@@ -53,31 +53,22 @@ class ConversationFragment : Fragment() {
             )
         }
 
-        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.READ_CONTACTS), 101)
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.READ_CONTACTS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(android.Manifest.permission.READ_CONTACTS),
+                101
+            )
         }
-
-        /* adapter = MessageAdapter1()
-         binding.conversationList.adapter = adapter
-
-         val repository = MessageRepository(requireContext().contentResolver)
-         val viewModelFactory = MessageViewModelFactory(repository)
-         viewModel = ViewModelProvider(this, viewModelFactory).get(MessageViewModel::class.java)
-         viewModel.fetchMessages(requireContext())
-         viewModel.messages.observe(viewLifecycleOwner) { latestMessages ->
-
-             Log.d("MessageActivity", "Displaying ${latestMessages.size} unique senders with their last message.")
-             if (latestMessages.isNotEmpty()) {
-                 adapter.submitList(latestMessages)
-             } else {
-                 Log.d("MessageActivity", "No messages found!")
-             }
-
-         }*/
 
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             Log.d("ConversationFragment", "Messages Loaded: ${messageList.size}")
-            adapter.submitList(messageList) // Efficiently update list
+            adapter.submitList(messageList)
+            binding.conversationList.smoothScrollToPosition(0)
         }
 
         return binding.getRoot();
@@ -86,21 +77,20 @@ class ConversationFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = MessageAdapter()
+        binding.conversationList.itemAnimator = null
         binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
         binding.conversationList.adapter = adapter
 
-        adapter.onItemClickListener = { threadId ->
-//            viewModel.loadConversation(threadId)
-            Log.e("TAG", "setupRecyclerView: "+threadId )
+        adapter.onItemClickListener = { message ->
             val intent = Intent(requireContext(), ConversationActivity::class.java)
-            intent.putExtra(ConversationActivity.EXTRA_THREAD_ID, threadId)
+            intent.putExtra("EXTRA_THREAD_ID", message.threadId)
+            intent.putExtra("NUMBER", message.number)
             startActivity(intent)
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissionsAndLoadMessages() {
-        // Check if both SMS and Contacts permissions are granted
         val smsPermission = ContextCompat.checkSelfPermission(
             requireContext(),
             android.Manifest.permission.READ_SMS
@@ -110,13 +100,14 @@ class ConversationFragment : Fragment() {
             android.Manifest.permission.READ_CONTACTS
         )
 
-        // If both permissions are granted, load messages
         if (smsPermission == PackageManager.PERMISSION_GRANTED && contactsPermission == PackageManager.PERMISSION_GRANTED) {
             viewModel.loadMessages()
         } else {
-            // If permissions are not granted, request them
             requestPermissions(
-                arrayOf(android.Manifest.permission.READ_SMS, android.Manifest.permission.READ_CONTACTS),
+                arrayOf(
+                    android.Manifest.permission.READ_SMS,
+                    android.Manifest.permission.READ_CONTACTS
+                ),
                 101
             )
         }
@@ -133,15 +124,18 @@ class ConversationFragment : Fragment() {
         when (requestCode) {
             101 -> {
                 // Check if both permissions were granted
-                val smsPermissionGranted = grantResults.getOrNull(0) == PackageManager.PERMISSION_GRANTED
-                val contactsPermissionGranted = grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
+                val smsPermissionGranted =
+                    grantResults.getOrNull(0) == PackageManager.PERMISSION_GRANTED
+                val contactsPermissionGranted =
+                    grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
 
                 if (smsPermissionGranted && contactsPermissionGranted) {
                     // Both permissions granted, load messages
                     viewModel.loadMessages()
                 } else {
                     // Permissions denied, show a toast message
-                    Toast.makeText(requireActivity(), "Permissions denied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireActivity(), "Permissions denied", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
 

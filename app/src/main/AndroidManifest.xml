@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.provider.Telephony.SMS_RECEIVED" />
-
     <uses-feature android:name="android.hardware.telephony" />
 
 
@@ -45,9 +44,12 @@
         <receiver
             android:name=".ui.reciever.SmsReceiver"
             android:exported="true"
+            android:enabled="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
                 <action android:name="android.provider.Telephony.SMS_DELIVER" />
+
             </intent-filter>
         </receiver>
 
@@ -101,7 +103,12 @@
             android:theme="@style/Theme.MyApplication">
 
         </activity>
-        <activity android:name="com.test.messages.demo.ui.Activity.ConversationActivity" />
+        <activity android:name="com.test.messages.demo.ui.Activity.ConversationActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            />
+
+        <receiver android:name=".ui.reciever.SmsStatusSentReceiver" />
+
     </application>
 
 </manifest>

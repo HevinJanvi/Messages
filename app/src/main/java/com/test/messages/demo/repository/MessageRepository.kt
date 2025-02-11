@@ -1,5 +1,6 @@
 package com.test.messages.demo.repository
 
+import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
@@ -8,13 +9,50 @@ import android.provider.ContactsContract
 import android.provider.Telephony
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Locale
 import javax.inject.Inject
 
-class MessageRepository @Inject constructor(private val context: Context) {
+class MessageRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
+    private val _messages = MutableLiveData<List<MessageItem>>()
+    val messages: LiveData<List<MessageItem>> get() = _messages
+
+    private val _conversation = MutableLiveData<List<ConversationItem>>()
+    val conversation: LiveData<List<ConversationItem>> get() = _conversation
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun getMessages(): List<MessageItem> {
+        val messageList = getConversations()
+        val recipientMap = getRecipientAddresses().toMap()
+        val contactMap =
+            getContactDetails().associateBy({ it.normalizeNumber }, { it.name })
+        val newmsgList = messageList
+            .filter {
+                it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null
+            }
+            .map { messageItem ->
+                val rawPhoneNumber = recipientMap[messageItem.reciptid.toString()] ?: "Unknown Number"
+                val normalizedMessageNumber = normalizePhoneNumber(rawPhoneNumber)
+                val contactName = contactMap[normalizedMessageNumber] ?: rawPhoneNumber
+                messageItem.copy(sender = contactName, number = rawPhoneNumber)
+            }
+        _messages.postValue(newmsgList)
+        return newmsgList
+
+    }
+
+     fun getConversation(threadId: Long): List<ConversationItem> {
+         val updatedConversation = getConversationDetails(threadId)
+         _conversation.postValue(updatedConversation)
+        return updatedConversation
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getConversations(): List<MessageItem> {
@@ -49,7 +87,7 @@ class MessageRepository @Inject constructor(private val context: Context) {
                     conversations.add(
                         MessageItem(
                             threadId,
-                            senderName,
+                            senderName, "",
                             lastMessage,
                             lastMessageTimestamp,
                             isRead = messageCount > 0,
@@ -61,6 +99,7 @@ class MessageRepository @Inject constructor(private val context: Context) {
             }
 
         }
+        _messages.postValue(conversations)
         return conversations
     }
 
@@ -88,6 +127,7 @@ class MessageRepository @Inject constructor(private val context: Context) {
             }
         }
         val recipientMap = getRecipientAddressesForIds(recipientList) // Get as HashMap
+        Log.d("TAG", "getRecipientAddresses: " + recipientMap)
         return recipientMap
     }
 
@@ -123,7 +163,8 @@ class MessageRepository @Inject constructor(private val context: Context) {
 
         val projection = arrayOf(
             ContactsContract.CommonDataKinds.Phone.NUMBER,
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
         )
 
         val cursor = context.contentResolver.query(
@@ -138,28 +179,29 @@ class MessageRepository @Inject constructor(private val context: Context) {
             while (it.moveToNext()) {
                 val phoneNumber =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                val normalizePhoneNumber =
+                    it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
                 val displayName =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-                contactList.add(ContactItem(displayName, phoneNumber))
+
+                if (phoneNumber != null && normalizePhoneNumber!=null) {
+                    contactList.add(ContactItem(displayName, phoneNumber, normalizePhoneNumber))
+                }
             }
         }
 
         return contactList
     }
 
-    fun updateRecipientWithContactNames(recipientMap: HashMap<String, String>) {
-        val contactDetails = getContactDetails()
-
-        // Map phone numbers to contact names
-        contactDetails.forEach { contact ->
-            recipientMap.entries.find { it.value == contact.phoneNumber }?.apply {
-                this.setValue(contact.name!!) // Update recipient map with contact name
-            }
+    private fun normalizePhoneNumber(phoneNumber: String): String {
+        return try {
+            val phoneUtil = PhoneNumberUtil.getInstance()
+            val number = phoneUtil.parse(phoneNumber, Locale.getDefault().country)
+            phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.E164)
+        } catch (e: Exception) {
+            phoneNumber // Return original if parsing fails
         }
-
-        Log.d("UpdatedRecipientMap", "Recipient map after contact name update: $recipientMap")
     }
-
 
     fun getConversationDetails(threadId: Long): List<ConversationItem> {
         val conversationList = mutableListOf<ConversationItem>()
@@ -183,11 +225,12 @@ class MessageRepository @Inject constructor(private val context: Context) {
             projection,
             selection,
             selectionArgs,
-            "${Telephony.Sms.DATE} ASC" // Order messages by date
+            "${Telephony.Sms.DATE} ASC"
         )
 
         cursor?.use {
-            Log.e("TAG", "getConversationDetails: "+cursor.count )
+            Log.d("SMS", "Conversation loaded. Messages found: ${it.count}")
+
             while (it.moveToNext()) {
                 val id = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms._ID))
                 val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
@@ -195,13 +238,52 @@ class MessageRepository @Inject constructor(private val context: Context) {
                 val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
                 val type = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.TYPE))
                 val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
-                val subscriptionId = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
+                val subscriptionId =
+                    it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
+                Log.d("SMS", "Message: $body | Type: $type | Address: $address")
 
                 // Add conversation item
-                conversationList.add(ConversationItem(id, threadId, date, body, address, type, read, subscriptionId))
+                conversationList.add(
+                    ConversationItem(
+                        id,
+                        threadId,
+                        date,
+                        body,
+                        address,
+                        type,
+                        read,
+                        subscriptionId
+                    )
+                )
             }
         }
 
         return conversationList
     }
+
+    fun getContactNameOrNumber(phoneNumber: String): String {
+        val contactMap = getContactDetails().associateBy(
+            { it.phoneNumber },
+            { it.name }
+        )
+        contactMap[phoneNumber]?.let { return it }
+
+        val contentResolver: ContentResolver = context.contentResolver
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
+        val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
+
+        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)
+                return cursor.getString(nameIndex)
+            }
+        }
+        return phoneNumber
+    }
+
+
+
 }

@@ -28,6 +28,7 @@ class ConversationAdapter : ListAdapter<ConversationItem, ConversationAdapter.Vi
         private const val VIEW_TYPE_OUTGOING = 2
     }
 
+
     override fun getItemViewType(position: Int): Int {
         return if (getItem(position).isIncoming()) VIEW_TYPE_INCOMING else VIEW_TYPE_OUTGOING
     }

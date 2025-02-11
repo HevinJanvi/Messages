@@ -2,6 +2,7 @@ package com.test.messages.demo.data
 
 import android.content.Context
 import com.test.messages.demo.repository.MessageRepository
+import com.test.messages.demo.ui.reciever.SmsReceiver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,10 +19,6 @@ class AppModule {
     fun MessageRepository(@ApplicationContext context:Context): MessageRepository{
         return com.test.messages.demo.repository.MessageRepository(context)
     }
-//    @Provides
-//    @Singleton
-//    fun ConversationRepository(@ApplicationContext context:Context): ConversationRepository{
-//        return com.test.messages.demo.repository.ConversationRepository(context)
-//    }
+
 
 }

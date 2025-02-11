@@ -1,4 +1,8 @@
-
+buildscript{
+    repositories{
+        jcenter()
+    }
+}
 
 
 

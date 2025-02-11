@@ -4,13 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.data.MessageDiffCallback
 import com.test.messages.demo.data.MessageItem
 
 class MessageAdapter : RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
 
-    var onItemClickListener: ((Long) -> Unit)? = null
+    var onItemClickListener: ((MessageItem) -> Unit)? = null
 
     private var messages: List<MessageItem> = emptyList()
 
@@ -29,14 +31,17 @@ class MessageAdapter : RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.itemView.setOnClickListener {
-            val threadId = message.threadId
-            onItemClickListener?.invoke(threadId)
+            onItemClickListener?.invoke(message)
         }
     }
+
     override fun getItemCount(): Int = messages.size
 
+    // Submit new list using DiffUtil
     fun submitList(newMessages: List<MessageItem>) {
+        val diffCallback = MessageDiffCallback(messages, newMessages)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
         messages = newMessages
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 }
