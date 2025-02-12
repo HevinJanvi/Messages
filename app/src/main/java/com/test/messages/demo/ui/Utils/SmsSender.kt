@@ -12,13 +12,9 @@ import com.test.messages.demo.data.SmsException.Companion.EMPTY_DESTINATION_ADDR
 import com.test.messages.demo.data.SmsException.Companion.ERROR_SENDING_MESSAGE
 import com.test.messages.demo.ui.reciever.SmsStatusSentReceiver
 
-/** Class that sends chat message via SMS. */
 class SmsSender(val app: Application) {
 
-    // not sure what to do about this yet. this is the default as per android-smsmms
     private val sendMultipartSmsAsSeparateMessages = false
-
-    // This should be called from a RequestWriter queue thread
     fun sendMessage(
         subId: Int, destination: String, body: String, serviceCenter: String?,
         requireDeliveryReport: Boolean, messageUri: Uri

@@ -5,17 +5,15 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.Telephony
 import android.provider.Telephony.Sms
 import android.telephony.SmsMessage
 import com.klinker.android.send_message.Settings
 import com.test.messages.demo.data.SmsException
 import com.test.messages.demo.data.SmsException.Companion.ERROR_PERSISTING_MESSAGE
 
-class MessagingUtils(val context: Context) {
+class MessageUtils(val context: Context) {
 
-
-    public fun insertSmsMessage(
+    fun insertSmsMessage(
         subId: Int, dest: String, text: String, timestamp: Long, threadId: Long,
         status: Int = Sms.STATUS_NONE, type: Int = Sms.MESSAGE_TYPE_OUTBOX, messageId: Long? = null
     ): Uri {
@@ -27,7 +25,7 @@ class MessagingUtils(val context: Context) {
             put(Sms.SEEN, 1)
             put(Sms.BODY, text)
 
-            // insert subscription id only if it is a valid one.
+
             if (subId != Settings.DEFAULT_SUBSCRIPTION_ID) {
                 put(Sms.SUBSCRIPTION_ID, subId)
             }
@@ -42,13 +40,6 @@ class MessagingUtils(val context: Context) {
                 put(Sms.THREAD_ID, threadId)
             }
         }
-
-       /* return try {
-            context.contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
-                ?: throw SmsException(SmsException.ERROR_PERSISTING_MESSAGE)
-        } catch (e: Exception) {
-            throw SmsException(SmsException.ERROR_PERSISTING_MESSAGE, e)
-        }*/
 
         try {
             if (messageId != null) {
@@ -70,14 +61,6 @@ class MessagingUtils(val context: Context) {
         return response ?: throw SmsException(ERROR_PERSISTING_MESSAGE)
     }
 
-    @SuppressLint("NewApi")
-   fun Context.getThreadId(addresses: Set<String>): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(this, addresses)
-        } catch (e: Exception) {
-            0L
-        }
-    }
 
     /** Send an SMS message given [text] and [addresses]. A [SmsException] is thrown in case any errors occur. */
 //    fun sendSmsMessage(

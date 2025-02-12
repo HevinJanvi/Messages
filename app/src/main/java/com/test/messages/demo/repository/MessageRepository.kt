@@ -38,7 +38,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null
             }
             .map { messageItem ->
-                val rawPhoneNumber = recipientMap[messageItem.reciptid.toString()] ?: "Unknown Number"
+                val rawPhoneNumber =
+                    recipientMap[messageItem.reciptid.toString()] ?: "Unknown Number"
                 val normalizedMessageNumber = normalizePhoneNumber(rawPhoneNumber)
                 val contactName = contactMap[normalizedMessageNumber] ?: rawPhoneNumber
                 messageItem.copy(sender = contactName, number = rawPhoneNumber)
@@ -48,9 +49,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     }
 
-     fun getConversation(threadId: Long): List<ConversationItem> {
-         val updatedConversation = getConversationDetails(threadId)
-         _conversation.postValue(updatedConversation)
+    fun getConversation(threadId: Long): List<ConversationItem> {
+        val updatedConversation = getConversationDetails(threadId)
+        _conversation.postValue(updatedConversation)
         return updatedConversation
     }
 
@@ -83,6 +84,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val reciptid =
                     cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val senderName = ""
+//                val senderName = getSenderNameForGroup(reciptid)
                 if (lastMessage != null) {
                     conversations.add(
                         MessageItem(
@@ -184,7 +186,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val displayName =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
 
-                if (phoneNumber != null && normalizePhoneNumber!=null) {
+                if (phoneNumber != null && normalizePhoneNumber != null) {
                     contactList.add(ContactItem(displayName, phoneNumber, normalizePhoneNumber))
                 }
             }
@@ -285,5 +287,23 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
 
+    fun findGroupThreadId(addresses: Set<String>): Long? {
+        val mergedAddresses = addresses.joinToString("|")
+        val cursor = context.contentResolver.query(
+            Uri.parse("content://sms/threads"),
+            arrayOf("thread_id"),
+            "address LIKE ?",
+            arrayOf("%$mergedAddresses%"),
+            null
+        )
 
+        return cursor?.use {
+            if (it.moveToFirst()) {
+                val threadId = it.getLong(it.getColumnIndexOrThrow("thread_id"))
+                threadId
+            } else {
+                null // No group thread found
+            }
+        }
+    }
 }

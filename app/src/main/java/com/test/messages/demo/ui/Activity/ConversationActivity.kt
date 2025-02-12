@@ -16,12 +16,10 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.klinker.android.send_message.Utils
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
-import com.test.messages.demo.ui.Utils.MessagingUtils
+import com.test.messages.demo.ui.Utils.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsSender
-import com.test.messages.demo.ui.Utils.smsSender
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,7 +32,7 @@ class ConversationActivity : AppCompatActivity() {
     private var threadId: Long = -1
     private lateinit var number: String
     private var subscriptionId: Int = -1
-    private lateinit var messagingUtils: MessagingUtils
+    private lateinit var messagingUtils: MessageUtils
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var oldBottom = 0
 
@@ -43,7 +41,7 @@ class ConversationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        messagingUtils = MessagingUtils(this)
+        messagingUtils = MessageUtils(this)
 
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
         number = intent.getStringExtra("NUMBER").toString()
@@ -102,29 +100,42 @@ class ConversationActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun sendMessage() {
-        var text = binding.editTextMessage.text.toString().trim()
+        val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
-            Toast.makeText(this, "failed to send message", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Failed to send message", Toast.LENGTH_LONG).show()
             return
         }
+
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
         threadId = getThreadId(setOf(number))
         if (threadId == -1L || threadId == 0L) {
             threadId = getThreadId(setOf(number))
         }
         Log.d("TAG", "Sending message to $number in thread $threadId")
+        val numbersSet = number.split("+").filter { it.isNotEmpty() }.toSet() // Convert to Set<String>
+        if (numbersSet.size > 1) {
+            val groupThreadId = threadId
+            if (groupThreadId != null) {
+                messagingUtils.insertSmsMessage(
+                    subId = subscriptionId,
+                    dest = numbersSet.joinToString("|"),  // Group identifier (merge the addresses)
+                    text = text,
+                    timestamp = System.currentTimeMillis(),
+                    threadId = groupThreadId
+                )
+            }
+        }
+        sendSmsMessage(
+            text = text,
+            addresses = numbersSet,
+            subId = subscriptionId,
+            requireDeliveryReport = false
+        )
         binding.editTextMessage.text.clear()
-        sendSmsMessage(text, setOf(number), subscriptionId, false, null)
         binding.recyclerViewConversation.itemAnimator = null
         scrolltoBottom()
-        viewModel.loadConversation(threadId)
         viewModel.loadMessages()
-    }
-
-    fun scrolltoBottom() {
-        binding.recyclerViewConversation.postDelayed({
-            binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
-        }, 100)
+        viewModel.loadConversation(threadId)
     }
 
     private fun observeViewModel() {
@@ -144,7 +155,6 @@ class ConversationActivity : AppCompatActivity() {
 
     }
 
-
     @SuppressLint("NewApi")
     fun Context.getThreadId(addresses: Set<String>): Long {
         return try {
@@ -161,38 +171,59 @@ class ConversationActivity : AppCompatActivity() {
         requireDeliveryReport: Boolean,
         messageId: Long? = null
     ) {
-        if (addresses.size > 1) {
-            // insert a dummy message for this thread if it is a group message
-            val broadCastThreadId = getThreadId(addresses.toSet())
+        if (addresses.isEmpty()) return
+
+        val isGroupMessage = addresses.size > 1
+        val groupThreadId = if (isGroupMessage) viewModel.findGroupThreadId(addresses) else null
+
+        // Step 1: Insert Group Message (So it appears in the Group Chat)
+        if (isGroupMessage && groupThreadId != null) {
+            Log.d("TAG", "sendSmsMessage:group ", )
+            val groupThreadId = getThreadId(addresses)
             val mergedAddresses = addresses.joinToString("|")
             messagingUtils.insertSmsMessage(
                 subId = subId,
-                dest = mergedAddresses,
+                dest = mergedAddresses,  // Use merged addresses as a group identifier
                 text = text,
                 timestamp = System.currentTimeMillis(),
-                threadId = broadCastThreadId,
+                threadId = groupThreadId,
                 status = Telephony.Sms.Sent.STATUS_COMPLETE,
                 type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
                 messageId = messageId
             )
         }
 
-
+        // ✅ Step 2: Send Personal Messages (So they appear in individual chats)
         for (address in addresses) {
+            val personalThreadId = getThreadId(setOf(address)) // Get thread ID for single recipient
             val messageUri = messagingUtils.insertSmsMessage(
-                subId = subId, dest = address, text = text,
-                timestamp = System.currentTimeMillis(), threadId = threadId,
+                subId = subId,
+                dest = address,
+                text = text,
+                timestamp = System.currentTimeMillis(),
+                threadId = personalThreadId,
                 messageId = messageId
             )
+
             try {
                 SmsSender.getInstance(applicationContext as Application).sendMessage(
-                    subId = subId, destination = address, body = text, serviceCenter = null,
-                    requireDeliveryReport = requireDeliveryReport, messageUri = messageUri
+                    subId = subId,
+                    destination = address,
+                    body = text,
+                    serviceCenter = null,
+                    requireDeliveryReport = requireDeliveryReport,
+                    messageUri = messageUri
                 )
             } catch (e: Exception) {
-                throw e
+                Log.d("TAG", "Failed to send message to $address", e)
             }
         }
+    }
+
+    fun scrolltoBottom() {
+        binding.recyclerViewConversation.postDelayed({
+            binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
+        }, 100)
     }
 
 }

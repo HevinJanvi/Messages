@@ -54,7 +54,8 @@ class MessageViewModel @Inject constructor(
         return repository.getContactNameOrNumber(phoneNumber)
     }
 
-
-
+    fun findGroupThreadId(addresses: Set<String>): Long? {
+        return repository.findGroupThreadId(addresses)
+    }
 
 }

@@ -28,6 +28,7 @@ class ConversationFragment : Fragment() {
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var adapter: MessageAdapter
     private lateinit var binding: FragmentConversationBinding
+    private var lastVisibleItemPosition: Int = 0 // Variable to remember the scroll position
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -68,7 +69,9 @@ class ConversationFragment : Fragment() {
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             Log.d("ConversationFragment", "Messages Loaded: ${messageList.size}")
             adapter.submitList(messageList)
-            binding.conversationList.smoothScrollToPosition(0)
+            if (lastVisibleItemPosition == adapter.itemCount - 1) {
+                binding.conversationList.scrollToPosition(lastVisibleItemPosition)
+            }
         }
 
         return binding.getRoot();
@@ -80,7 +83,6 @@ class ConversationFragment : Fragment() {
         binding.conversationList.itemAnimator = null
         binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
         binding.conversationList.adapter = adapter
-
         adapter.onItemClickListener = { message ->
             val intent = Intent(requireContext(), ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
