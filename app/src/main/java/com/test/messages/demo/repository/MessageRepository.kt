@@ -31,22 +31,40 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getMessages(): List<MessageItem> {
         val messageList = getConversations()
         val recipientMap = getRecipientAddresses().toMap()
-        val contactMap =
-            getContactDetails().associateBy({ it.normalizeNumber }, { it.name })
-        val newmsgList = messageList
-            .filter {
-                it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null
-            }
-            .map { messageItem ->
-                val rawPhoneNumber =
-                    recipientMap[messageItem.reciptid.toString()] ?: "Unknown Number"
-                val normalizedMessageNumber = normalizePhoneNumber(rawPhoneNumber)
-                val contactName = contactMap[normalizedMessageNumber] ?: rawPhoneNumber
-                messageItem.copy(sender = contactName, number = rawPhoneNumber)
-            }
-        _messages.postValue(newmsgList)
-        return newmsgList
+        val contactMap = getContactDetails().associateBy({ it.normalizeNumber }, { it.name })
 
+        val newMsgList = messageList
+            .filter { it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null }
+            .map { messageItem ->
+                val reciptids = messageItem.reciptids.trim()
+
+                val displayName: String
+                val rawPhoneNumber: String
+
+                if (reciptids.contains(" ")) {  // ✅ Only split if space exists
+                    val receiptIdList = reciptids.split(" ")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+
+                    val rawPhoneNumbers = receiptIdList.map { id -> recipientMap[id] ?: "Unknown Number" }
+
+                    val contactNames = rawPhoneNumbers.map { number ->
+                        val normalizedNumber = normalizePhoneNumber(number)
+                        contactMap[normalizedNumber] ?: number  // Use contact name if available, else show number
+                    }
+
+                    displayName = contactNames.joinToString(", ")
+                    rawPhoneNumber = rawPhoneNumbers.joinToString(", ")  // Group numbers
+                } else {
+                    rawPhoneNumber = recipientMap[reciptids] ?: "Unknown Number"
+                    val normalizedNumber = normalizePhoneNumber(rawPhoneNumber)
+                    displayName = contactMap[normalizedNumber] ?: rawPhoneNumber  // Single name or number
+                }
+                messageItem.copy(sender = displayName, number = rawPhoneNumber)
+            }
+
+        _messages.postValue(newMsgList)
+        return newMsgList
     }
 
     fun getConversation(threadId: Long): List<ConversationItem> {
@@ -83,8 +101,11 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Threads.MESSAGE_COUNT))
                 val reciptid =
                     cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
+                val reciptids =
+                    cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val senderName = ""
-//                val senderName = getSenderNameForGroup(reciptid)
+
+//                Log.d("TAG", "getConversations:reciptid " + reciptid)
                 if (lastMessage != null) {
                     conversations.add(
                         MessageItem(
@@ -93,7 +114,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             lastMessage,
                             lastMessageTimestamp,
                             isRead = messageCount > 0,
-                            reciptid
+                            reciptid,
+                            reciptids
+
                         )
                     )
 
@@ -123,13 +146,15 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             while (cursor.moveToNext()) {
                 val recipientIds =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
+
+                Log.d("TAG", "getRecipientid---- " + recipientIds)
                 recipientIds.split(",").map { it.trim() }
                     .filter { it.isNotEmpty() } // Filter out blank recipient IDs
                     .let { recipientList.addAll(it) }
             }
         }
         val recipientMap = getRecipientAddressesForIds(recipientList) // Get as HashMap
-        Log.d("TAG", "getRecipientAddresses: " + recipientMap)
+//        Log.d("TAG", "getRecipientAddresses: " + recipientMap)
         return recipientMap
     }
 
@@ -152,11 +177,16 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val recipientId = it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr._ID))
                 val recipientPhoneNumber =
                     it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr.ADDRESS))
+//                Log.d(
+//                    "TAG",
+//                    "getRecipientAddressesFor:---" + recipientId + "-------number-------" + recipientPhoneNumber
+//                )
+
                 recipientMap[recipientId] = recipientPhoneNumber
 
             }
         }
-        Log.d("TAG", "getRecipientAddressesForIds:- $recipientMap")
+//        Log.d("TAG", "getRecipientAddressesForIds:- $recipientMap")
         return recipientMap
     }
 
@@ -164,6 +194,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val contactList = mutableListOf<ContactItem>()
 
         val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
@@ -179,6 +210,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
         cursor?.use {
             while (it.moveToNext()) {
+                val cid =
+                    it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID))
                 val phoneNumber =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
                 val normalizePhoneNumber =
@@ -187,11 +220,18 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
 
                 if (phoneNumber != null && normalizePhoneNumber != null) {
-                    contactList.add(ContactItem(displayName, phoneNumber, normalizePhoneNumber))
+                    contactList.add(
+                        ContactItem(
+                            cid,
+                            displayName,
+                            phoneNumber,
+                            normalizePhoneNumber
+                        )
+                    )
                 }
             }
         }
-
+//        Log.d("TAG", "getContactDetails: " + contactList)
         return contactList
     }
 
@@ -201,7 +241,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             val number = phoneUtil.parse(phoneNumber, Locale.getDefault().country)
             phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.E164)
         } catch (e: Exception) {
-            phoneNumber // Return original if parsing fails
+            phoneNumber
         }
     }
 

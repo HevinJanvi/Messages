@@ -17,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.databinding.FragmentConversationBinding
 import com.test.messages.demo.ui.Activity.ConversationActivity
+import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,7 +74,10 @@ class ConversationFragment : Fragment() {
                 binding.conversationList.scrollToPosition(lastVisibleItemPosition)
             }
         }
-
+        binding.newConversation.setOnClickListener {
+            val intent = Intent(requireContext(), NewConversationActivtiy::class.java)
+            startActivity(intent)
+        }
         return binding.getRoot();
 
     }

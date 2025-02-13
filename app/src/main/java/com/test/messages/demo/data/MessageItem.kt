@@ -7,5 +7,6 @@ data class MessageItem(
     val body: String,
     val timestamp: Long,
     val isRead: Boolean,
-    val reciptid: Int
+    val reciptid: Int,
+    val reciptids: String
 )

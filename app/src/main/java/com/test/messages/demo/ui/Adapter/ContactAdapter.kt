@@ -9,7 +9,7 @@ import com.test.messages.demo.R
 import com.test.messages.demo.data.ContactItem
 
 class ContactAdapter(
-    private val contacts: List<ContactItem>,
+    private var contacts: List<ContactItem>,
     private val onContactSelected: (ContactItem) -> Unit
 ) : RecyclerView.Adapter<ContactAdapter.ContactViewHolder>() {
 
@@ -25,11 +25,22 @@ class ContactAdapter(
 
     override fun getItemCount(): Int = contacts.size
 
+    fun submitList(newContacts: List<ContactItem>) {
+        this.contacts = newContacts
+        notifyDataSetChanged()  // Notify the adapter that the data has changed
+    }
     inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val contactName: TextView = itemView.findViewById(R.id.contactName)
 
         fun bind(contact: ContactItem) {
             contactName.text = contact.name
+
+//            if (contact.cid == -1) {
+//                holder.iconImageView.setImageResource(R.drawable.ic_user) // Replace with your user icon
+//            } else {
+//                hol.der.iconImageView.setImageResource(R.drawable.ic_contact) // Regular contact icon
+//            }
+
             itemView.setOnClickListener {
                 onContactSelected(contact)
             }

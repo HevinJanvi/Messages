@@ -2,20 +2,17 @@ package com.test.messages.demo.viewmodel
 
 
 import android.os.Build
-import android.provider.Telephony
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
-import com.test.messages.demo.data.Recipient
 import com.test.messages.demo.repository.MessageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,9 +25,11 @@ class MessageViewModel @Inject constructor(
     val messages: LiveData<List<MessageItem>> = repository.messages
     val conversation: LiveData<List<ConversationItem>> = repository.conversation
 
-
-
-
+    private val _contacts = MutableLiveData<List<ContactItem>>()
+    val contacts: LiveData<List<ContactItem>> get() = _contacts
+    init {
+        loadContacts()
+    }
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -56,6 +55,30 @@ class MessageViewModel @Inject constructor(
 
     fun findGroupThreadId(addresses: Set<String>): Long? {
         return repository.findGroupThreadId(addresses)
+    }
+
+    fun loadContacts() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val contactList = repository.getContactDetails()
+            withContext(Dispatchers.Main) {
+                _contacts.value = contactList
+            }
+        }
+    }
+
+    private val _selectedItemIds = MutableLiveData<Set<String>>(emptySet())
+    val selectedItemIds: LiveData<Set<String>> = _selectedItemIds
+
+    fun selectItem(id: String) {
+        _selectedItemIds.value = _selectedItemIds.value?.plus(id)
+    }
+
+    fun deselectItem(id: String) {
+        _selectedItemIds.value = _selectedItemIds.value?.minus(id)
+    }
+
+    fun clearSelection() {
+        _selectedItemIds.value = emptySet()
     }
 
 }

@@ -105,32 +105,32 @@ class ConversationActivity : AppCompatActivity() {
             Toast.makeText(this, "Failed to send message", Toast.LENGTH_LONG).show()
             return
         }
-
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
-        threadId = getThreadId(setOf(number))
-        if (threadId == -1L || threadId == 0L) {
-            threadId = getThreadId(setOf(number))
+        val numbersSet = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        threadId = if (threadId == -1L || threadId == 0L) {
+            viewModel.findGroupThreadId(numbersSet)
+                ?: getThreadId(numbersSet)
+        } else {
+            threadId
         }
         Log.d("TAG", "Sending message to $number in thread $threadId")
-        val numbersSet = number.split("+").filter { it.isNotEmpty() }.toSet() // Convert to Set<String>
         if (numbersSet.size > 1) {
-            val groupThreadId = threadId
-            if (groupThreadId != null) {
-                messagingUtils.insertSmsMessage(
-                    subId = subscriptionId,
-                    dest = numbersSet.joinToString("|"),  // Group identifier (merge the addresses)
-                    text = text,
-                    timestamp = System.currentTimeMillis(),
-                    threadId = groupThreadId
-                )
-            }
+            messagingUtils.insertSmsMessage(
+                subId = subscriptionId,
+                dest = numbersSet.joinToString("|"), // Group identifier
+                text = text,
+                timestamp = System.currentTimeMillis(),
+                threadId = threadId
+            )
         }
+
         sendSmsMessage(
             text = text,
             addresses = numbersSet,
             subId = subscriptionId,
             requireDeliveryReport = false
         )
+
         binding.editTextMessage.text.clear()
         binding.recyclerViewConversation.itemAnimator = null
         scrolltoBottom()
@@ -150,7 +150,6 @@ class ConversationActivity : AppCompatActivity() {
                 val senderNumber = conversationList.first().address ?: number
                 binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
             }
-
         }
 
     }
@@ -173,29 +172,8 @@ class ConversationActivity : AppCompatActivity() {
     ) {
         if (addresses.isEmpty()) return
 
-        val isGroupMessage = addresses.size > 1
-        val groupThreadId = if (isGroupMessage) viewModel.findGroupThreadId(addresses) else null
-
-        // Step 1: Insert Group Message (So it appears in the Group Chat)
-        if (isGroupMessage && groupThreadId != null) {
-            Log.d("TAG", "sendSmsMessage:group ", )
-            val groupThreadId = getThreadId(addresses)
-            val mergedAddresses = addresses.joinToString("|")
-            messagingUtils.insertSmsMessage(
-                subId = subId,
-                dest = mergedAddresses,  // Use merged addresses as a group identifier
-                text = text,
-                timestamp = System.currentTimeMillis(),
-                threadId = groupThreadId,
-                status = Telephony.Sms.Sent.STATUS_COMPLETE,
-                type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
-                messageId = messageId
-            )
-        }
-
-        // ✅ Step 2: Send Personal Messages (So they appear in individual chats)
         for (address in addresses) {
-            val personalThreadId = getThreadId(setOf(address)) // Get thread ID for single recipient
+            val personalThreadId = getThreadId(setOf(address))
             val messageUri = messagingUtils.insertSmsMessage(
                 subId = subId,
                 dest = address,

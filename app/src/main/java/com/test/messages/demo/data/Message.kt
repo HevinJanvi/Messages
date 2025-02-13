@@ -5,5 +5,6 @@ data class Message(
     var sender: String,
     val content: String,
     val timestamp: Long,
-    val isRead: Boolean
+    val isRead: Boolean,
+
 )

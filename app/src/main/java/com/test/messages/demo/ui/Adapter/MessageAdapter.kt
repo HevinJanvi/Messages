@@ -30,9 +30,11 @@ class MessageAdapter : RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
         val message = messages[position]
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
+
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(message)
         }
+
     }
 
     override fun getItemCount(): Int = messages.size

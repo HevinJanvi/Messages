@@ -9,8 +9,8 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.provider.Telephony.SMS_RECEIVED" />
-    <uses-feature android:name="android.hardware.telephony" />
 
+    <uses-feature android:name="android.hardware.telephony" />
 
     <application
         android:name=".data.MyApp"
@@ -24,35 +24,37 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".ui.Activity.NewConversationActivtiy"
+            android:exported="false" />
+        <activity
             android:name=".ui.Activity.SmsPermissionActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:scheme="smsto" />
             </intent-filter>
-
         </activity>
 
         <receiver
             android:name=".ui.reciever.SmsReceiver"
-            android:exported="true"
             android:enabled="true"
+            android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
                 <action android:name="android.provider.Telephony.SMS_DELIVER" />
-
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".ui.reciever.MmsReceiver"
             android:enabled="true"
@@ -71,6 +73,7 @@
             android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
             <intent-filter>
                 <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:scheme="sms" />
@@ -79,13 +82,13 @@
                 <data android:scheme="mmsto" />
             </intent-filter>
         </service>
-
         <service
             android:name=".ui.reciever.MmsService"
             android:exported="true"
             android:permission="android.permission.BROADCAST_WAP_PUSH">
             <intent-filter>
                 <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
+
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </service>
@@ -94,21 +97,18 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.smsprovider"
             android:exported="false"
-            android:grantUriPermissions="true"></provider>
+            android:grantUriPermissions="true" />
 
         <activity
             android:name=".ui.Activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication">
-
-        </activity>
-        <activity android:name="com.test.messages.demo.ui.Activity.ConversationActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            />
+            android:theme="@style/Theme.MyApplication"></activity>
+        <activity
+            android:name=".ui.Activity.ConversationActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
 
         <receiver android:name=".ui.reciever.SmsStatusSentReceiver" />
-
     </application>
 
 </manifest>
