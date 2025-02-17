@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.test.messages.demo"
-        minSdk = 24
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -94,17 +94,22 @@ dependencies {
     implementation("io.github.cymchad:BaseRecyclerViewAdapterHelper4:4.1.0")
 
     implementation("com.google.dagger:hilt-android:2.46")
-    kapt ("com.google.dagger:hilt-compiler:2.46")
+    kapt("com.google.dagger:hilt-compiler:2.46")
 
 //    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation ("androidx.fragment:fragment-ktx:1.6.1")
-    implementation ("androidx.activity:activity-ktx:1.7.2")
-    implementation ("com.klinkerapps:android-smsmms:5.2.6")
-    implementation ("androidx.work:work-runtime:2.9.0")
-    implementation ("com.googlecode.libphonenumber:libphonenumber:8.12.51")
-    implementation ("com.futuremind.recyclerfastscroll:fastscroll:0.2.5")
-//    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-//    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
+    implementation("androidx.activity:activity-ktx:1.7.2")
+    implementation("com.klinkerapps:android-smsmms:5.2.6")
+    implementation("androidx.work:work-runtime:2.9.0")
+    implementation("com.googlecode.libphonenumber:libphonenumber:8.12.51")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation ("com.makeramen:roundedimageview:2.3.0")
+
+    implementation ("androidx.room:room-ktx:2.6.1")
+    kapt ("androidx.room:room-compiler:2.6.1")
+//    implementation ("com.intuit.sdp:sdp-android:1.1.0")
+//    implementation ("com.intuit.ssp:ssp-android:1.1.0")
+
 
 
 }

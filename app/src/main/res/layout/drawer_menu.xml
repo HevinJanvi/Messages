@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/popup_bg">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="13dp"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="start"
+            android:text="@string/app_name"
+            android:textColor="@color/colorPrimary"
+            android:textFontWeight="500"
+            android:textSize="21dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/unreadCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="13dp"
+            android:layout_marginTop="3dp"
+            android:fontFamily="@font/product_sans_regular"
+            android:text="0"
+            android:textColor="@color/textcolor"
+            android:textSize="13dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/heading" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/product_sans_regular"
+            android:text="@string/unread_messages"
+            android:textColor="@color/textcolor"
+            android:textSize="13dp"
+            app:layout_constraintStart_toEndOf="@+id/unreadCount"
+            app:layout_constraintTop_toBottomOf="@+id/heading" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginTop="15dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/header" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyInbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view1">
+
+        <ImageView
+            android:id="@+id/icInbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_index"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txInbox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/inbox"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginStart="10dp"
+            app:layout_constraintEnd_toStartOf="@+id/newMessage"
+            app:layout_constraintStart_toEndOf="@id/icInbox"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/newMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/white"
+            android:paddingVertical="5dp"
+            android:paddingHorizontal="8dp"
+            android:background="@drawable/unread_msg_bg"
+            android:textSize="12dp"
+            android:fontFamily="@font/product_sans_medium"
+            android:layout_marginEnd="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lyInbox" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyArchived"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view2">
+
+        <ImageView
+            android:id="@+id/icArchive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_archive"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txArchive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/archived"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icArchive"
+            app:layout_constraintEnd_toStartOf="@+id/nextArchive"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextArchive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+           android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view3"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lyArchived" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lySchedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view3">
+
+        <ImageView
+            android:id="@+id/icSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_schedule"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txSchedule"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/schedule"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icSchedule"
+            app:layout_constraintEnd_toStartOf="@+id/nextSchedule"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextSchedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view4"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lySchedule" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyBlock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view4">
+
+        <ImageView
+            android:id="@+id/icBlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_block"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/schedule"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icBlock"
+            app:layout_constraintEnd_toStartOf="@+id/nextBlock"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextBlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view5"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lyBlock" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyStarred"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view5">
+
+        <ImageView
+            android:id="@+id/icStarred"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_starred"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txStarred"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/starred"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icStarred"
+            app:layout_constraintEnd_toStartOf="@+id/nextStarred"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextStarred"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view6"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lyStarred" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyRead"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view6">
+
+        <ImageView
+            android:id="@+id/icRead"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_read"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txRead"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_as_read"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icRead"
+            app:layout_constraintEnd_toStartOf="@+id/nextRead"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextRead"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view7"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lyRead" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lyBakup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view7">
+
+        <ImageView
+            android:id="@+id/icBakup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_bakuprestore"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txBakup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/backup_amp_restore"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icBakup"
+            app:layout_constraintEnd_toStartOf="@+id/nextBakup"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextBakup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view8"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lyBakup" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/lySetting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginVertical="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view8">
+
+        <ImageView
+            android:id="@+id/icSetting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_settings"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/txSetting"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/settings"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textSize="15dp"
+            android:gravity="start"
+            android:textColor="@color/textcolor"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/icSetting"
+            app:layout_constraintEnd_toStartOf="@+id/nextSetting"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/nextSetting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/view9"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@color/drawer_viewcolor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lySetting" />
+</androidx.constraintlayout.widget.ConstraintLayout>

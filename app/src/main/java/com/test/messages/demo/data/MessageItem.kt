@@ -8,5 +8,6 @@ data class MessageItem(
     val timestamp: Long,
     val isRead: Boolean,
     val reciptid: Int,
-    val reciptids: String
+    val reciptids: String,
+    val profileImageUrl: String
 )

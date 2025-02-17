@@ -32,35 +32,49 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val messageList = getConversations()
         val recipientMap = getRecipientAddresses().toMap()
         val contactMap = getContactDetails().associateBy({ it.normalizeNumber }, { it.name })
+        val contactPhotoMap =
+            getContactDetails().associateBy({ it.normalizeNumber }, { it.profileImageUrl })
+
 
         val newMsgList = messageList
-            .filter { it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null }
+            .filter {
+                it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null
+            }
             .map { messageItem ->
                 val reciptids = messageItem.reciptids.trim()
-
                 val displayName: String
                 val rawPhoneNumber: String
+                val photoUri: String
 
                 if (reciptids.contains(" ")) {  // ✅ Only split if space exists
                     val receiptIdList = reciptids.split(" ")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
 
-                    val rawPhoneNumbers = receiptIdList.map { id -> recipientMap[id] ?: "Unknown Number" }
+                    val rawPhoneNumbers =
+                        receiptIdList.map { id -> recipientMap[id] ?: "Unknown Number" }
 
                     val contactNames = rawPhoneNumbers.map { number ->
                         val normalizedNumber = normalizePhoneNumber(number)
-                        contactMap[normalizedNumber] ?: number  // Use contact name if available, else show number
+                        contactMap[normalizedNumber]
+                            ?: number  // Use contact name if available, else show number
                     }
 
                     displayName = contactNames.joinToString(", ")
                     rawPhoneNumber = rawPhoneNumbers.joinToString(", ")  // Group numbers
+                    photoUri = ""
                 } else {
                     rawPhoneNumber = recipientMap[reciptids] ?: "Unknown Number"
                     val normalizedNumber = normalizePhoneNumber(rawPhoneNumber)
-                    displayName = contactMap[normalizedNumber] ?: rawPhoneNumber  // Single name or number
+                    displayName =
+                        contactMap[normalizedNumber] ?: rawPhoneNumber  // Single name or number
+                    photoUri = contactPhotoMap[normalizedNumber].toString()
                 }
-                messageItem.copy(sender = displayName, number = rawPhoneNumber)
+                messageItem.copy(
+                    sender = displayName,
+                    number = rawPhoneNumber,
+                    profileImageUrl = photoUri
+                )
             }
 
         _messages.postValue(newMsgList)
@@ -104,6 +118,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val reciptids =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val senderName = ""
+                val profileImageUrl = ""
 
 //                Log.d("TAG", "getConversations:reciptid " + reciptid)
                 if (lastMessage != null) {
@@ -115,7 +130,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             lastMessageTimestamp,
                             isRead = messageCount > 0,
                             reciptid,
-                            reciptids
+                            reciptids,
+                            profileImageUrl
 
                         )
                     )
@@ -197,7 +213,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+
         )
 
         val cursor = context.contentResolver.query(
@@ -218,14 +236,21 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
                 val displayName =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                var profileImageUrl =
+                    it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI))
 
+                if (profileImageUrl == null) {
+                    profileImageUrl = ""
+                }
+                Log.e("TAG", "getContactDetails:-- " + profileImageUrl)
                 if (phoneNumber != null && normalizePhoneNumber != null) {
                     contactList.add(
                         ContactItem(
                             cid,
                             displayName,
                             phoneNumber,
-                            normalizePhoneNumber
+                            normalizePhoneNumber,
+                            profileImageUrl
                         )
                     )
                 }

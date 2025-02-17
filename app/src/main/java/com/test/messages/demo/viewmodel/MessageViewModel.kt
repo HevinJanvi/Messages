@@ -27,9 +27,8 @@ class MessageViewModel @Inject constructor(
 
     private val _contacts = MutableLiveData<List<ContactItem>>()
     val contacts: LiveData<List<ContactItem>> get() = _contacts
-    init {
-        loadContacts()
-    }
+
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -66,19 +65,7 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    private val _selectedItemIds = MutableLiveData<Set<String>>(emptySet())
-    val selectedItemIds: LiveData<Set<String>> = _selectedItemIds
 
-    fun selectItem(id: String) {
-        _selectedItemIds.value = _selectedItemIds.value?.plus(id)
-    }
 
-    fun deselectItem(id: String) {
-        _selectedItemIds.value = _selectedItemIds.value?.minus(id)
-    }
-
-    fun clearSelection() {
-        _selectedItemIds.value = emptySet()
-    }
 
 }

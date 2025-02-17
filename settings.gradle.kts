@@ -6,6 +6,8 @@ pluginManagement {
         gradlePluginPortal()
         maven {
             url = uri("https://jitpack.io")
+//            url = uri("https://plugins.gradle.org/m2/")
+
         }
         maven {
             url = uri("https://mvnrepository.com/artifact/com.klinkerapps/android-smsmms")
@@ -23,7 +25,9 @@ dependencyResolutionManagement {
         }
         maven {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+//            url = uri("https://plugins.gradle.org/m2/")
         }
+
     }
 }
 

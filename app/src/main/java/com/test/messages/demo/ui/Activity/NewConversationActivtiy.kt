@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Activity
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -22,7 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.databinding.ActivityNewConversationBinding
-import com.test.messages.demo.ui.Adapter.ContactAdapter
+import com.test.messages.demo.ui.Adapter.ConversationContactAdapter
 import com.test.messages.demo.ui.Utils.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.viewmodel.MessageViewModel
@@ -31,10 +32,9 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class NewConversationActivtiy : AppCompatActivity() {
     private lateinit var binding: ActivityNewConversationBinding
-    private lateinit var contactAdapter: ContactAdapter
-    private var selectedContacts = mutableListOf<ContactItem>()
-    private val selectedContactViews = mutableMapOf<String, View>() // Map to store contact views
-
+    private lateinit var contactAdapter: ConversationContactAdapter
+    private var selectedContacts = LinkedHashSet<ContactItem>()
+    private val selectedContactViews = mutableMapOf<String, View>()
     private var allContacts = listOf<ContactItem>()
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var filteredContacts: List<ContactItem>
@@ -50,12 +50,13 @@ class NewConversationActivtiy : AppCompatActivity() {
         messageUtils = MessageUtils(this)
 
         binding.contactRecyclerView.layoutManager = LinearLayoutManager(this)
-        contactAdapter = ContactAdapter(allContacts) { contact ->
+        contactAdapter = ConversationContactAdapter(allContacts) { contact ->
             if (!selectedContacts.contains(contact)) {
                 addToSelectedContacts(contact)
             }
         }
         binding.contactRecyclerView.adapter = contactAdapter
+
         viewModel.loadContacts()
         viewModel.contacts.observe(this) { contacts ->
             allContacts = contacts
@@ -78,16 +79,16 @@ class NewConversationActivtiy : AppCompatActivity() {
 
                 }
 
-
                 val isValidNumber = query.matches(Regex("^\\d{1,16}$"))
                 val numberExistsInContacts = allContacts.any { it.phoneNumber == query }
 
                 if (isValidNumber && !numberExistsInContacts) {
                     val newContact = ContactItem(
-                        cid = "", // No contact ID (indicating it's manually entered)
-                        name = query,  // Display the number itself
+                        cid = "",
+                        name = query,
                         phoneNumber = query,
-                        normalizeNumber = query
+                        normalizeNumber = query,
+                        profileImageUrl = ""
                     )
                     filteredContacts = listOf(newContact) + filteredContacts
                 }
@@ -103,46 +104,66 @@ class NewConversationActivtiy : AppCompatActivity() {
         binding.btnSendMessage.setOnClickListener {
             sendMessage()
         }
+        binding.addContact.setOnClickListener {
+            val intent = Intent(this, ContactActivtiy::class.java)
+            intent.putParcelableArrayListExtra("selectedContacts", ArrayList(selectedContacts))
+            startActivityForResult(intent, 111)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 111 && resultCode == RESULT_OK) {
+            val updatedContacts = data?.getParcelableArrayListExtra<ContactItem>("selectedContacts")
+            updatedContacts?.let { newContacts ->
+                newContacts.forEach { contact ->
+                    if (!selectedContacts.contains(contact)) {
+                        selectedContacts.add(contact)
+                    }
+                }
+                updateSelectedContactsHeader()
+            }
+        }
+    }
+
+
+    private fun updateSelectedContactsHeader() {
+        binding.selectedContactsLayout.removeAllViews()
+        selectedContactViews.clear()
+
+        selectedContacts.forEach { contact ->
+            val contactView = LayoutInflater.from(this).inflate(R.layout.item_selected_contact, null)
+            val contactNameTextView = contactView.findViewById<TextView>(R.id.contactName)
+            val minusButton = contactView.findViewById<ImageButton>(R.id.minusButton)
+
+            contactNameTextView.text = contact.name
+            minusButton.setOnClickListener {
+                removeFromSelectedContacts(contact)
+            }
+            binding.selectedContactsLayout.addView(contactView)
+            selectedContactViews[contact.phoneNumber] = contactView
+        }
+
     }
 
     private fun addToSelectedContacts(contact: ContactItem) {
-        if (selectedContacts.contains(contact)) return
 
-        selectedContacts.add(contact)
-        viewModel.selectItem(contact.cid!!)
-
-        val contactView = LayoutInflater.from(this).inflate(R.layout.item_selected_contact, null)
-        val contactNameTextView = contactView.findViewById<TextView>(R.id.contactName)
-        val minusButton = contactView.findViewById<ImageButton>(R.id.minusButton)
-
-        contactNameTextView.text = contact.name
-
-        minusButton.setOnClickListener {
-            removeFromSelectedContacts(contact)
+        if (selectedContacts.contains(contact)) {
+            return
         }
-
-        binding.selectedContactsLayout.addView(contactView, 0)
-        selectedContactViews[contact.phoneNumber] = contactView // Store reference
-        binding.editTextSearch.text.clear()
-        binding.contactRecyclerView.visibility = View.GONE
-
+        selectedContacts.add(contact)
+        updateSelectedContactsHeader()
     }
+
 
     private fun removeFromSelectedContacts(contact: ContactItem) {
         if (!selectedContacts.contains(contact)) return
-
         selectedContacts.remove(contact)
-
-        // Find the correct view and remove it safely
         val contactView = selectedContactViews[contact.phoneNumber]
         if (contactView != null) {
             binding.selectedContactsLayout.removeView(contactView)
             selectedContactViews.remove(contact.phoneNumber) // Remove from map
         }
-
-//        selectedContacts.remove(contact)
-//        binding.selectedContactsLayout.removeViewAt(selectedContacts.indexOf(contact))
-
     }
 
 

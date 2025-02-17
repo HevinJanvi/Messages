@@ -107,6 +107,7 @@
         <activity
             android:name=".ui.Activity.ConversationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity android:name="com.test.messages.demo.ui.Activity.ContactActivtiy" />
 
         <receiver android:name=".ui.reciever.SmsStatusSentReceiver" />
     </application>

@@ -2,8 +2,11 @@ package com.test.messages.demo.ui.Fragment
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,21 +18,29 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.Room
+import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
 import com.test.messages.demo.ui.Activity.ConversationActivity
 import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.AppDatabase
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinViewModel
 import org.jetbrains.annotations.Nullable
 
 @AndroidEntryPoint
 class ConversationFragment : Fragment() {
 
     private val viewModel: MessageViewModel by viewModels()
+    private val recycleBinViewModel: RecycleBinViewModel by viewModels()
+
     private lateinit var adapter: MessageAdapter
     private lateinit var binding: FragmentConversationBinding
-    private var lastVisibleItemPosition: Int = 0 // Variable to remember the scroll position
+    private var lastVisibleItemPosition: Int = 0
+    var onSelectionChanged: ((Int) -> Unit)? = null
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -83,7 +94,10 @@ class ConversationFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = MessageAdapter()
+        adapter = MessageAdapter { count ->
+            onSelectionChanged?.invoke(count)
+        }
+
         binding.conversationList.itemAnimator = null
         binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
         binding.conversationList.adapter = adapter
@@ -94,6 +108,122 @@ class ConversationFragment : Fragment() {
             startActivity(intent)
         }
     }
+
+     @RequiresApi(Build.VERSION_CODES.Q)
+     fun deleteSelectedMessages() {
+         if (adapter.selectedMessages.isEmpty()) return
+
+         val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
+         val contentResolver = requireActivity().contentResolver
+         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+
+         Thread {
+             try {
+                 for (threadId in threadIds) {
+                     val uri = Uri.parse("content://sms/conversations/$threadId")
+                     val deletedRows = contentResolver.delete(uri, null, null)
+
+                     if (deletedRows > 0) {
+                         Log.d(
+                             "SMS_DELETE",
+                             "Deleted thread ID $threadId with $deletedRows messages."
+                         )
+                         updatedList.removeAll { it.threadId == threadId }
+                     } else {
+                         Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
+                     }
+                 }
+                 // Post UI update back to main thread
+                 Handler(Looper.getMainLooper()).post {
+                     adapter.selectedMessages.clear()
+                     adapter.submitList(updatedList)
+                     onSelectionChanged?.invoke(adapter.selectedMessages.size)
+                 }
+
+             } catch (e: Exception) {
+                 Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
+             }
+         }.start()
+     }
+
+   /* @RequiresApi(Build.VERSION_CODES.Q)
+    fun deleteSelectedMessages() {
+        if (adapter.selectedMessages.isEmpty()) return
+
+        val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
+        val contentResolver = requireActivity().contentResolver
+        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+
+        val db = Room.databaseBuilder(
+            requireContext(),
+            AppDatabase::class.java, "app-database"
+        ).build()
+
+        val recycleBinDao = db.recycleBinDao()
+
+        Thread {
+            try {
+                    //insert into recycle bin
+                val deletedMessages = adapter.selectedMessages.map { message ->
+                    DeletedMessage(
+                        threadId = message.threadId,
+                        sender = message.sender,
+                        number = message.number,
+                        body = message.body,
+                        timestamp = message.timestamp,
+                        isRead = message.isRead,
+                        reciptid = message.reciptid,
+                        reciptids = message.reciptids,
+                        profileImageUrl = message.profileImageUrl
+                    )
+                }
+                for (message in deletedMessages) {
+                    recycleBinDao.insert(message)
+                }
+
+                for (threadId in threadIds) {
+                    val uri = Uri.parse("content://sms/conversations/$threadId")
+                    val deletedRows = contentResolver.delete(uri, null, null)
+
+                    if (deletedRows > 0) {
+                        updatedList.removeAll { it.threadId == threadId }
+                    } else {
+                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
+                    }
+                }
+                // Post UI update back to main thread
+                Handler(Looper.getMainLooper()).post {
+                    adapter.selectedMessages.clear()
+                    adapter.submitList(updatedList)
+                    onSelectionChanged?.invoke(adapter.selectedMessages.size)
+                }
+
+
+            } catch (e: Exception) {
+                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
+            }
+        }.start()
+    }*/
+
+    fun clearSelection() {
+        adapter.clearSelection()
+    }
+
+    fun toggleSelectAll(selectAll: Boolean) {
+        if (selectAll) {
+            adapter.selectedMessages.clear()
+            val allMessages = adapter.getAllMessages()
+            adapter.selectedMessages.addAll(allMessages)
+            Log.d("ConversationFragment", "All messages selected: ${adapter.selectedMessages.size}")
+
+        } else {
+            adapter.selectedMessages.clear()
+        }
+        onSelectionChanged?.invoke(adapter.selectedMessages.size)
+        adapter.notifyDataSetChanged()
+
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissionsAndLoadMessages() {
@@ -129,17 +259,14 @@ class ConversationFragment : Fragment() {
 
         when (requestCode) {
             101 -> {
-                // Check if both permissions were granted
                 val smsPermissionGranted =
                     grantResults.getOrNull(0) == PackageManager.PERMISSION_GRANTED
                 val contactsPermissionGranted =
                     grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
 
                 if (smsPermissionGranted && contactsPermissionGranted) {
-                    // Both permissions granted, load messages
                     viewModel.loadMessages()
                 } else {
-                    // Permissions denied, show a toast message
                     Toast.makeText(requireActivity(), "Permissions denied", Toast.LENGTH_SHORT)
                         .show()
                 }
