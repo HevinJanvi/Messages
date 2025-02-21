@@ -2,11 +2,13 @@ package com.test.messages.demo.viewmodel
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.test.messages.demo.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
@@ -28,6 +30,8 @@ class MessageViewModel @Inject constructor(
     private val _contacts = MutableLiveData<List<ContactItem>>()
     val contacts: LiveData<List<ContactItem>> get() = _contacts
 
+    private val _archivedThreadIds = MutableLiveData<Set<Long>>()
+    val archivedThreadIds: LiveData<Set<Long>> get() = _archivedThreadIds
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
@@ -37,6 +41,10 @@ class MessageViewModel @Inject constructor(
                 (repository.messages as MutableLiveData).value = updatedMessages
             }
         }
+    }
+
+    fun emptyConversation() {
+        repository.emptyConversation()
     }
 
     fun loadConversation(threadId: Long) {
@@ -66,6 +74,32 @@ class MessageViewModel @Inject constructor(
     }
 
 
+
+    fun loadArchivedThreads() {
+        viewModelScope.launch {
+            val archivedIds = repository.getArchivedThreadIds().toSet()
+            Log.d("ArchiveDebug", "Archived Thread IDs: $archivedIds")
+            _archivedThreadIds.postValue(archivedIds)
+        }
+    }
+
+    suspend fun getArchivedConversations(): List<ArchivedConversation> {
+        return repository.getArchivedConversations()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun archiveSelectedConversations(conversationIds: List<Long>) {
+        viewModelScope.launch {
+            repository.archiveConversations(conversationIds)
+        }
+    }
+
+    fun unarchiveConversations(conversationIds: List<Long>) {
+        viewModelScope.launch {
+            repository.unarchiveConversations(conversationIds)
+            loadArchivedThreads()
+        }
+    }
 
 
 }

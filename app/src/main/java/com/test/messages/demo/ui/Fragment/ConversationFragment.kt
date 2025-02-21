@@ -17,6 +17,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
 import com.test.messages.demo.data.MessageItem
@@ -26,16 +27,18 @@ import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
-import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.Nullable
 
 @AndroidEntryPoint
 class ConversationFragment : Fragment() {
 
+    private var archivedConversationIds: List<Long> = emptyList()
     private val viewModel: MessageViewModel by viewModels()
-    private val recycleBinViewModel: RecycleBinViewModel by viewModels()
 
     private lateinit var adapter: MessageAdapter
     private lateinit var binding: FragmentConversationBinding
@@ -78,13 +81,33 @@ class ConversationFragment : Fragment() {
             )
         }
 
-        viewModel.messages.observe(viewLifecycleOwner) { messageList ->
+        /*viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             Log.d("ConversationFragment", "Messages Loaded: ${messageList.size}")
+
             adapter.submitList(messageList)
             if (lastVisibleItemPosition == adapter.itemCount - 1) {
                 binding.conversationList.scrollToPosition(lastVisibleItemPosition)
             }
+        }*/
+//        viewModel.loadArchivedConversations()
+
+        viewModel.messages.observe(viewLifecycleOwner) { messageList ->
+           CoroutineScope(Dispatchers.IO).launch {
+                archivedConversationIds = viewModel.getArchivedConversations().map { it.conversationId }
+               val filteredMessages = messageList.filter { message ->
+                   !archivedConversationIds.contains(message.threadId)
+               }
+               withContext(Dispatchers.Main){
+                   adapter.submitList(filteredMessages)
+                   if (lastVisibleItemPosition == adapter.itemCount - 1) {
+                       binding.conversationList.scrollToPosition(lastVisibleItemPosition)
+                   }
+               }
+
+            }
+
         }
+
         binding.newConversation.setOnClickListener {
             val intent = Intent(requireContext(), NewConversationActivtiy::class.java)
             startActivity(intent)
@@ -109,7 +132,7 @@ class ConversationFragment : Fragment() {
         }
     }
 
-     @RequiresApi(Build.VERSION_CODES.Q)
+  @RequiresApi(Build.VERSION_CODES.Q)
      fun deleteSelectedMessages() {
          if (adapter.selectedMessages.isEmpty()) return
 
@@ -146,65 +169,15 @@ class ConversationFragment : Fragment() {
          }.start()
      }
 
-   /* @RequiresApi(Build.VERSION_CODES.Q)
-    fun deleteSelectedMessages() {
-        if (adapter.selectedMessages.isEmpty()) return
-
-        val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
-        val contentResolver = requireActivity().contentResolver
-        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
-
-        val db = Room.databaseBuilder(
-            requireContext(),
-            AppDatabase::class.java, "app-database"
-        ).build()
-
-        val recycleBinDao = db.recycleBinDao()
-
-        Thread {
-            try {
-                    //insert into recycle bin
-                val deletedMessages = adapter.selectedMessages.map { message ->
-                    DeletedMessage(
-                        threadId = message.threadId,
-                        sender = message.sender,
-                        number = message.number,
-                        body = message.body,
-                        timestamp = message.timestamp,
-                        isRead = message.isRead,
-                        reciptid = message.reciptid,
-                        reciptids = message.reciptids,
-                        profileImageUrl = message.profileImageUrl
-                    )
-                }
-                for (message in deletedMessages) {
-                    recycleBinDao.insert(message)
-                }
-
-                for (threadId in threadIds) {
-                    val uri = Uri.parse("content://sms/conversations/$threadId")
-                    val deletedRows = contentResolver.delete(uri, null, null)
-
-                    if (deletedRows > 0) {
-                        updatedList.removeAll { it.threadId == threadId }
-                    } else {
-                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
-                    }
-                }
-                // Post UI update back to main thread
-                Handler(Looper.getMainLooper()).post {
-                    adapter.selectedMessages.clear()
-                    adapter.submitList(updatedList)
-                    onSelectionChanged?.invoke(adapter.selectedMessages.size)
-                }
-
-
-            } catch (e: Exception) {
-                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
-            }
-        }.start()
-    }*/
-
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun archiveMessages() {
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        viewModel.archiveSelectedConversations(selectedIds)
+        val updatedList = adapter.getAllMessages().toMutableList()
+        updatedList.removeAll { selectedIds.contains(it.threadId) }
+        adapter.submitList(updatedList)
+        adapter.clearSelection()
+    }
     fun clearSelection() {
         adapter.clearSelection()
     }
@@ -215,7 +188,6 @@ class ConversationFragment : Fragment() {
             val allMessages = adapter.getAllMessages()
             adapter.selectedMessages.addAll(allMessages)
             Log.d("ConversationFragment", "All messages selected: ${adapter.selectedMessages.size}")
-
         } else {
             adapter.selectedMessages.clear()
         }

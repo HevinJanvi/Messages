@@ -24,6 +24,7 @@
                 android:layout_height="?actionBarSize"
                 android:orientation="vertical"
                 android:visibility="visible"
+                android:animateLayoutChanges="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -97,6 +98,7 @@
                 android:layout_height="?actionBarSize"
                 android:orientation="vertical"
                 android:visibility="gone"
+                android:animateLayoutChanges="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -145,7 +147,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
         <FrameLayout
             android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
@@ -158,7 +159,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
+            android:animateLayoutChanges="true"
             app:layout_constraintBottom_toBottomOf="parent">
+
+
+            <LinearLayout
+                android:id="@+id/archiveLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/icArchive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:src="@drawable/ic_unarchive" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/archived"
+                    android:textSize="12dp"
+                    android:textColor="@color/gray_txtcolor"/>
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/deleteLayout"
@@ -174,7 +204,7 @@
                     android:id="@+id/icDelete"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="5dp"
+                    android:padding="3dp"
                     android:src="@drawable/ic_delete" />
 
                 <TextView

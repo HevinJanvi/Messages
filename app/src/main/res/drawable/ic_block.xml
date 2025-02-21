@@ -1,17 +1,17 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="26dp"
-    android:height="26dp"
+    android:width="25dp"
+    android:height="25dp"
     android:viewportWidth="70"
     android:viewportHeight="70">
   <path
       android:pathData="M35,10C21.215,10 10,21.215 10,35.001C10.001,48.785 21.216,60 35,60C48.785,60 60,48.785 60,35.001C60,21.215 48.785,10 35,10ZM35,13.481C40.11,13.481 44.809,15.273 48.504,18.26L18.26,48.505C15.274,44.81 13.481,40.111 13.481,35.001C13.481,23.135 23.135,13.481 35,13.481ZM35,56.519C29.496,56.519 24.469,54.441 20.659,51.029L51.028,20.659C54.44,24.469 56.519,29.496 56.519,35.001C56.519,46.866 46.865,56.519 35,56.519Z"
-      android:fillColor="@color/ic_color"/>
+      android:fillColor="#FF291E"/>
   <path
       android:pathData="M35,13C22.869,13 13,22.87 13,35.001C13.001,47.131 22.87,57 35,57C47.131,57 57,47.131 57,35.001C57,22.87 47.131,13 35,13Z"
       android:strokeWidth="2"
       android:fillColor="#00000000"
-      android:strokeColor="@color/ic_color"/>
+      android:strokeColor="#FF291E"/>
   <path
       android:pathData="M17,49.575L48.576,18L52,21.255L20.255,53L17,49.575Z"
-      android:fillColor="@color/ic_color"/>
+      android:fillColor="#FF291E"/>
 </vector>

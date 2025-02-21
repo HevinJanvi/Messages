@@ -4,13 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.test.messages.demo.Database.Archived.ArchivedConversation
+import com.test.messages.demo.Database.Archived.ArchivedDao
+import com.test.messages.demo.Database.Converters
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinDao
 
-@Database(entities = [DeletedMessage::class], version = 1, exportSchema = false)
+@Database(entities = [DeletedMessage::class, ArchivedConversation::class], version = 2, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun recycleBinDao(): RecycleBinDao
-
+    abstract fun archivedDao(): ArchivedDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -20,7 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "recycle_bin_db"
+                    "messages_db"
                 ).build()
                 INSTANCE = instance
                 instance

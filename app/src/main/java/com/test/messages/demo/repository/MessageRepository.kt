@@ -12,10 +12,14 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.test.messages.demo.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import dagger.hilt.android.qualifiers.ApplicationContext
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import javax.inject.Inject
 
@@ -79,6 +83,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
         _messages.postValue(newMsgList)
         return newMsgList
+    }
+
+    fun emptyConversation() {
+        _conversation.value = emptyList()
     }
 
     fun getConversation(threadId: Long): List<ConversationItem> {
@@ -238,11 +246,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
                 var profileImageUrl =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI))
+                        ?: ""
 
-                if (profileImageUrl == null) {
-                    profileImageUrl = ""
-                }
-                Log.e("TAG", "getContactDetails:-- " + profileImageUrl)
+//                if (profileImageUrl == null) {
+//                    profileImageUrl = ""
+//                }
+//                Log.e("TAG", "getContactDetails:-- " + profileImageUrl)
                 if (phoneNumber != null && normalizePhoneNumber != null) {
                     contactList.add(
                         ContactItem(
@@ -351,7 +360,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         return phoneNumber
     }
 
-
     fun findGroupThreadId(addresses: Set<String>): Long? {
         val mergedAddresses = addresses.joinToString("|")
         val cursor = context.contentResolver.query(
@@ -369,6 +377,40 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             } else {
                 null // No group thread found
             }
+        }
+    }
+
+    suspend fun getArchivedConversations(): List<ArchivedConversation> {
+        return AppDatabase.getDatabase(context).archivedDao().getAllArchivedConversations()
+    }
+
+    suspend fun getArchivedThreadIds(): List<Long> {
+        return withContext(Dispatchers.IO) {
+            AppDatabase.getDatabase(context).archivedDao().getArchivedThreadIds()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    suspend fun archiveConversations(conversationIds: List<Long>) {
+        val archivedConversations = conversationIds.map { conversationId ->
+            ArchivedConversation(id = 0, conversationId = conversationId, isArchived = true)
+        }
+        AppDatabase.getDatabase(context).archivedDao()
+            .insertArchivedConversations(archivedConversations)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun updateMessagesAfterArchiving(conversationIds: List<Long>) {
+        val currentMessages = getMessages()
+        val updatedMessages = currentMessages.filterNot { message ->
+            conversationIds.contains(message.threadId)
+        }
+        _messages.postValue(updatedMessages)
+    }
+
+    suspend fun unarchiveConversations(conversationIds: List<Long>) {
+        conversationIds.forEach {
+            AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
         }
     }
 }

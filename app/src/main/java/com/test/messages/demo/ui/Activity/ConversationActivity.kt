@@ -53,6 +53,8 @@ class ConversationActivity : AppCompatActivity() {
         } else {
             threadId = getThreadId(setOf(number))
         }
+        binding.address.text = ""
+        viewModel.loadConversation(threadId)
         observeViewModel()
         binding.buttonSend.setOnClickListener {
             sendMessage()
@@ -68,6 +70,12 @@ class ConversationActivity : AppCompatActivity() {
         scrolltoBottom()
         setKeyboardVisibilityListener()
         scrollToBottom()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.emptyConversation()
+
     }
 
     private fun setKeyboardVisibilityListener() {
@@ -143,11 +151,9 @@ class ConversationActivity : AppCompatActivity() {
             adapter.submitList(conversationList)
             binding.recyclerViewConversation.scrollToPosition(conversationList.size - 1)
             scrolltoBottom()
-            val senderNumber = conversationList.first().address ?: number
-            binding.address.text = senderNumber
 
             if (conversationList.isNotEmpty()) {
-                val senderNumber = conversationList.first().address ?: number
+                val senderNumber = conversationList.firstOrNull()?.address ?: number
                 binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
             }
         }

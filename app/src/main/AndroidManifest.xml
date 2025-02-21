@@ -24,6 +24,12 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".ui.Activity.ArchivedActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.Activity.RecycleBinActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.Activity.NewConversationActivtiy"
             android:exported="false" />
         <activity
@@ -103,11 +109,11 @@
             android:name=".ui.Activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication"></activity>
+            android:theme="@style/Theme.MyApplication" />
         <activity
             android:name=".ui.Activity.ConversationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize" />
-        <activity android:name="com.test.messages.demo.ui.Activity.ContactActivtiy" />
+        <activity android:name=".ui.Activity.ContactActivtiy" />
 
         <receiver android:name=".ui.reciever.SmsStatusSentReceiver" />
     </application>
