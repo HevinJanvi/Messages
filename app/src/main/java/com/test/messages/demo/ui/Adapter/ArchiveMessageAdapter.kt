@@ -1,6 +1,7 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,7 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
+        val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
 
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -50,12 +52,14 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(message.timestamp)
+
         if (message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
             Glide.with(holder.itemView.context)
                 .load(message.profileImageUrl)
                 .placeholder(R.drawable.ic_user)
+                .dontAnimate()
                 .into(holder.icUser)
         } else {
             holder.icUser.visibility = View.GONE
@@ -63,6 +67,16 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.initialsTextView.text = getInitials(message.sender)
             holder.profileContainer.backgroundTintList =
                 ColorStateList.valueOf(getRandomColor(message.sender))
+        }
+
+        if (!message.isRead) {
+            holder.senderName.setTypeface(null, Typeface.BOLD)
+            holder.blueDot.visibility = View.VISIBLE
+            holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.textcolor))
+        } else {
+            holder.senderName.setTypeface(null, Typeface.NORMAL)
+            holder.blueDot.visibility = View.GONE
+            holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.subtext_color))
         }
 
         if (selectedMessages.contains(message)) {
@@ -105,6 +119,17 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         return selectedMessages.map { it.threadId }
     }
 
+    fun selectAll(select: Boolean) {
+        if (select) {
+            selectedMessages.clear()
+            selectedMessages.addAll(messages)
+        } else {
+            selectedMessages.clear()
+        }
+        notifyDataSetChanged()
+        onSelectionChanged(selectedMessages.size)
+    }
+
     fun clearSelection() {
         selectedMessages.clear()
         notifyDataSetChanged()
@@ -114,13 +139,21 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     override fun getItemCount(): Int = messages.size
 
     fun removeItems(threadIds: List<Long>) {
-        val updatedMessages = messages.filterNot { it.threadId in threadIds }
-        submitList(updatedMessages)
+        val updatedList = messages.toMutableList()
+        updatedList.removeAll { it.threadId in threadIds }
+        submitList(updatedList)
     }
     fun submitList(newMessages: List<MessageItem>) {
         val diffCallback = MessageDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messages = newMessages.toMutableList()
         diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun updateReadStatus(threadIds: List<Long>) {
+        val newList = messages.map { message ->
+            if (threadIds.contains(message.threadId)) message.copy(isRead = true) else message
+        }
+        submitList(newList)
     }
 }

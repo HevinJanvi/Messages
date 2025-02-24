@@ -1,6 +1,7 @@
 package com.test.messages.demo.repository
 
 import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
@@ -74,10 +75,15 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         contactMap[normalizedNumber] ?: rawPhoneNumber  // Single name or number
                     photoUri = contactPhotoMap[normalizedNumber].toString()
                 }
+                val isRead = messageItem.isRead
+
+                Log.d("MessageRepository", "Message from: $displayName, isRead: $isRead")
+
                 messageItem.copy(
                     sender = displayName,
                     number = rawPhoneNumber,
-                    profileImageUrl = photoUri
+                    profileImageUrl = photoUri,
+                    isRead = isRead
                 )
             }
 
@@ -104,7 +110,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             Telephony.Threads.SNIPPET,
             Telephony.Threads.DATE,
             Telephony.Threads.MESSAGE_COUNT,
-            Telephony.Threads.RECIPIENT_IDS
+            Telephony.Threads.RECIPIENT_IDS,
+            Telephony.Sms.READ
+
         )
 
         val threadCursor: Cursor? = context.contentResolver.query(
@@ -125,6 +133,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val reciptids =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
+                val isRead = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1  // ✅ Correctly fetch `isRead`
+
+                Log.d("MessageRepository", "Message from: isRead: $isRead")
                 val senderName = ""
                 val profileImageUrl = ""
 
@@ -136,7 +147,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             senderName, "",
                             lastMessage,
                             lastMessageTimestamp,
-                            isRead = messageCount > 0,
+                            isRead = isRead,
                             reciptid,
                             reciptids,
                             profileImageUrl
@@ -399,18 +410,17 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             .insertArchivedConversations(archivedConversations)
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun updateMessagesAfterArchiving(conversationIds: List<Long>) {
-        val currentMessages = getMessages()
-        val updatedMessages = currentMessages.filterNot { message ->
-            conversationIds.contains(message.threadId)
-        }
-        _messages.postValue(updatedMessages)
-    }
 
     suspend fun unarchiveConversations(conversationIds: List<Long>) {
         conversationIds.forEach {
             AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    suspend fun getUnarchivedMessages(conversationIds: List<Long>): List<MessageItem> {
+        return getMessages().filter { it.threadId in conversationIds }
+    }
+
+
 }

@@ -1,10 +1,16 @@
 package com.test.messages.demo.viewmodel
 
 
+import android.content.Context
+import android.database.ContentObserver
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.provider.Telephony
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +20,7 @@ import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.repository.MessageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,12 +40,18 @@ class MessageViewModel @Inject constructor(
     private val _archivedThreadIds = MutableLiveData<Set<Long>>()
     val archivedThreadIds: LiveData<Set<Long>> get() = _archivedThreadIds
 
+    private val _messages2 = MutableLiveData<List<MessageItem>>()
+    val messages2: LiveData<List<MessageItem>> get() = _messages2
+
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
-        viewModelScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val updatedMessages = repository.getMessages()
+            val unreadMessages = updatedMessages.count { !it.isRead }
             withContext(Dispatchers.Main) {
                 (repository.messages as MutableLiveData).value = updatedMessages
+                _messages2.value = updatedMessages
             }
         }
     }
@@ -74,12 +87,12 @@ class MessageViewModel @Inject constructor(
     }
 
 
-
     fun loadArchivedThreads() {
         viewModelScope.launch {
             val archivedIds = repository.getArchivedThreadIds().toSet()
             Log.d("ArchiveDebug", "Archived Thread IDs: $archivedIds")
             _archivedThreadIds.postValue(archivedIds)
+
         }
     }
 
@@ -94,12 +107,21 @@ class MessageViewModel @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun unarchiveConversations(conversationIds: List<Long>) {
         viewModelScope.launch {
             repository.unarchiveConversations(conversationIds)
-            loadArchivedThreads()
+
+            val updatedArchivedIds = _archivedThreadIds.value?.filterNot { it in conversationIds }?.toSet()
+            _archivedThreadIds.postValue(updatedArchivedIds)
+
+            val updatedMessages = repository.getMessages()
+            (repository.messages as MutableLiveData).postValue(updatedMessages)
         }
     }
 
+    fun updateMessages(newList: List<MessageItem>) {
+        (repository.messages as MutableLiveData).value = newList
+    }
 
 }

@@ -2,10 +2,13 @@ package com.test.messages.demo.ui.Activity
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Telephony
 import android.telephony.SmsManager
 import android.util.Log
@@ -20,8 +23,10 @@ import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
 import com.test.messages.demo.ui.Utils.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsSender
+import com.test.messages.demo.ui.reciever.NewSmsEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import org.greenrobot.eventbus.EventBus
 
 @AndroidEntryPoint
 class ConversationActivity : AppCompatActivity() {
@@ -37,6 +42,21 @@ class ConversationActivity : AppCompatActivity() {
     private var oldBottom = 0
 
     @RequiresApi(Build.VERSION_CODES.Q)
+    private fun markThreadAsRead(threadId: Long) {
+        if (threadId == -1L) return
+        val contentValues = ContentValues().apply {
+            put(Telephony.Sms.READ, 1)
+        }
+        val uri = Telephony.Sms.CONTENT_URI
+        val selection = "${Telephony.Sms.THREAD_ID} = ?"
+        val selectionArgs = arrayOf(threadId.toString())
+        val updatedRows = contentResolver.update(uri, contentValues, selection, selectionArgs)
+        Log.d("ConversationActivity", "Marked $updatedRows messages as read in thread $threadId")
+//        viewModel.loadMessages()
+        Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
@@ -45,7 +65,6 @@ class ConversationActivity : AppCompatActivity() {
 
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
         number = intent.getStringExtra("NUMBER").toString()
-
         Log.d("TAG", "onCreate: threadId :- " + threadId)
         setupRecyclerView()
         if (threadId != -1L) {
@@ -53,7 +72,8 @@ class ConversationActivity : AppCompatActivity() {
         } else {
             threadId = getThreadId(setOf(number))
         }
-        binding.address.text = ""
+        markThreadAsRead(threadId)
+
         viewModel.loadConversation(threadId)
         observeViewModel()
         binding.buttonSend.setOnClickListener {
@@ -69,7 +89,6 @@ class ConversationActivity : AppCompatActivity() {
         binding.recyclerViewConversation.adapter = adapter
         scrolltoBottom()
         setKeyboardVisibilityListener()
-        scrollToBottom()
     }
 
     override fun onDestroy() {
@@ -204,10 +223,21 @@ class ConversationActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+//        val threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
+//        if (threadId != -1L) {
+//            viewModel.markMessageAsRead(threadId) // 🔥 Only modify affected items
+//        }
+    }
+
     fun scrolltoBottom() {
         binding.recyclerViewConversation.postDelayed({
             binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
         }, 100)
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+    }
 }

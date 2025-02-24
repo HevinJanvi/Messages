@@ -109,6 +109,7 @@ dependencies {
     kapt ("androidx.room:room-compiler:2.6.1")
 
     implementation ("com.google.code.gson:gson:2.11.0")
+    implementation("org.greenrobot:eventbus:3.1.1")
 
 
 //    implementation ("com.intuit.sdp:sdp-android:1.1.0")

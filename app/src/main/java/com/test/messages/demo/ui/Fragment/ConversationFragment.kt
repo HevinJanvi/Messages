@@ -1,5 +1,6 @@
 package com.test.messages.demo.ui.Fragment
 
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -7,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Telephony
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +25,7 @@ import androidx.room.Room
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
 import com.test.messages.demo.ui.Activity.ConversationActivity
+import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.viewmodel.MessageViewModel
@@ -38,7 +41,7 @@ import org.jetbrains.annotations.Nullable
 class ConversationFragment : Fragment() {
 
     private var archivedConversationIds: List<Long> = emptyList()
-    private val viewModel: MessageViewModel by viewModels()
+    val viewModel: MessageViewModel by viewModels()
 
     private lateinit var adapter: MessageAdapter
     private lateinit var binding: FragmentConversationBinding
@@ -81,28 +84,21 @@ class ConversationFragment : Fragment() {
             )
         }
 
-        /*viewModel.messages.observe(viewLifecycleOwner) { messageList ->
-            Log.d("ConversationFragment", "Messages Loaded: ${messageList.size}")
-
-            adapter.submitList(messageList)
-            if (lastVisibleItemPosition == adapter.itemCount - 1) {
-                binding.conversationList.scrollToPosition(lastVisibleItemPosition)
-            }
-        }*/
-//        viewModel.loadArchivedConversations()
-
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
-           CoroutineScope(Dispatchers.IO).launch {
-                archivedConversationIds = viewModel.getArchivedConversations().map { it.conversationId }
-               val filteredMessages = messageList.filter { message ->
-                   !archivedConversationIds.contains(message.threadId)
-               }
-               withContext(Dispatchers.Main){
-                   adapter.submitList(filteredMessages)
-                   if (lastVisibleItemPosition == adapter.itemCount - 1) {
-                       binding.conversationList.scrollToPosition(lastVisibleItemPosition)
-                   }
-               }
+            (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                archivedConversationIds =
+                    viewModel.getArchivedConversations().map { it.conversationId }
+                val filteredMessages = messageList.filter { message ->
+                    !archivedConversationIds.contains(message.threadId)
+                }
+                withContext(Dispatchers.Main) {
+                    adapter.submitList(filteredMessages)
+                    if (lastVisibleItemPosition == adapter.itemCount - 1) {
+                        binding.conversationList.scrollToPosition(lastVisibleItemPosition)
+                    }
+                }
 
             }
 
@@ -132,42 +128,41 @@ class ConversationFragment : Fragment() {
         }
     }
 
-  @RequiresApi(Build.VERSION_CODES.Q)
-     fun deleteSelectedMessages() {
-         if (adapter.selectedMessages.isEmpty()) return
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun deleteSelectedMessages() {
+        if (adapter.selectedMessages.isEmpty()) return
 
-         val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
-         val contentResolver = requireActivity().contentResolver
-         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+        val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
+        val contentResolver = requireActivity().contentResolver
+        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
 
-         Thread {
-             try {
-                 for (threadId in threadIds) {
-                     val uri = Uri.parse("content://sms/conversations/$threadId")
-                     val deletedRows = contentResolver.delete(uri, null, null)
+        Thread {
+            try {
+                for (threadId in threadIds) {
+                    val uri = Uri.parse("content://sms/conversations/$threadId")
+                    val deletedRows = contentResolver.delete(uri, null, null)
 
-                     if (deletedRows > 0) {
-                         Log.d(
-                             "SMS_DELETE",
-                             "Deleted thread ID $threadId with $deletedRows messages."
-                         )
-                         updatedList.removeAll { it.threadId == threadId }
-                     } else {
-                         Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
-                     }
-                 }
-                 // Post UI update back to main thread
-                 Handler(Looper.getMainLooper()).post {
-                     adapter.selectedMessages.clear()
-                     adapter.submitList(updatedList)
-                     onSelectionChanged?.invoke(adapter.selectedMessages.size)
-                 }
+                    if (deletedRows > 0) {
+                        Log.d(
+                            "SMS_DELETE",
+                            "Deleted thread ID $threadId with $deletedRows messages."
+                        )
+                        updatedList.removeAll { it.threadId == threadId }
+                    } else {
+                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
+                    }
+                }
+                Handler(Looper.getMainLooper()).post {
+                    adapter.selectedMessages.clear()
+                    adapter.submitList(updatedList)
+                    onSelectionChanged?.invoke(adapter.selectedMessages.size)
+                }
 
-             } catch (e: Exception) {
-                 Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
-             }
-         }.start()
-     }
+            } catch (e: Exception) {
+                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
+            }
+        }.start()
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun archiveMessages() {
@@ -178,6 +173,35 @@ class ConversationFragment : Fragment() {
         adapter.submitList(updatedList)
         adapter.clearSelection()
     }
+
+
+   @RequiresApi(Build.VERSION_CODES.Q)
+   fun markReadMessages() {
+       CoroutineScope(Dispatchers.IO).launch {
+           val updatedList = adapter.getAllMessages().toMutableList()
+           val unreadMessages = updatedList.filter { !it.isRead }
+           if (unreadMessages.isEmpty()) return@launch
+           val unreadThreadIds = unreadMessages.map { it.threadId }.distinct()
+           val contentValues = ContentValues().apply {
+               put(Telephony.Sms.READ, 1)
+           }
+           val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
+           val updatedRows = requireContext().contentResolver.update(
+               Telephony.Sms.CONTENT_URI, contentValues, selection, null
+           )
+           if (updatedRows > 0) {
+               updatedList.replaceAll { message ->
+                   if (unreadThreadIds.contains(message.threadId)) message.copy(isRead = true) else message
+               }
+               withContext(Dispatchers.Main) {
+                   adapter.submitList(updatedList)
+               }
+           }
+       }
+   }
+
+
+
     fun clearSelection() {
         adapter.clearSelection()
     }
@@ -193,7 +217,6 @@ class ConversationFragment : Fragment() {
         }
         onSelectionChanged?.invoke(adapter.selectedMessages.size)
         adapter.notifyDataSetChanged()
-
     }
 
 

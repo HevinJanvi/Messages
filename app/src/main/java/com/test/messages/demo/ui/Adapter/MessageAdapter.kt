@@ -1,6 +1,7 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
+        val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
 
     }
 
@@ -65,6 +67,15 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.profileContainer.backgroundTintList =
                 ColorStateList.valueOf(getRandomColor(message.sender))
         }
+        if (!message.isRead) {
+            holder.senderName.setTypeface(null, Typeface.BOLD)
+            holder.blueDot.visibility = View.VISIBLE
+            holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.textcolor))
+        } else {
+            holder.senderName.setTypeface(null, Typeface.NORMAL)
+            holder.blueDot.visibility = View.GONE
+            holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
+        }
 
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE
@@ -72,7 +83,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         } else {
             holder.icSelect.visibility = View.GONE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
-
         }
 
         holder.itemView.setOnClickListener {
@@ -102,7 +112,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         onSelectionChanged(selectedMessages.size)
         notifyDataSetChanged()
     }
-
 
     fun clearSelection() {
         selectedMessages.clear()

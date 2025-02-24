@@ -4,8 +4,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
-import android.util.Log
 import android.view.View
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -13,6 +13,7 @@ import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Utils.DeleteDialog
+import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupClickListeners() {
-        //drawer
+
         binding.icDelete.setOnClickListener {
             val deleteDialog = DeleteDialog(this) {
                 val fragment =
@@ -64,11 +65,18 @@ class MainActivity : AppCompatActivity() {
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.archiveMessages()
         }
+        //drawer
+
         binding.include.lyArchived.setOnClickListener {
             val intent = Intent(this, ArchivedActivity::class.java)
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
-
+        }
+        binding.include.lyRead.setOnClickListener {
+            val fragment =
+                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+            fragment?.markReadMessages()
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
 
 //        binding.icRecyclerbin.setOnClickListener {
@@ -86,6 +94,13 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
+
+        supportFragmentManager.executePendingTransactions()
+        val loadedFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+        loadedFragment?.let {
+            val totalMessages = it.viewModel.messages.value?.size ?: 0
+            updateTotalMessagesCount(totalMessages)
+        }
     }
 
 
@@ -104,6 +119,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun updateTotalMessagesCount(count: Int) {
+        binding.include.newMessage.text = "$count"
+    }
     override fun onBackPressed() {
         if (selectedMessagesCount > 0) {
             updateSelectedItemsCount(0)

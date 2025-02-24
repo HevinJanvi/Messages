@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.test.messages.demo.repository.MessageRepository
 import dagger.hilt.android.AndroidEntryPoint
+import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -45,6 +46,7 @@ class SmsReceiver : BroadcastReceiver() {
 
             // Insert into system database
             insertMessageIntoSystemDatabase(context, address, subject, body, date, threadId, read, type, subscriptionId, status)
+//            EventBus.getDefault().post(NewSmsEvent(threadId))
             repository.getMessages()
             repository.getConversation(threadId)
         }
