@@ -19,14 +19,19 @@ import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.repository.MessageRepository
+import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
+@RequiresApi(Build.VERSION_CODES.Q)
 class MessageViewModel @Inject constructor(
     private val repository: MessageRepository
 ) : ViewModel() {
@@ -39,10 +44,11 @@ class MessageViewModel @Inject constructor(
 
     private val _archivedThreadIds = MutableLiveData<Set<Long>>()
     val archivedThreadIds: LiveData<Set<Long>> get() = _archivedThreadIds
-
-    private val _messages2 = MutableLiveData<List<MessageItem>>()
-    val messages2: LiveData<List<MessageItem>> get() = _messages2
-
+    private val _pinnedThreadIds = MutableLiveData<Set<Long>>()
+    val pinnedThreadIds: LiveData<Set<Long>> get() = _pinnedThreadIds
+    init {
+        _pinnedThreadIds.value = emptySet() // or load from database/storage
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
@@ -51,7 +57,6 @@ class MessageViewModel @Inject constructor(
             val unreadMessages = updatedMessages.count { !it.isRead }
             withContext(Dispatchers.Main) {
                 (repository.messages as MutableLiveData).value = updatedMessages
-                _messages2.value = updatedMessages
             }
         }
     }
@@ -90,9 +95,7 @@ class MessageViewModel @Inject constructor(
     fun loadArchivedThreads() {
         viewModelScope.launch {
             val archivedIds = repository.getArchivedThreadIds().toSet()
-            Log.d("ArchiveDebug", "Archived Thread IDs: $archivedIds")
             _archivedThreadIds.postValue(archivedIds)
-
         }
     }
 
@@ -111,10 +114,9 @@ class MessageViewModel @Inject constructor(
     fun unarchiveConversations(conversationIds: List<Long>) {
         viewModelScope.launch {
             repository.unarchiveConversations(conversationIds)
-
-            val updatedArchivedIds = _archivedThreadIds.value?.filterNot { it in conversationIds }?.toSet()
+            val updatedArchivedIds =
+                _archivedThreadIds.value?.filterNot { it in conversationIds }?.toSet()
             _archivedThreadIds.postValue(updatedArchivedIds)
-
             val updatedMessages = repository.getMessages()
             (repository.messages as MutableLiveData).postValue(updatedMessages)
         }
@@ -122,6 +124,57 @@ class MessageViewModel @Inject constructor(
 
     fun updateMessages(newList: List<MessageItem>) {
         (repository.messages as MutableLiveData).value = newList
+    }
+
+    fun getPinnedThreadIds(): List<Long> {
+//        return repository.getPinnedThreadIds()
+        return runBlocking(Dispatchers.IO) { repository.getPinnedThreadIds()}
+    }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun togglePin(selectedIds: List<Long>) {
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val pinnedThreadIds = repository.getPinnedThreadIds().toMutableSet()
+
+            val pinnedMessages = selectedIds.filter { it in pinnedThreadIds }  // Already pinned
+            val unpinnedMessages = selectedIds.filter { it !in pinnedThreadIds } // Not pinned yet
+            when {
+                pinnedMessages.isNotEmpty() && unpinnedMessages.isNotEmpty() -> {
+                    when {
+                        pinnedMessages.size >= unpinnedMessages.size -> {
+                            // If pinned >= unpinned, we unpin all
+                            repository.removePinnedMessages(pinnedMessages)
+                        }
+                        else -> {
+                            // More unpinned → Pin only unpinned ones
+                            repository.addPinnedMessages(unpinnedMessages)
+                        }
+                    }
+                }
+                pinnedMessages.isNotEmpty() -> {
+                    // Only pinned messages selected → Unpin them
+                    repository.removePinnedMessages(pinnedMessages)
+                }
+                unpinnedMessages.isNotEmpty() -> {
+                    // Only unpinned messages selected → Pin them
+                    repository.addPinnedMessages(unpinnedMessages)
+                }
+            }
+            refreshPinnedMessages()
+        }
+    }
+
+    fun isPinned(threadId: Long): Boolean {
+        return _pinnedThreadIds.value?.contains(threadId) == true
+    }
+    private suspend fun refreshPinnedMessages() {
+        val updatedMessages = repository.getMessages()
+        val pinnedThreadIds = repository.getPinnedThreadIds()
+        val sortedMessages = updatedMessages.sortedByDescending { pinnedThreadIds.contains(it.threadId) }
+
+        withContext(Dispatchers.Main) {
+            (repository.messages as MutableLiveData).value = sortedMessages
+        }
     }
 
 }

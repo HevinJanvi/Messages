@@ -9,5 +9,6 @@ data class MessageItem(
     val isRead: Boolean,
     val reciptid: Int,
     val reciptids: String,
-    val profileImageUrl: String
+    val profileImageUrl: String,
+    val isPinned: Boolean
 )

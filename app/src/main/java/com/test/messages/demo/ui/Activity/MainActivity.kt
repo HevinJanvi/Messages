@@ -4,11 +4,13 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.viewModels
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var selectedMessagesCount = 0
+    val viewModel: MessageViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +68,11 @@ class MainActivity : AppCompatActivity() {
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.archiveMessages()
         }
-        //drawer
+        binding.pinLayout.setOnClickListener {
+            val fragment =
+                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+            fragment?.pinMessages()
+        }
 
         binding.include.lyArchived.setOnClickListener {
             val intent = Intent(this, ArchivedActivity::class.java)
@@ -78,7 +85,6 @@ class MainActivity : AppCompatActivity() {
             fragment?.markReadMessages()
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
-
 //        binding.icRecyclerbin.setOnClickListener {
 //            val intent = Intent(this, RecycleBinActivity::class.java)
 //            startActivity(intent)
@@ -86,9 +92,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun loadConversationFragment() {
         val fragment = ConversationFragment()
-        fragment.onSelectionChanged = { count ->
+        fragment.onSelectionChanged = { count, ispinned ->
+            updatePinLayout(count, ispinned)
             updateSelectedItemsCount(count)
         }
         supportFragmentManager.beginTransaction()
@@ -96,13 +104,50 @@ class MainActivity : AppCompatActivity() {
             .commit()
 
         supportFragmentManager.executePendingTransactions()
-        val loadedFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+        val loadedFragment =
+            supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
         loadedFragment?.let {
             val totalMessages = it.viewModel.messages.value?.size ?: 0
             updateTotalMessagesCount(totalMessages)
         }
     }
 
+    private fun updatePinLayout(selectedCount: Int, pinnedCount: Int) {
+        if (selectedCount > 0) {
+            binding.pinLayout.visibility = View.VISIBLE
+            val pinTextView = binding.txtPin
+            val unpinnedCount = selectedCount - pinnedCount
+
+            when {
+                pinnedCount > unpinnedCount -> {
+                    binding.icpin.setImageResource(R.drawable.ic_unpin)
+                    pinTextView.text = getString(R.string.unpin)
+                }
+                unpinnedCount > pinnedCount -> {
+                    binding.icpin.setImageResource(R.drawable.ic_pin)
+                    pinTextView.text = getString(R.string.pin)
+                }
+
+                else -> {
+                    binding.icpin.setImageResource(R.drawable.ic_unpin)
+                    pinTextView.text = getString(R.string.unpin)
+                }
+            }
+        } else {
+            binding.pinLayout.visibility = View.GONE
+        }
+    }
+
+
+    /*private fun updatePinLayout(isPinned: Boolean) {
+        if (isPinned) {
+            binding.icpin.setImageResource(R.drawable.ic_unpin)
+            binding.txtPin.text = getString(R.string.unpin)
+        } else {
+            binding.icpin.setImageResource(R.drawable.ic_pin)
+            binding.txtPin.text = getString(R.string.pin)
+        }
+    }*/
 
     private fun updateSelectedItemsCount(count: Int) {
         selectedMessagesCount = count
@@ -119,9 +164,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     fun updateTotalMessagesCount(count: Int) {
         binding.include.newMessage.text = "$count"
     }
+
     override fun onBackPressed() {
         if (selectedMessagesCount > 0) {
             updateSelectedItemsCount(0)

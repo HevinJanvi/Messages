@@ -175,12 +175,14 @@
                app:layout_constraintBottom_toBottomOf="parent">
 
                <ImageView
+                   android:id="@+id/icPinArchiv"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:padding="3dp"
                    android:src="@drawable/ic_pin" />
 
                <TextView
+                   android:id="@+id/txtPinArchiv"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:fontFamily="@font/product_sans_regular"

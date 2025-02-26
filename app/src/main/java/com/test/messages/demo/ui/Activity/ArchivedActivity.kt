@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
+import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.ui.Utils.DeleteDialog
 import com.test.messages.demo.ui.reciever.NewSmsEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
@@ -40,6 +41,7 @@ class ArchivedActivity : AppCompatActivity() {
     private lateinit var binding: ActivityArchivedBinding
     private lateinit var adapter: ArchiveMessageAdapter
     private val viewModel: MessageViewModel by viewModels()
+    private var pinnedThreadIds: List<Long> = emptyList()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,9 +51,14 @@ class ArchivedActivity : AppCompatActivity() {
         setContentView(view)
 
         binding.archiveRecyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = ArchiveMessageAdapter { selectedCount ->
-            updateSelectedItemsCount()
-        }
+        adapter = ArchiveMessageAdapter(
+            onArchiveSelectionChanged = { selectedCount ->
+                val pinnedCount = adapter.selectedMessages.count { it.isPinned }
+                updatePinLayout(selectedCount, pinnedCount)
+                updateSelectedItemsCount()
+            }
+        )
+
         binding.archiveRecyclerView.adapter = adapter
 
         adapter.onArchiveItemClickListener = { message ->
@@ -61,13 +68,22 @@ class ArchivedActivity : AppCompatActivity() {
             startActivity(intent)
         }
         viewModel.messages.observe(this) { messageList ->
-            Log.e("TAG", "onCreate:archive ", )
+            Log.e("TAG", "onCreate:archive ")
             CoroutineScope(Dispatchers.IO).launch {
                 val archivedConversationIds =
                     viewModel.getArchivedConversations().map { it.conversationId }
-                val archivedMessages = messageList.filter { message ->
+
+                pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
+                val archivedMessages = messageList
+                    .filter { archivedConversationIds.contains(it.threadId) }
+                    .map { message ->
+                        message.copy(isPinned = pinnedThreadIds.contains(message.threadId))
+                    }
+                    .sortedByDescending { it.isPinned }
+
+                /*val archivedMessages = messageList.filter { message ->
                     archivedConversationIds.contains(message.threadId)
-                }
+                }*/
                 withContext(Dispatchers.Main) {
                     val layoutManager =
                         binding.archiveRecyclerView.layoutManager as LinearLayoutManager
@@ -95,12 +111,20 @@ class ArchivedActivity : AppCompatActivity() {
         binding.btnSelectAll.setOnCheckedChangeListener { _, isChecked ->
             adapter.selectAll(isChecked)
         }
+        binding.btnPin.setOnClickListener {
+            val selectedIds = adapter.selectedMessages.map { it.threadId }
+            if (selectedIds.isNotEmpty()) {
+                viewModel.togglePin(selectedIds)
+            }
+            adapter.clearSelection()
+        }
         binding.btnUnarchive.setOnClickListener {
-
             val selectedThreadIds = adapter.getSelectedThreadIds()
             if (selectedThreadIds.isNotEmpty()) {
                 viewModel.unarchiveConversations(selectedThreadIds)
-                val updatedList = viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds } ?: emptyList()
+                val updatedList =
+                    viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds }
+                        ?: emptyList()
                 viewModel.updateMessages(updatedList)
                 adapter.clearSelection()
                 adapter.submitList(updatedList)
@@ -156,8 +180,9 @@ class ArchivedActivity : AppCompatActivity() {
 
                 if (deletedThreads.isNotEmpty()) {
                     Handler(Looper.getMainLooper()).post {
-                        val updatedList = viewModel.messages.value?.filterNot { it.threadId in deletedThreads } ?: emptyList()
-
+                        val updatedList =
+                            viewModel.messages.value?.filterNot { it.threadId in deletedThreads }
+                                ?: emptyList()
                         viewModel.updateMessages(updatedList)
                         adapter.removeItems(deletedThreads)
                         adapter.clearSelection()
@@ -213,6 +238,53 @@ class ArchivedActivity : AppCompatActivity() {
         }
     }
 
+    private fun updatePinLayout(selectedCount: Int, pinnedCount: Int) {
+        if (selectedCount > 0) {
+            binding.btnPin.visibility = View.VISIBLE
+            val pinTextView = binding.txtPinArchiv
+
+            val unpinnedCount = selectedCount - pinnedCount
+
+            when {
+                pinnedCount > unpinnedCount -> {
+                    binding.icPinArchiv.setImageResource(R.drawable.ic_unpin)
+                    pinTextView.text = getString(R.string.unpin)
+                }
+
+                unpinnedCount > pinnedCount -> {
+                    binding.icPinArchiv.setImageResource(R.drawable.ic_pin)
+                    pinTextView.text = getString(R.string.pin)
+                }
+
+                else -> {
+                    binding.icPinArchiv.setImageResource(R.drawable.ic_unpin)
+                    pinTextView.text = getString(R.string.unpin)
+                }
+            }
+        } else {
+            binding.btnPin.visibility = View.GONE
+        }
+    }
+
+
+    private fun updatePinButton() {
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        val pinnedIds = selectedIds.filter { it in pinnedThreadIds }
+
+        if (selectedIds.isEmpty()) {
+            binding.txtPinArchiv.text = getString(R.string.pin) // Default state when no selection
+            binding.icPinArchiv.setImageResource(R.drawable.ic_pin)
+            return
+        }
+
+        if (pinnedIds.size == selectedIds.size) {
+            binding.txtPinArchiv.setText(getString(R.string.unpin))
+            binding.icPinArchiv.setImageResource(R.drawable.ic_unpin)
+        } else {
+            binding.txtPinArchiv.setText(getString(R.string.pin))
+            binding.icPinArchiv.setImageResource(R.drawable.ic_pin)
+        }
+    }
 
     override fun onStart() {
         super.onStart()

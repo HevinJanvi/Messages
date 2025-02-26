@@ -23,4 +23,5 @@
     <string name="delete_conversation">Delete Conversation?</string>
     <string name="remove_this_conversation_permanently">Remove this conversation permanently?</string>
     <string name="cancel">Cancel</string>
+    <string name="unpin">Unpin</string>
 </resources>

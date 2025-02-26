@@ -41,12 +41,13 @@ import org.jetbrains.annotations.Nullable
 class ConversationFragment : Fragment() {
 
     private var archivedConversationIds: List<Long> = emptyList()
+    private var pinnedThreadIds: List<Long> = emptyList()
     val viewModel: MessageViewModel by viewModels()
 
     private lateinit var adapter: MessageAdapter
     private lateinit var binding: FragmentConversationBinding
     private var lastVisibleItemPosition: Int = 0
-    var onSelectionChanged: ((Int) -> Unit)? = null
+    var onSelectionChanged: ((Int, Int) -> Unit)? = null
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -86,19 +87,35 @@ class ConversationFragment : Fragment() {
 
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
-
             CoroutineScope(Dispatchers.IO).launch {
                 archivedConversationIds =
                     viewModel.getArchivedConversations().map { it.conversationId }
-                val filteredMessages = messageList.filter { message ->
-                    !archivedConversationIds.contains(message.threadId)
-                }
+
+                pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
+                /* val filteredMessages = messageList
+                     .filter { !archivedConversationIds.contains(it.threadId) }
+                     .sortedByDescending { pinnedThreadIds.contains(it.threadId) } */
+                val filteredMessages = messageList
+                    .filter { !archivedConversationIds.contains(it.threadId) }
+                    .map { message ->
+                        message.copy(isPinned = pinnedThreadIds.contains(message.threadId))
+                    }
+                    .sortedByDescending { it.isPinned }
+
+                Log.d(
+                    "ObserverDebug",
+                    "Filtered and sorted messages: ${filteredMessages.size} messages"
+                )
                 withContext(Dispatchers.Main) {
-                    adapter.submitList(filteredMessages)
+                    if (adapter.selectedMessages != filteredMessages) {
+                        Log.d("ObserverDebug", "Adapter list changed. Updating adapter.")
+                        adapter.submitList(filteredMessages)
+                    }
                     if (lastVisibleItemPosition == adapter.itemCount - 1) {
                         binding.conversationList.scrollToPosition(lastVisibleItemPosition)
                     }
                 }
+
 
             }
 
@@ -112,10 +129,14 @@ class ConversationFragment : Fragment() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupRecyclerView() {
-        adapter = MessageAdapter { count ->
-            onSelectionChanged?.invoke(count)
-        }
+        adapter = MessageAdapter(
+            onSelectionChanged = { count ->
+                val pinnedCount = adapter.selectedMessages.count { it.isPinned }
+                onSelectionChanged?.invoke(count, pinnedCount)
+            }
+        )
 
         binding.conversationList.itemAnimator = null
         binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
@@ -155,7 +176,9 @@ class ConversationFragment : Fragment() {
                 Handler(Looper.getMainLooper()).post {
                     adapter.selectedMessages.clear()
                     adapter.submitList(updatedList)
-                    onSelectionChanged?.invoke(adapter.selectedMessages.size)
+                    onSelectionChanged?.invoke(
+                        adapter.selectedMessages.size,
+                        adapter.selectedMessages.count { it.isPinned })
                 }
 
             } catch (e: Exception) {
@@ -174,32 +197,56 @@ class ConversationFragment : Fragment() {
         adapter.clearSelection()
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun pinMessages() {
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        CoroutineScope(Dispatchers.IO).launch {
+            val pinnedIds = selectedIds.filter { viewModel.isPinned(it) } // Get only pinned messages
+            val unpinnedIds = selectedIds.filterNot { viewModel.isPinned(it) } // Get only unpinned messages
+            when {
+                pinnedIds.isNotEmpty() && unpinnedIds.isNotEmpty() -> {
+                    if (pinnedIds.size > unpinnedIds.size) {
+                        viewModel.togglePin(pinnedIds)
+                    }
+                }
+                pinnedIds.isNotEmpty() -> {
+                    viewModel.togglePin(pinnedIds)
+                }
+                unpinnedIds.isNotEmpty() -> {
+                    viewModel.togglePin(unpinnedIds)
+                }
+            }
+            withContext(Dispatchers.Main) {
+                adapter.clearSelection()
+            }
+        }
+    }
 
-   @RequiresApi(Build.VERSION_CODES.Q)
-   fun markReadMessages() {
-       CoroutineScope(Dispatchers.IO).launch {
-           val updatedList = adapter.getAllMessages().toMutableList()
-           val unreadMessages = updatedList.filter { !it.isRead }
-           if (unreadMessages.isEmpty()) return@launch
-           val unreadThreadIds = unreadMessages.map { it.threadId }.distinct()
-           val contentValues = ContentValues().apply {
-               put(Telephony.Sms.READ, 1)
-           }
-           val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
-           val updatedRows = requireContext().contentResolver.update(
-               Telephony.Sms.CONTENT_URI, contentValues, selection, null
-           )
-           if (updatedRows > 0) {
-               updatedList.replaceAll { message ->
-                   if (unreadThreadIds.contains(message.threadId)) message.copy(isRead = true) else message
-               }
-               withContext(Dispatchers.Main) {
-                   adapter.submitList(updatedList)
-               }
-           }
-       }
-   }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun markReadMessages() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val updatedList = adapter.getAllMessages().toMutableList()
+            val unreadMessages = updatedList.filter { !it.isRead }
+            if (unreadMessages.isEmpty()) return@launch
+            val unreadThreadIds = unreadMessages.map { it.threadId }.distinct()
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, 1)
+            }
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
+            val updatedRows = requireContext().contentResolver.update(
+                Telephony.Sms.CONTENT_URI, contentValues, selection, null
+            )
+            if (updatedRows > 0) {
+                updatedList.replaceAll { message ->
+                    if (unreadThreadIds.contains(message.threadId)) message.copy(isRead = true) else message
+                }
+                withContext(Dispatchers.Main) {
+                    adapter.submitList(updatedList)
+                }
+            }
+        }
+    }
 
 
     fun clearSelection() {
@@ -215,7 +262,9 @@ class ConversationFragment : Fragment() {
         } else {
             adapter.selectedMessages.clear()
         }
-        onSelectionChanged?.invoke(adapter.selectedMessages.size)
+        onSelectionChanged?.invoke(
+            adapter.selectedMessages.size,
+            adapter.selectedMessages.count { it.isPinned })
         adapter.notifyDataSetChanged()
     }
 
@@ -232,6 +281,7 @@ class ConversationFragment : Fragment() {
         )
 
         if (smsPermission == PackageManager.PERMISSION_GRANTED && contactsPermission == PackageManager.PERMISSION_GRANTED) {
+            Log.d("ObserverDebug", "checkPermissionsAndLoadMessages: ")
             viewModel.loadMessages()
         } else {
             requestPermissions(
@@ -260,6 +310,7 @@ class ConversationFragment : Fragment() {
                     grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
 
                 if (smsPermissionGranted && contactsPermissionGranted) {
+                    Log.d("ObserverDebug", "onRequestPermissionsResult: ")
                     viewModel.loadMessages()
                 } else {
                     Toast.makeText(requireActivity(), "Permissions denied", Toast.LENGTH_SHORT)

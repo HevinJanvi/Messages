@@ -8,14 +8,17 @@ import androidx.room.TypeConverters
 import com.test.messages.demo.Database.Archived.ArchivedConversation
 import com.test.messages.demo.Database.Archived.ArchivedDao
 import com.test.messages.demo.Database.Converters
+import com.test.messages.demo.Database.Pin.PinDao
+import com.test.messages.demo.Database.Pin.PinMessage
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinDao
 
-@Database(entities = [DeletedMessage::class, ArchivedConversation::class], version = 2, exportSchema = false)
+@Database(entities = [DeletedMessage::class, ArchivedConversation::class, PinMessage::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun recycleBinDao(): RecycleBinDao
     abstract fun archivedDao(): ArchivedDao
+    abstract fun pinDao(): PinDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -26,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "messages_db"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

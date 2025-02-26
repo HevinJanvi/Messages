@@ -40,6 +40,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
         val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
+        val icPin: ImageView = itemView.findViewById(R.id.icPin)
 
     }
 
@@ -77,6 +78,12 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
 
+        if (message.isPinned) {
+            holder.icPin.visibility = View.VISIBLE
+        } else {
+            holder.icPin.visibility = View.GONE
+        }
+
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
@@ -92,6 +99,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
                 onItemClickListener?.invoke(message)
             }
         }
+
 
         holder.itemView.setOnLongClickListener {
             toggleSelection(message, holder)
@@ -125,7 +133,8 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     fun submitList(newMessages: List<MessageItem>) {
         val diffCallback = MessageDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
-        messages = newMessages.toMutableList()
+        messages.clear()
+        messages.addAll(newMessages)
         diffResult.dispatchUpdatesTo(this)
     }
 }

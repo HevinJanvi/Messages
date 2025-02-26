@@ -22,7 +22,7 @@ import com.test.messages.demo.ui.Utils.TimeUtils.getInitials
 import com.test.messages.demo.ui.Utils.TimeUtils.getRandomColor
 
 
-class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
+class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit) :
     RecyclerView.Adapter<ArchiveMessageAdapter.ViewHolder>() {
 
     var onArchiveItemClickListener: ((MessageItem) -> Unit)? = null
@@ -40,6 +40,7 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
         val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
+        val icPin: ImageView = itemView.findViewById(R.id.icPin)
 
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -78,6 +79,11 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.blueDot.visibility = View.GONE
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.subtext_color))
         }
+        if (message.isPinned) {
+            holder.icPin.visibility = View.VISIBLE
+        } else {
+            holder.icPin.visibility = View.GONE
+        }
 
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE
@@ -109,9 +115,10 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         } else {
             selectedMessages.add(message)
             holder.icSelect.visibility = View.VISIBLE
-            holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
+            holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.gray_txtcolor))
         }
-        onSelectionChanged(selectedMessages.size)
+
+        onArchiveSelectionChanged(selectedMessages.size)
         notifyDataSetChanged()
     }
 
@@ -127,13 +134,13 @@ class ArchiveMessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             selectedMessages.clear()
         }
         notifyDataSetChanged()
-        onSelectionChanged(selectedMessages.size)
+        onArchiveSelectionChanged(selectedMessages.size)
     }
 
     fun clearSelection() {
         selectedMessages.clear()
         notifyDataSetChanged()
-        onSelectionChanged(selectedMessages.size)
+        onArchiveSelectionChanged(selectedMessages.size)
     }
 
     override fun getItemCount(): Int = messages.size

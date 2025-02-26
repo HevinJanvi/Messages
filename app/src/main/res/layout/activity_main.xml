@@ -164,6 +164,34 @@
 
 
             <LinearLayout
+                android:id="@+id/pinLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/icpin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:src="@drawable/ic_pin" />
+
+                <TextView
+                    android:id="@+id/txtPin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/pin"
+                    android:textSize="12dp"
+                    android:textColor="@color/gray_txtcolor"/>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/archiveLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

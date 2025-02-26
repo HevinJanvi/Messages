@@ -14,6 +14,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.test.messages.demo.Database.Archived.ArchivedConversation
+import com.test.messages.demo.Database.Pin.PinMessage
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
@@ -76,7 +77,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     photoUri = contactPhotoMap[normalizedNumber].toString()
                 }
                 val isRead = messageItem.isRead
-
                 Log.d("MessageRepository", "Message from: $displayName, isRead: $isRead")
 
                 messageItem.copy(
@@ -86,7 +86,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     isRead = isRead
                 )
             }
-
+        Log.d("ObserverDebug", "getMessages: " + newMsgList.size)
         _messages.postValue(newMsgList)
         return newMsgList
     }
@@ -133,7 +133,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val reciptids =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
-                val isRead = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1  // ✅ Correctly fetch `isRead`
+                val isRead = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
 
                 Log.d("MessageRepository", "Message from: isRead: $isRead")
                 val senderName = ""
@@ -150,7 +150,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             isRead = isRead,
                             reciptid,
                             reciptids,
-                            profileImageUrl
+                            profileImageUrl,
+                            false
 
                         )
                     )
@@ -159,7 +160,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
 
         }
-        _messages.postValue(conversations)
+        Log.d("ObserverDebug", "getConversations: " + conversations.size)
+
+//        _messages.postValue(conversations)
         return conversations
     }
 
@@ -182,7 +185,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val recipientIds =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
 
-                Log.d("TAG", "getRecipientid---- " + recipientIds)
+//                Log.d("TAG", "getRecipientid---- " + recipientIds)
                 recipientIds.split(",").map { it.trim() }
                     .filter { it.isNotEmpty() } // Filter out blank recipient IDs
                     .let { recipientList.addAll(it) }
@@ -410,17 +413,71 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             .insertArchivedConversations(archivedConversations)
     }
 
-
     suspend fun unarchiveConversations(conversationIds: List<Long>) {
         conversationIds.forEach {
             AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    suspend fun getUnarchivedMessages(conversationIds: List<Long>): List<MessageItem> {
-        return getMessages().filter { it.threadId in conversationIds }
+    /*suspend fun togglePin(threadId: Long) {
+        return withContext(Dispatchers.IO) {
+            val isPinned =
+                AppDatabase.getDatabase(context).pinDao().isThreadPinned(threadId) != null
+            if (isPinned) {
+                AppDatabase.getDatabase(context).pinDao().unpinThread(threadId)
+            } else {
+                AppDatabase.getDatabase(context).pinDao()
+                    .pinThread(PinMessage(threadId = threadId, isPinned = true))
+            }
+        }
+    }*/
+
+
+    fun getPinnedThreadIds(): List<Long> {
+        return AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
     }
+
+    suspend fun togglePin(threadIds: List<Long>) {
+        Log.d("PinDebug", "togglePin called with threadIds: $threadIds")
+
+        val pinnedThreadIds = AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
+        Log.d("PinDebug", "Currently pinned threadIds: $pinnedThreadIds")
+
+        val (toUnpin, toPin) = threadIds.partition { it in pinnedThreadIds }
+
+        if (toUnpin.isNotEmpty()) {
+            Log.d("PinDebug", "Unpinning threadIds: $toUnpin")
+            AppDatabase.getDatabase(context).pinDao().removePinnedMessages(toUnpin)
+        }
+        if (toPin.isNotEmpty()) {
+            Log.d("PinDebug", "Pinning threadIds: $toPin")
+            val pinnedMessages = toPin.map { PinMessage(0, it, true) }
+            AppDatabase.getDatabase(context).pinDao().insertPinnedMessages(pinnedMessages)
+        }
+
+        // Verify after insertion
+        val updatedPinnedIds = AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
+        Log.d("PinDebug", "Pinned threads after toggle: $updatedPinnedIds")
+    }
+
+
+     fun addPinnedMessage(threadId: Long) {
+        AppDatabase.getDatabase(context).pinDao()
+            .insertPinnedMessages(listOf(PinMessage(0, threadId, true)))
+    }
+
+     fun removePinnedMessage(threadId: Long) {
+        AppDatabase.getDatabase(context).pinDao().deletePinnedMessage(listOf(threadId))
+    }
+
+    fun addPinnedMessages(threadIds: List<Long>) {
+        threadIds.forEach { addPinnedMessage(it) }
+    }
+
+    fun removePinnedMessages(threadIds: List<Long>) {
+        threadIds.forEach { removePinnedMessage(it) }
+    }
+
 
 
 }
