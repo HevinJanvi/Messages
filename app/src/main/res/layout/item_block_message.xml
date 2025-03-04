@@ -23,34 +23,21 @@
 
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/icUser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_user"
+                android:src="@drawable/ic_block"
+                android:padding="6dp"
+                android:background="@drawable/circle_background_block"
                 android:visibility="visible"
                 app:riv_corner_radius="25dp" />
-
-            <RelativeLayout
-                android:id="@+id/profileContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/circle_background"
-                android:visibility="visible">
-
-                <TextView
-                    android:id="@+id/initialsTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:textColor="@color/white"
-                    android:textSize="18sp" />
-            </RelativeLayout>
 
             <ImageView
                 android:id="@+id/icSelect"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
+                android:visibility="gone"
                 android:src="@drawable/ic_selected" />
 
         </FrameLayout>
@@ -106,42 +93,6 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="@+id/messageContent"
             app:layout_constraintEnd_toEndOf="parent">
-
-            <ImageView
-                android:id="@+id/icMute"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:src="@drawable/ic_mute"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/icPin" />
-
-            <ImageView
-                android:id="@+id/icPin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:src="@drawable/ic_pin_item"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <TextView
-                android:id="@+id/newMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/unread_msg_bg"
-                android:fontFamily="@font/product_sans_medium"
-                android:paddingHorizontal="7dp"
-                android:paddingVertical="3dp"
-                android:text="1"
-                android:textColor="@color/white"
-                android:textSize="10dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
 
             <ImageView
                 android:id="@+id/blueDot"

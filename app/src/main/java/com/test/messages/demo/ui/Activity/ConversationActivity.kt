@@ -19,6 +19,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
 import com.test.messages.demo.ui.Utils.MessageUtils
@@ -26,6 +27,10 @@ import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.ui.reciever.NewSmsEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 
 @AndroidEntryPoint
@@ -40,6 +45,7 @@ class ConversationActivity : AppCompatActivity() {
     private lateinit var messagingUtils: MessageUtils
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var oldBottom = 0
+    var isfromBlock: Boolean = false
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun markThreadAsRead(threadId: Long) {
@@ -65,6 +71,7 @@ class ConversationActivity : AppCompatActivity() {
 
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
         number = intent.getStringExtra("NUMBER").toString()
+        isfromBlock = intent.getBooleanExtra("fromBlock", false)
         Log.d("TAG", "onCreate: threadId :- " + threadId)
         setupRecyclerView()
         if (threadId != -1L) {
@@ -78,6 +85,14 @@ class ConversationActivity : AppCompatActivity() {
         observeViewModel()
         binding.buttonSend.setOnClickListener {
             sendMessage()
+        }
+        if (isfromBlock) {
+            binding.blockLy.visibility = View.VISIBLE
+            binding.btnUnblock.setOnClickListener {
+                unblockThread(threadId)
+            }
+        } else {
+            binding.blockLy.visibility = View.GONE
         }
 
     }
@@ -129,7 +144,7 @@ class ConversationActivity : AppCompatActivity() {
     private fun sendMessage() {
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
-            Toast.makeText(this, "Failed to send message", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG).show()
             return
         }
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
@@ -222,6 +237,24 @@ class ConversationActivity : AppCompatActivity() {
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun unblockThread(threadId: Long) {
+        if (threadId == -1L) return
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.unblockConversations(listOf(threadId))
+            binding.blockLy.visibility = View.GONE // Hide block layout
+            isfromBlock = false
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@ConversationActivity,
+                    getString(R.string.contact_blocked), Toast.LENGTH_SHORT)
+                    .show()
+                finish()
+            }
+        }
+
+    }
+
 
     override fun onResume() {
         super.onResume()

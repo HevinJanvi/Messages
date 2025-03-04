@@ -134,7 +134,7 @@
         android:layout_marginHorizontal="50dp"
         android:fontFamily="@font/product_sans_regular"
         android:gravity="center"
-        android:text="@string/empty_item_text"
+        android:text="@string/empty_item_text_archive"
         android:textColor="@color/gray_txtcolor"
         android:textFontWeight="400"
         app:layout_constraintBottom_toTopOf="@+id/selectMenuArchive"

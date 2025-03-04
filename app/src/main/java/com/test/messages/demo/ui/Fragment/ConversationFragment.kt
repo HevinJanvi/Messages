@@ -8,7 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.BlockedNumberContract
 import android.provider.Telephony
+import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +30,7 @@ import com.test.messages.demo.ui.Activity.ConversationActivity
 import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.MessageAdapter
+import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -40,6 +43,7 @@ import org.jetbrains.annotations.Nullable
 @AndroidEntryPoint
 class ConversationFragment : Fragment() {
 
+    private var blockConversationIds: List<Long> = emptyList()
     private var archivedConversationIds: List<Long> = emptyList()
     private var pinnedThreadIds: List<Long> = emptyList()
     val viewModel: MessageViewModel by viewModels()
@@ -48,6 +52,7 @@ class ConversationFragment : Fragment() {
     private lateinit var binding: FragmentConversationBinding
     private var lastVisibleItemPosition: Int = 0
     var onSelectionChanged: ((Int, Int) -> Unit)? = null
+    private var blockedNumbers: List<String> = emptyList()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -88,35 +93,30 @@ class ConversationFragment : Fragment() {
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
             CoroutineScope(Dispatchers.IO).launch {
+                blockedNumbers = viewModel.getBlockedNumbers()
                 archivedConversationIds =
                     viewModel.getArchivedConversations().map { it.conversationId }
-
+                blockConversationIds = viewModel.getBlockedConversations().map { it.conversationId }
                 pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
-                /* val filteredMessages = messageList
-                     .filter { !archivedConversationIds.contains(it.threadId) }
-                     .sortedByDescending { pinnedThreadIds.contains(it.threadId) } */
+
+
                 val filteredMessages = messageList
-                    .filter { !archivedConversationIds.contains(it.threadId) }
+                    .filter { it.number !in blockedNumbers }
+                    .filter { it.threadId !in archivedConversationIds }
+                    .filter { it.threadId !in blockConversationIds }
                     .map { message ->
                         message.copy(isPinned = pinnedThreadIds.contains(message.threadId))
                     }
                     .sortedByDescending { it.isPinned }
 
-                Log.d(
-                    "ObserverDebug",
-                    "Filtered and sorted messages: ${filteredMessages.size} messages"
-                )
                 withContext(Dispatchers.Main) {
                     if (adapter.selectedMessages != filteredMessages) {
-                        Log.d("ObserverDebug", "Adapter list changed. Updating adapter.")
                         adapter.submitList(filteredMessages)
                     }
                     if (lastVisibleItemPosition == adapter.itemCount - 1) {
                         binding.conversationList.scrollToPosition(lastVisibleItemPosition)
                     }
                 }
-
-
             }
 
         }
@@ -201,17 +201,21 @@ class ConversationFragment : Fragment() {
     fun pinMessages() {
         val selectedIds = adapter.selectedMessages.map { it.threadId }
         CoroutineScope(Dispatchers.IO).launch {
-            val pinnedIds = selectedIds.filter { viewModel.isPinned(it) } // Get only pinned messages
-            val unpinnedIds = selectedIds.filterNot { viewModel.isPinned(it) } // Get only unpinned messages
+            val pinnedIds =
+                selectedIds.filter { viewModel.isPinned(it) } // Get only pinned messages
+            val unpinnedIds =
+                selectedIds.filterNot { viewModel.isPinned(it) } // Get only unpinned messages
             when {
                 pinnedIds.isNotEmpty() && unpinnedIds.isNotEmpty() -> {
                     if (pinnedIds.size > unpinnedIds.size) {
                         viewModel.togglePin(pinnedIds)
                     }
                 }
+
                 pinnedIds.isNotEmpty() -> {
                     viewModel.togglePin(pinnedIds)
                 }
+
                 unpinnedIds.isNotEmpty() -> {
                     viewModel.togglePin(unpinnedIds)
                 }
@@ -220,6 +224,32 @@ class ConversationFragment : Fragment() {
                 adapter.clearSelection()
             }
         }
+    }
+
+    /*@RequiresApi(Build.VERSION_CODES.Q)
+    fun BlockMessages() {
+        val selectedMessages = adapter.selectedMessages.toList()
+        if (selectedMessages.isNotEmpty()) {
+            viewModel.blockContacts(selectedMessages)
+            adapter.clearSelection()
+        }
+    }*/
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun BlockMessages() {
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        val blockDialog = BlockDialog(requireContext()) {
+            CoroutineScope(Dispatchers.IO).launch {
+                viewModel.blockSelectedConversations(selectedIds)
+                withContext(Dispatchers.Main) {
+                    val updatedList = adapter.getAllMessages().toMutableList()
+                    updatedList.removeAll { selectedIds.contains(it.threadId) }
+                    adapter.submitList(updatedList)
+                    adapter.clearSelection()
+                }
+            }
+        }
+        blockDialog.show()
     }
 
 
@@ -268,7 +298,6 @@ class ConversationFragment : Fragment() {
         adapter.notifyDataSetChanged()
     }
 
-
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissionsAndLoadMessages() {
         val smsPermission = ContextCompat.checkSelfPermission(
@@ -310,7 +339,6 @@ class ConversationFragment : Fragment() {
                     grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
 
                 if (smsPermissionGranted && contactsPermissionGranted) {
-                    Log.d("ObserverDebug", "onRequestPermissionsResult: ")
                     viewModel.loadMessages()
                 } else {
                     Toast.makeText(requireActivity(), "Permissions denied", Toast.LENGTH_SHORT)

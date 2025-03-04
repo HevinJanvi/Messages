@@ -1,30 +1,21 @@
 package com.test.messages.demo.viewmodel
 
 
-import android.content.Context
-import android.database.ContentObserver
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import android.provider.Telephony
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.test.messages.demo.Database.Archived.ArchivedConversation
+import com.test.messages.demo.Database.Block.BlockConversation
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.repository.MessageRepository
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
-import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -44,11 +35,20 @@ class MessageViewModel @Inject constructor(
 
     private val _archivedThreadIds = MutableLiveData<Set<Long>>()
     val archivedThreadIds: LiveData<Set<Long>> get() = _archivedThreadIds
+
+    private val _blockThreadIds = MutableLiveData<Set<Long>>()
+    val blockThreadIds: LiveData<Set<Long>> get() = _blockThreadIds
+
     private val _pinnedThreadIds = MutableLiveData<Set<Long>>()
     val pinnedThreadIds: LiveData<Set<Long>> get() = _pinnedThreadIds
+
     init {
         _pinnedThreadIds.value = emptySet() // or load from database/storage
     }
+
+    private val _blockedMessages = MutableLiveData<List<MessageItem>>()
+    val blockedMessages: LiveData<List<MessageItem>> get() = _blockedMessages
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
@@ -91,7 +91,6 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-
     fun loadArchivedThreads() {
         viewModelScope.launch {
             val archivedIds = repository.getArchivedThreadIds().toSet()
@@ -102,6 +101,7 @@ class MessageViewModel @Inject constructor(
     suspend fun getArchivedConversations(): List<ArchivedConversation> {
         return repository.getArchivedConversations()
     }
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun archiveSelectedConversations(conversationIds: List<Long>) {
@@ -128,8 +128,9 @@ class MessageViewModel @Inject constructor(
 
     fun getPinnedThreadIds(): List<Long> {
 //        return repository.getPinnedThreadIds()
-        return runBlocking(Dispatchers.IO) { repository.getPinnedThreadIds()}
+        return runBlocking(Dispatchers.IO) { repository.getPinnedThreadIds() }
     }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun togglePin(selectedIds: List<Long>) {
 
@@ -145,16 +146,19 @@ class MessageViewModel @Inject constructor(
                             // If pinned >= unpinned, we unpin all
                             repository.removePinnedMessages(pinnedMessages)
                         }
+
                         else -> {
                             // More unpinned → Pin only unpinned ones
                             repository.addPinnedMessages(unpinnedMessages)
                         }
                     }
                 }
+
                 pinnedMessages.isNotEmpty() -> {
                     // Only pinned messages selected → Unpin them
                     repository.removePinnedMessages(pinnedMessages)
                 }
+
                 unpinnedMessages.isNotEmpty() -> {
                     // Only unpinned messages selected → Pin them
                     repository.addPinnedMessages(unpinnedMessages)
@@ -167,14 +171,71 @@ class MessageViewModel @Inject constructor(
     fun isPinned(threadId: Long): Boolean {
         return _pinnedThreadIds.value?.contains(threadId) == true
     }
+
     private suspend fun refreshPinnedMessages() {
         val updatedMessages = repository.getMessages()
         val pinnedThreadIds = repository.getPinnedThreadIds()
-        val sortedMessages = updatedMessages.sortedByDescending { pinnedThreadIds.contains(it.threadId) }
+        val sortedMessages =
+            updatedMessages.sortedByDescending { pinnedThreadIds.contains(it.threadId) }
 
         withContext(Dispatchers.Main) {
             (repository.messages as MutableLiveData).value = sortedMessages
         }
     }
 
+
+    suspend fun getBlockedNumbers(): List<String> {
+        return repository.getBlockedNumbers()
+    }
+
+    fun blockContacts(contactToBlock: List<MessageItem>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.blockContacts(contactToBlock)
+            val updatedMessages = repository.getMessages()
+            withContext(Dispatchers.Main) {
+                (repository.messages as MutableLiveData).value = updatedMessages
+            }
+        }
+    }
+
+    fun loadBlockedMessages() {
+        repository.getBlockedContacts().observeForever { messages ->
+            _blockedMessages.postValue(messages)
+        }
+    }
+
+    fun loadBlockThreads() {
+        viewModelScope.launch {
+            val blockIds = repository.getBlockThreadIds().toSet()
+            _blockThreadIds.postValue(blockIds)
+        }
+    }
+
+    suspend fun getBlockedThreadIdForNumber(phoneNumber: String): Long? {
+        return repository.getBlockedThreadId(phoneNumber)
+    }
+
+    suspend fun getBlockedConversations(): List<BlockConversation> {
+        return repository.getBlockConversations()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun blockSelectedConversations(conversationIds: List<Long>) {
+        viewModelScope.launch {
+            repository.blockConversations(conversationIds)
+
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun unblockConversations(conversationIds: List<Long>) {
+        viewModelScope.launch {
+            repository.unblockConversations(conversationIds)
+            val updatedBlockIds =
+                _blockThreadIds.value?.filterNot { it in conversationIds }?.toSet()
+            _blockThreadIds.postValue(updatedBlockIds)
+            val updatedMessages = repository.getMessages()
+            (repository.messages as MutableLiveData).postValue(updatedMessages)
+        }
+    }
 }

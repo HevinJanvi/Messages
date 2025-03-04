@@ -18,5 +18,10 @@
     <color name="subtext_color">#8D8C91</color>
     <color name="gray_txtcolor">#8D8C91</color>
     <color name="transparant">#00000000</color>
+    <color name="red">#FF291E</color>
+    <color name="switch_bg">#8D8C91</color>
+    <color name="view_color">#F1F1F1</color>
+    <color name="block_bg">#FFE0E0</color>
+    <color name="block_bg2">#ECF4FF</color>
 
 </resources>

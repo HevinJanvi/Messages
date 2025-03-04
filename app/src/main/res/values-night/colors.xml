@@ -18,5 +18,9 @@
     <color name="subtext_color">#FCFCFC</color>
     <color name="gray_txtcolor">#8D8C91</color>
     <color name="transparant">#00000000</color>
+    <color name="switch_bg">#18181B</color>
+    <color name="view_color">#26252A</color>
+    <color name="block_bg">#520C03</color>
+    <color name="block_bg2">#ECF4FF</color>
 
 </resources>

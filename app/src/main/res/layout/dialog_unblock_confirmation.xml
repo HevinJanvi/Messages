@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/popup_bg"
+    android:layout_margin="15dp"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/txtDialogTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/unblock_messages"
+        android:textSize="18sp"
+        android:textColor="@color/textcolor"
+        android:layout_gravity="left|center"
+        android:textFontWeight="500"
+        android:fontFamily="@font/product_sans_medium"
+        android:gravity="center"/>
+
+    <TextView
+        android:id="@+id/txtDialogMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textFontWeight="400"
+        android:textSize="14dp"
+        android:layout_marginTop="8dp"
+        android:layout_gravity="start"
+        android:textColor="@color/gray_txtcolor"
+        android:fontFamily="@font/product_sans_regular"
+        android:text="@string/do_you_want_to_unblock_messages"
+        android:gravity="center"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="right"
+        android:gravity="right"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="17dp"
+            android:layout_marginEnd="15dp"
+            android:paddingHorizontal="20dp"
+            android:text="@string/cancel"
+            android:textFontWeight="500"
+            android:fontFamily="@font/product_sans_medium"
+            android:textColor="@color/colorPrimary"
+            android:backgroundTint="@color/gray"/>
+
+        <TextView
+            android:id="@+id/btnConfirmDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="17dp"
+            android:paddingHorizontal="15dp"
+            android:text="@string/unblock"
+            android:textFontWeight="500"
+            android:fontFamily="@font/product_sans_medium"
+            android:textColor="@color/red"
+            />
+
+    </LinearLayout>
+</LinearLayout>

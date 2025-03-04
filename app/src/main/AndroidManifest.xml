@@ -117,6 +117,9 @@
             android:name=".ui.Activity.ConversationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity android:name=".ui.Activity.ContactActivtiy" />
+        <activity android:name="com.test.messages.demo.ui.Activity.BlockedMessagesActivity" />
+        <activity android:name="com.test.messages.demo.ui.Activity.BlockedContactActivity" />
+        <activity android:name="com.test.messages.demo.ui.Activity.BlockMessageActivity" />
 
         <receiver android:name=".ui.reciever.SmsStatusSentReceiver" />
     </application>

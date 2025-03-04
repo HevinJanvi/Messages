@@ -1,20 +1,24 @@
 package com.test.messages.demo.ui.Activity
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.viewModels
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
-import com.test.messages.demo.ui.Utils.DeleteDialog
+import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -54,6 +58,10 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupClickListeners() {
+        //toolbar
+        binding.icMore.setOnClickListener {
+            showPopupHome(it)
+        }
 
         binding.icDelete.setOnClickListener {
             val deleteDialog = DeleteDialog(this) {
@@ -73,7 +81,12 @@ class MainActivity : AppCompatActivity() {
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.pinMessages()
         }
-
+        binding.blockLayout.setOnClickListener {
+            val fragment =
+                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+            fragment?.BlockMessages()
+        }
+        //drawer
         binding.include.lyArchived.setOnClickListener {
             val intent = Intent(this, ArchivedActivity::class.java)
             startActivity(intent)
@@ -85,12 +98,17 @@ class MainActivity : AppCompatActivity() {
             fragment?.markReadMessages()
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
+        binding.include.lyBlock.setOnClickListener {
+//            val intent = Intent(this, BlockedMessagesActivity::class.java)
+            val intent = Intent(this, BlockMessageActivity::class.java)
+            startActivity(intent)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
 //        binding.icRecyclerbin.setOnClickListener {
 //            val intent = Intent(this, RecycleBinActivity::class.java)
 //            startActivity(intent)
 //        }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun loadConversationFragment() {
@@ -99,9 +117,7 @@ class MainActivity : AppCompatActivity() {
             updatePinLayout(count, ispinned)
             updateSelectedItemsCount(count)
         }
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, fragment)
-            .commit()
+        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment).commit()
 
         supportFragmentManager.executePendingTransactions()
         val loadedFragment =
@@ -123,6 +139,7 @@ class MainActivity : AppCompatActivity() {
                     binding.icpin.setImageResource(R.drawable.ic_unpin)
                     pinTextView.text = getString(R.string.unpin)
                 }
+
                 unpinnedCount > pinnedCount -> {
                     binding.icpin.setImageResource(R.drawable.ic_pin)
                     pinTextView.text = getString(R.string.pin)
@@ -164,10 +181,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     fun updateTotalMessagesCount(count: Int) {
         binding.include.newMessage.text = "$count"
     }
+
+    fun showPopupHome(view: View) {
+        val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val dialog = layoutInflater.inflate(R.layout.popup_home_menu, null)
+
+        val popupWindow = PopupWindow(
+            dialog, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        popupWindow.setBackgroundDrawable(BitmapDrawable())
+        popupWindow.isOutsideTouchable = true
+
+        val editCat: TextView = dialog.findViewById(R.id.editCategory)
+        editCat.setOnClickListener {
+            popupWindow.dismiss()
+        }
+        popupWindow.showAsDropDown(view, 0, 0)
+    }
+
 
     override fun onBackPressed() {
         if (selectedMessagesCount > 0) {

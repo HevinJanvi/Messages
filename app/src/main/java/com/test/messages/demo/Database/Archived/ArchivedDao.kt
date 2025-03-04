@@ -8,8 +8,6 @@ import androidx.room.Query
 
 @Dao
 interface ArchivedDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun archiveConversation(archivedConversation: ArchivedConversation)
 
     @Query("SELECT * FROM archived_conversations")
     fun getAllArchivedConversations(): List<ArchivedConversation>
@@ -23,6 +21,4 @@ interface ArchivedDao {
     @Query("DELETE FROM archived_conversations WHERE conversationId = :conversationId")
     suspend fun unarchiveConversation(conversationId: Long)
 
-//    @Query("SELECT conversationId FROM archived_conversations")
-//    fun getArchivedConversations(): LiveData<List<Long>>
 }

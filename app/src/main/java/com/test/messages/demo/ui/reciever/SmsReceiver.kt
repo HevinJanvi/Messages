@@ -4,14 +4,15 @@ import android.content.BroadcastReceiver
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.Telephony
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.test.messages.demo.repository.MessageRepository
 import dagger.hilt.android.AndroidEntryPoint
-import org.greenrobot.eventbus.EventBus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -41,16 +42,41 @@ class SmsReceiver : BroadcastReceiver() {
                 status = it.status
                 body += it.messageBody
                 date = it.timestampMillis
-                threadId = getThreadId(context, address)
             }
 
-            // Insert into system database
-            insertMessageIntoSystemDatabase(context, address, subject, body, date, threadId, read, type, subscriptionId, status)
-//            EventBus.getDefault().post(NewSmsEvent(threadId))
-            repository.getMessages()
-            repository.getConversation(threadId)
+            CoroutineScope(Dispatchers.IO).launch {
+                val prefs = context.getSharedPreferences("block_prefs", Context.MODE_PRIVATE)
+                val isDropMessagesEnabled = prefs.getBoolean("drop_messages", false)
+                val isDeleted = repository.isDeletedConversation(address)
+
+                if (isDeleted) {
+                    if (isDropMessagesEnabled) {
+                        Log.d("SmsReceiver", "Drop Messages is ON, ignoring message from: $address")
+                        return@launch  // Exit without inserting message
+                    }
+                    threadId = getThreadId(context,address)
+                    insertMessageIntoSystemDatabase(context, address, subject, body, date, threadId, read, type, subscriptionId, status)
+                    threadId = getThreadId(context,address)
+                    val isAlreadyBlocked = repository.isBlockedConversation(threadId)
+                    if (!isAlreadyBlocked) {
+                        repository.blockConversation(threadId, address)
+                        repository.removeOldBlockedThreadIds(address, threadId)
+                        Log.d("TAG", "onReceive: Blocked new thread ID $threadId and removed old ones for $address")
+                    } else {
+                        Log.d("TAG", "onReceive: Thread ID $threadId is already blocked, skipping...")
+                    }
+
+                } else {
+                    Log.d("SmsReceiver", "Message from unblocked number: $address")
+                    threadId = getThreadId(context, address)
+                    insertMessageIntoSystemDatabase(context, address, subject, body, date, threadId, read, type, subscriptionId, status)
+                }
+                repository.getMessages()
+                repository.getConversation(threadId)
+            }
         }
     }
+
 
     private fun insertMessageIntoSystemDatabase(
         context: Context,
@@ -89,7 +115,7 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun getThreadId(context: Context, sender: String): Long {
-        val uri = Uri.withAppendedPath(Telephony.Sms.CONTENT_URI, "conversations")
+        val uri = Telephony.Sms.CONTENT_URI
         val projection = arrayOf(Telephony.Sms.THREAD_ID)
         val selection = "${Telephony.Sms.ADDRESS} = ?"
         val selectionArgs = arrayOf(sender)
@@ -100,7 +126,8 @@ class SmsReceiver : BroadcastReceiver() {
                     return cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
                 }
             }
-        return 0L // Default thread ID if not found
+        return 0L
     }
+
 
 }

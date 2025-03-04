@@ -6,6 +6,7 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
+import android.provider.BlockedNumberContract
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.util.Log
@@ -14,13 +15,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.test.messages.demo.Database.Archived.ArchivedConversation
+import com.test.messages.demo.Database.Block.BlockConversation
 import com.test.messages.demo.Database.Pin.PinMessage
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 import javax.inject.Inject
@@ -77,7 +81,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     photoUri = contactPhotoMap[normalizedNumber].toString()
                 }
                 val isRead = messageItem.isRead
-                Log.d("MessageRepository", "Message from: $displayName, isRead: $isRead")
+//                Log.d("MessageRepository", "Message from: $displayName, isRead: $isRead")
 
                 messageItem.copy(
                     sender = displayName,
@@ -135,7 +139,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val isRead = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
 
-                Log.d("MessageRepository", "Message from: isRead: $isRead")
+//                Log.d("MessageRepository", "Message from: isRead: $isRead")
                 val senderName = ""
                 val profileImageUrl = ""
 
@@ -161,8 +165,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
         }
         Log.d("ObserverDebug", "getConversations: " + conversations.size)
-
-//        _messages.postValue(conversations)
         return conversations
     }
 
@@ -261,11 +263,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 var profileImageUrl =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI))
                         ?: ""
-
-//                if (profileImageUrl == null) {
-//                    profileImageUrl = ""
-//                }
-//                Log.e("TAG", "getContactDetails:-- " + profileImageUrl)
                 if (phoneNumber != null && normalizePhoneNumber != null) {
                     contactList.add(
                         ContactItem(
@@ -279,7 +276,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 }
             }
         }
-//        Log.d("TAG", "getContactDetails: " + contactList)
         return contactList
     }
 
@@ -419,54 +415,17 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         }
     }
 
-    /*suspend fun togglePin(threadId: Long) {
-        return withContext(Dispatchers.IO) {
-            val isPinned =
-                AppDatabase.getDatabase(context).pinDao().isThreadPinned(threadId) != null
-            if (isPinned) {
-                AppDatabase.getDatabase(context).pinDao().unpinThread(threadId)
-            } else {
-                AppDatabase.getDatabase(context).pinDao()
-                    .pinThread(PinMessage(threadId = threadId, isPinned = true))
-            }
-        }
-    }*/
-
-
     fun getPinnedThreadIds(): List<Long> {
         return AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
     }
 
-    suspend fun togglePin(threadIds: List<Long>) {
-        Log.d("PinDebug", "togglePin called with threadIds: $threadIds")
 
-        val pinnedThreadIds = AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
-        Log.d("PinDebug", "Currently pinned threadIds: $pinnedThreadIds")
-
-        val (toUnpin, toPin) = threadIds.partition { it in pinnedThreadIds }
-
-        if (toUnpin.isNotEmpty()) {
-            Log.d("PinDebug", "Unpinning threadIds: $toUnpin")
-            AppDatabase.getDatabase(context).pinDao().removePinnedMessages(toUnpin)
-        }
-        if (toPin.isNotEmpty()) {
-            Log.d("PinDebug", "Pinning threadIds: $toPin")
-            val pinnedMessages = toPin.map { PinMessage(0, it, true) }
-            AppDatabase.getDatabase(context).pinDao().insertPinnedMessages(pinnedMessages)
-        }
-
-        // Verify after insertion
-        val updatedPinnedIds = AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
-        Log.d("PinDebug", "Pinned threads after toggle: $updatedPinnedIds")
-    }
-
-
-     fun addPinnedMessage(threadId: Long) {
+    fun addPinnedMessage(threadId: Long) {
         AppDatabase.getDatabase(context).pinDao()
             .insertPinnedMessages(listOf(PinMessage(0, threadId, true)))
     }
 
-     fun removePinnedMessage(threadId: Long) {
+    fun removePinnedMessage(threadId: Long) {
         AppDatabase.getDatabase(context).pinDao().deletePinnedMessage(listOf(threadId))
     }
 
@@ -478,6 +437,186 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         threadIds.forEach { removePinnedMessage(it) }
     }
 
+    suspend fun getBlockConversations(): List<BlockConversation> {
+        return AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
+    }
+
+    suspend fun getBlockedThreadId(phoneNumber: String): Long? {
+        return withContext(Dispatchers.IO) {
+            AppDatabase.getDatabase(context).blockDao().getBlockedThreadId(phoneNumber)
+        }
+    }
+
+    suspend fun getBlockThreadIds(): List<Long> {
+        return withContext(Dispatchers.IO) {
+            AppDatabase.getDatabase(context).blockDao().getBlockThreadIds()
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    suspend fun blockConversations(conversationIds: List<Long>) {
+        val blockConversations = conversationIds.map { conversationId ->
+            val phoneNumber = getPhoneNumberForThread(conversationId) ?: ""
+            BlockConversation(id = 0, conversationId = conversationId, isBlocked = true,phoneNumber)
+        }
+        AppDatabase.getDatabase(context).blockDao()
+            .insertBlockConversations(blockConversations)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    suspend fun blockConversation(conversationId: Long, phoneNumber: String) {
+        blockConversations(listOf(conversationId))
+    }
+    suspend fun unblockConversations(conversationIds: List<Long>) {
+        conversationIds.forEach {
+            AppDatabase.getDatabase(context).blockDao().unblockConversation(it)
+        }
+    }
+
+    suspend fun removeOldBlockedThreadIds(phoneNumber: String, newThreadId: Long) {
+        AppDatabase.getDatabase(context).blockDao().deleteOldBlockedThreads(phoneNumber, newThreadId)
+    }
+
+    suspend fun isDeletedConversation(number: String): Boolean {
+        return  AppDatabase.getDatabase(context).blockDao().isDeleted(number)
+    }
+
+    suspend fun isBlockedConversation(threadId: Long): Boolean {
+        return AppDatabase.getDatabase(context).blockDao().isThreadBlocked(threadId) > 0
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun getPhoneNumberForThread(threadId: Long): String? {
+        val projection = arrayOf(Telephony.Sms.ADDRESS)
+        val selection = "${Telephony.Sms.THREAD_ID} = ?"
+        val selectionArgs = arrayOf(threadId.toString())
+
+        val cursor: Cursor? = context.contentResolver.query(
+            Telephony.Sms.CONTENT_URI, projection, selection, selectionArgs, null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
+            }
+        }
+        return null
+    }
+
+
+
+
+    //blocked contacts
+    fun getBlockedContacts(): LiveData<List<MessageItem>> {
+        val liveData = MutableLiveData<List<MessageItem>>()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val blockedMessagesList = mutableListOf<MessageItem>()
+            val uri = BlockedNumberContract.BlockedNumbers.CONTENT_URI
+            val projection = arrayOf(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER)
+
+            val cursor = context.contentResolver.query(uri, projection, null, null, null)
+
+            cursor?.use {
+                while (it.moveToNext()) {
+                    val number =
+                        it.getString(it.getColumnIndexOrThrow(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER))
+                    val displayName = getContactNameOrNumber(number)
+                    val threadId = getThreadIdForNumber(number)
+                    if (threadId == -1L) continue // Skip if threadId not found
+                    val messages = getConversationDetails(threadId)
+
+                    if (messages.isNotEmpty()) {
+                        val latestMessage = messages.last()
+
+                        blockedMessagesList.add(
+                            MessageItem(
+                                threadId = latestMessage.threadId,
+                                sender = displayName,
+                                number = latestMessage.address,
+                                body = latestMessage.body,
+                                timestamp = latestMessage.date,
+                                isRead = latestMessage.read,
+                                reciptid = 0,
+                                reciptids = "",
+                                profileImageUrl = "",
+                                isPinned = false
+                            )
+                        )
+                    }
+                }
+            }
+
+            liveData.postValue(blockedMessagesList)
+        }
+        return liveData
+    }
+
+    fun getThreadIdForNumber(phoneNumber: String): Long {
+        val uri = Uri.parse("content://sms/")
+        val projection = arrayOf("thread_id")
+        val selection = "address = ?"
+        val selectionArgs = arrayOf(phoneNumber)
+
+        val cursor: Cursor? =
+            context.contentResolver.query(uri, projection, selection, selectionArgs, null)
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getLong(it.getColumnIndexOrThrow("thread_id"))
+            }
+        }
+
+        return -1
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun blockContacts(messagesToBlock: List<MessageItem>) {
+        val contentResolver = context.contentResolver
+
+        for (message in messagesToBlock) {
+            val values = ContentValues().apply {
+                put(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER, message.number)
+            }
+
+            try {
+                val uri =
+                    contentResolver.insert(BlockedNumberContract.BlockedNumbers.CONTENT_URI, values)
+                if (uri != null) {
+                    Log.d("BlockMessages", "Successfully blocked number: ${message.number}")
+                } else {
+                    Log.d("BlockMessages", "Failed to block number: ${message.number}")
+                }
+            } catch (e: Exception) {
+                Log.d("BlockMessages", "Error blocking number: ${message.number}", e)
+            }
+        }
+    }
+
+
+    fun getBlockedNumbers(): List<String> {
+        val blockedNumbers = mutableListOf<String>()
+        val uri = BlockedNumberContract.BlockedNumbers.CONTENT_URI
+
+        val cursor: Cursor? = context.contentResolver.query(
+            uri,
+            arrayOf(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER),
+            null, null, null
+        )
+
+        cursor?.use {
+            val numberIndex =
+                it.getColumnIndex(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER)
+            while (it.moveToNext()) {
+                val number = it.getString(numberIndex)
+                if (!number.isNullOrEmpty()) {
+                    blockedNumbers.add(number)
+                }
+            }
+        }
+
+        Log.d("BlockMessages", "Blocked numbers: $blockedNumbers")
+        return blockedNumbers
+    }
 
 
 }

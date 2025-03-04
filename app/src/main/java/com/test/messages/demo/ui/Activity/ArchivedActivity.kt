@@ -23,18 +23,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
-import com.test.messages.demo.ui.Adapter.MessageAdapter
-import com.test.messages.demo.ui.Utils.DeleteDialog
-import com.test.messages.demo.ui.reciever.NewSmsEvent
+import com.test.messages.demo.ui.Dialogs.BlockDialog
+import com.test.messages.demo.ui.Dialogs.UnblockDialog
+import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 @AndroidEntryPoint
 class ArchivedActivity : AppCompatActivity() {
@@ -141,6 +138,25 @@ class ArchivedActivity : AppCompatActivity() {
             }
             deleteDialog.show()
         }
+        binding.btnBlock.setOnClickListener {
+            val selectedThreadIds = adapter.getSelectedThreadIds()
+
+            if (selectedThreadIds.isNotEmpty()) {
+                val blockDialog = BlockDialog(this) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        viewModel.unarchiveConversations(selectedThreadIds)
+                        val selectedIds = adapter.selectedMessages.map { it.threadId }
+                        viewModel.blockSelectedConversations(selectedIds)
+                        withContext(Dispatchers.Main) {
+                            adapter.removeItems(selectedThreadIds)
+                            adapter.clearSelection()
+                        }
+                    }
+                }
+                blockDialog.show()
+            }
+        }
+
         binding.icMore.setOnClickListener {
             showPopup(it)
         }
