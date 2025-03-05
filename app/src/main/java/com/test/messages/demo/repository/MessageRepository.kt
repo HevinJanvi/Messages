@@ -55,6 +55,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val displayName: String
                 val rawPhoneNumber: String
                 val photoUri: String
+                val isGroupChat = reciptids.contains(" ")
 
                 if (reciptids.contains(" ")) {  // ✅ Only split if space exists
                     val receiptIdList = reciptids.split(" ")
@@ -87,7 +88,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     sender = displayName,
                     number = rawPhoneNumber,
                     profileImageUrl = photoUri,
-                    isRead = isRead
+                    isRead = isRead,
+                    isGroupChat = isGroupChat
+
                 )
             }
         Log.d("ObserverDebug", "getMessages: " + newMsgList.size)
@@ -155,6 +158,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             reciptid,
                             reciptids,
                             profileImageUrl,
+                            false,
                             false
 
                         )
@@ -539,7 +543,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                                 reciptid = 0,
                                 reciptids = "",
                                 profileImageUrl = "",
-                                isPinned = false
+                                isPinned = false,
+                                isGroupChat = false
                             )
                         )
                     }

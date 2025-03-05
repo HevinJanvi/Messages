@@ -41,4 +41,11 @@
     <string name="unblock_to_receive_message">Unblock to receive messages from this\nsender</string>
     <string name="contact_blocked">Contact Blocked</string>
     <string name="failed_to_send_message">Failed to send message</string>
+    <string name="new_conversation">New conversation</string>
+    <string name="recipient">Recipient</string>
+    <string name="write_a_message">Write a message...</string>
+    <string name="type_a_name_or_number">Type a name or number</string>
+    <string name="done">Done</string>
+    <string name="no_contacts_selected">No contacts selected</string>
+    <string name="this_is_the_start_of_your_conversation">This is the start of your conversation, Say \nsomething nice!</string>
 </resources>

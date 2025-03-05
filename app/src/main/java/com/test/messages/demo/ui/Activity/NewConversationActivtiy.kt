@@ -14,7 +14,9 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -63,6 +65,7 @@ class NewConversationActivtiy : AppCompatActivity() {
             filteredContacts = contacts
             contactAdapter.submitList(filteredContacts)
         }
+
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString().trim().toLowerCase()
@@ -109,6 +112,9 @@ class NewConversationActivtiy : AppCompatActivity() {
             intent.putParcelableArrayListExtra("selectedContacts", ArrayList(selectedContacts))
             startActivityForResult(intent, 111)
         }
+        binding.icBack.setOnClickListener {
+            onBackPressed()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -126,21 +132,23 @@ class NewConversationActivtiy : AppCompatActivity() {
         }
     }
 
-
     private fun updateSelectedContactsHeader() {
         binding.selectedContactsLayout.removeAllViews()
+        binding.selectedContactsScroll.visibility = View.GONE
         selectedContactViews.clear()
 
         selectedContacts.forEach { contact ->
-            val contactView = LayoutInflater.from(this).inflate(R.layout.item_selected_contact, null)
+            val contactView =
+                LayoutInflater.from(this).inflate(R.layout.item_selected_contact, null)
             val contactNameTextView = contactView.findViewById<TextView>(R.id.contactName)
-            val minusButton = contactView.findViewById<ImageButton>(R.id.minusButton)
+            val minusButton = contactView.findViewById<ImageView>(R.id.minusButton)
 
             contactNameTextView.text = contact.name
             minusButton.setOnClickListener {
                 removeFromSelectedContacts(contact)
             }
             binding.selectedContactsLayout.addView(contactView)
+            binding.selectedContactsScroll.visibility = View.VISIBLE
             selectedContactViews[contact.phoneNumber] = contactView
         }
 
@@ -153,6 +161,10 @@ class NewConversationActivtiy : AppCompatActivity() {
         }
         selectedContacts.add(contact)
         updateSelectedContactsHeader()
+
+        binding.editTextSearch.text.clear()
+        filteredContacts = allContacts
+        contactAdapter.submitList(filteredContacts)
     }
 
 
@@ -164,6 +176,9 @@ class NewConversationActivtiy : AppCompatActivity() {
             binding.selectedContactsLayout.removeView(contactView)
             selectedContactViews.remove(contact.phoneNumber) // Remove from map
         }
+        if (selectedContacts.isEmpty()) {
+            binding.selectedContactsScroll.visibility = View.GONE
+        }
     }
 
 
@@ -171,14 +186,14 @@ class NewConversationActivtiy : AppCompatActivity() {
     private fun sendMessage() {
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
-            Toast.makeText(this, "Failed to send message", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG).show()
             return
         }
 
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
         val selectedNumbers = selectedContacts.map { it.phoneNumber }.toSet()
         if (selectedNumbers.isEmpty()) {
-            Toast.makeText(this, "No contacts selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_contacts_selected), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -211,8 +226,17 @@ class NewConversationActivtiy : AppCompatActivity() {
         binding.contactRecyclerView.itemAnimator = null
         viewModel.loadMessages()
         viewModel.loadConversation(threadId)
-    }
 
+        val firstNumber = selectedNumbers.firstOrNull() ?: ""
+        val intent = Intent(this, ConversationActivity::class.java).apply {
+            putExtra("EXTRA_THREAD_ID", threadId)
+            putExtra("NUMBER", firstNumber)
+        }
+        startActivity(intent)
+//        overrideActivityTransition(0,0)
+        finish()
+
+    }
 
     private fun sendSmsMessage(
         text: String,
@@ -256,6 +280,17 @@ class NewConversationActivtiy : AppCompatActivity() {
             Telephony.Threads.getOrCreateThreadId(this, addresses)
         } catch (e: Exception) {
             0L
+        }
+    }
+
+    override fun onBackPressed() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = currentFocus
+        if (view != null) {
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+            view.clearFocus()
+        } else {
+            super.onBackPressed()
         }
     }
 }

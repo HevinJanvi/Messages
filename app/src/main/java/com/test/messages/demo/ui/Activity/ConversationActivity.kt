@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -58,7 +60,6 @@ class ConversationActivity : AppCompatActivity() {
         val selectionArgs = arrayOf(threadId.toString())
         val updatedRows = contentResolver.update(uri, contentValues, selection, selectionArgs)
         Log.d("ConversationActivity", "Marked $updatedRows messages as read in thread $threadId")
-//        viewModel.loadMessages()
         Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
     }
 
@@ -86,6 +87,22 @@ class ConversationActivity : AppCompatActivity() {
         binding.buttonSend.setOnClickListener {
             sendMessage()
         }
+
+        val cleanedNumber = number.replace("[^+\\d]".toRegex(), "")
+        if (cleanedNumber.contains(",") || !cleanedNumber.matches(Regex("^[+]?[0-9]{7,15}$"))) {
+            binding.btnCall.visibility = View.GONE
+        } else {
+            binding.btnCall.visibility = View.VISIBLE
+        }
+
+
+        binding.btnCall.setOnClickListener {
+            makeCall(number)
+        }
+        binding.icBack.setOnClickListener {
+            onBackPressed()
+        }
+
         if (isfromBlock) {
             binding.blockLy.visibility = View.VISIBLE
             binding.btnUnblock.setOnClickListener {
@@ -94,7 +111,6 @@ class ConversationActivity : AppCompatActivity() {
         } else {
             binding.blockLy.visibility = View.GONE
         }
-
     }
 
     private fun setupRecyclerView() {
@@ -140,11 +156,45 @@ class ConversationActivity : AppCompatActivity() {
         layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
     }
 
+    /*private fun observeViewModel() {
+        viewModel.conversation.observe(this) { conversationList ->
+            adapter.submitList(conversationList)
+            binding.recyclerViewConversation.scrollToPosition(conversationList.size - 1)
+            scrolltoBottom()
+            if (conversationList.isNotEmpty()) {
+                binding.emptyText.visibility = View.GONE
+                val senderNumber = conversationList.firstOrNull()?.address ?: number
+                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
+            } else {
+                binding.emptyText.visibility = View.VISIBLE
+            }
+        }
+    }*/
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun observeViewModel() {
+        viewModel.conversation.observe(this) { conversationList ->
+            val sortedList = conversationList.sortedBy { it.date } // Ensure newest messages are last
+            adapter.submitList(sortedList)
+
+            binding.recyclerViewConversation.scrollToPosition(sortedList.size - 1)
+            scrolltoBottom()
+
+            if (sortedList.isNotEmpty()) {
+                binding.emptyText.visibility = View.GONE
+                val senderNumber = sortedList.firstOrNull()?.address ?: number
+                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
+            } else {
+                binding.emptyText.visibility = View.VISIBLE
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun sendMessage() {
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
-            Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG)
+                .show()
             return
         }
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
@@ -180,19 +230,7 @@ class ConversationActivity : AppCompatActivity() {
         viewModel.loadConversation(threadId)
     }
 
-    private fun observeViewModel() {
-        viewModel.conversation.observe(this) { conversationList ->
-            adapter.submitList(conversationList)
-            binding.recyclerViewConversation.scrollToPosition(conversationList.size - 1)
-            scrolltoBottom()
 
-            if (conversationList.isNotEmpty()) {
-                val senderNumber = conversationList.firstOrNull()?.address ?: number
-                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
-            }
-        }
-
-    }
 
     @SuppressLint("NewApi")
     fun Context.getThreadId(addresses: Set<String>): Long {
@@ -243,11 +281,13 @@ class ConversationActivity : AppCompatActivity() {
         if (threadId == -1L) return
         CoroutineScope(Dispatchers.IO).launch {
             viewModel.unblockConversations(listOf(threadId))
-            binding.blockLy.visibility = View.GONE // Hide block layout
+            binding.blockLy.visibility = View.GONE
             isfromBlock = false
             withContext(Dispatchers.Main) {
-                Toast.makeText(this@ConversationActivity,
-                    getString(R.string.contact_blocked), Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    this@ConversationActivity,
+                    getString(R.string.contact_blocked), Toast.LENGTH_SHORT
+                )
                     .show()
                 finish()
             }
@@ -255,12 +295,20 @@ class ConversationActivity : AppCompatActivity() {
 
     }
 
+    private fun makeCall(phoneNumber: String) {
+        val intent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$phoneNumber")
+        }
+        val chooser = Intent.createChooser(intent, "Choose an app to make a call")
+        startActivity(chooser)
+    }
+
 
     override fun onResume() {
         super.onResume()
 //        val threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
 //        if (threadId != -1L) {
-//            viewModel.markMessageAsRead(threadId) // 🔥 Only modify affected items
+//            viewModel.markMessageAsRead(threadId) // Only modify affected items
 //        }
     }
 

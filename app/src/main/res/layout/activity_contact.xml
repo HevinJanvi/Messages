@@ -6,7 +6,78 @@
     android:background="@color/bg"
     android:orientation="vertical">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolBarContact"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:layout_marginHorizontal="15dp"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/send_msg_bg"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/icBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:adjustViewBounds="true"
+                android:padding="1dp"
+                android:src="@drawable/ic_back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/editTextSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:fontFamily="@font/product_sans_regular"
+                android:hint="@string/type_a_name_or_number"
+                android:inputType="text"
+                android:textFontWeight="400"
+                android:textSize="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnKeypad"
+                app:layout_constraintStart_toEndOf="@+id/icBack"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnKeypad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_num_keypad"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <!--<LinearLayout
         android:id="@+id/layout_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,31 +86,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-            android:id="@+id/editTextSearch"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawableEnd="@android:drawable/ic_menu_close_clear_cancel"
-            android:hint="Search contacts"
-            android:inputType="text" />
 
-    </LinearLayout>
+
+    </LinearLayout>-->
 
     <HorizontalScrollView
         android:id="@+id/selectedContactsScroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
         android:fillViewport="true"
         android:padding="8dp"
         android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@+id/layout_search">
+        app:layout_constraintTop_toBottomOf="@+id/toolBarContact">
 
         <LinearLayout
             android:id="@+id/selectedContactsLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp"
+            android:gravity="start"
             android:orientation="horizontal" />
 
     </HorizontalScrollView>
@@ -47,20 +113,22 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnDone"
+        app:layout_constraintBottom_toTopOf="@+id/btmly"
         app:layout_constraintTop_toBottomOf="@+id/selectedContactsScroll">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/contactRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp" />
 
         <RelativeLayout
-            android:layout_width="5dp"
+            android:layout_width="4.6dp"
             android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="8dp"
+            android:layout_marginVertical="18dp"
+            android:layout_marginEnd="7.5dp"
             android:background="@drawable/scroll_bg" />
 
         <com.test.messages.demo.AlphabticScroll.RecyclerViewFastScroller
@@ -70,17 +138,35 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true" />
 
-
-
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/btnDone"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/btmly"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="done"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/view_color" />
+
+        <TextView
+            android:id="@+id/btnDone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="20dp"
+            android:fontFamily="@font/product_sans_medium"
+            android:text="@string/done"
+            android:textColor="@color/textcolor"
+            android:textFontWeight="500"
+            android:textSize="18dp" />
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

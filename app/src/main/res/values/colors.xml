@@ -23,5 +23,9 @@
     <color name="view_color">#F1F1F1</color>
     <color name="block_bg">#FFE0E0</color>
     <color name="block_bg2">#ECF4FF</color>
+    <color name="contact_block_clr">#F1F1F1</color>
+    <color name="send_color">#ECF4FF</color>
+    <color name="send_bg_color">#F1F1F1</color>
+    <color name="incoming_bg_clr">#F1F1F1</color>
 
 </resources>

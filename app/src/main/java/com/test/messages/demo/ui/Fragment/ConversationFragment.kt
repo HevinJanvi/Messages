@@ -145,6 +145,7 @@ class ConversationFragment : Fragment() {
             val intent = Intent(requireContext(), ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
             intent.putExtra("NUMBER", message.number)
+            intent.putExtra("isGroup", message.isGroupChat)
             startActivity(intent)
         }
     }

@@ -3,23 +3,32 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp"
-    android:orientation="horizontal"
+    android:layout_marginEnd="8dp"
+    android:layout_marginStart="30dp"
+    android:orientation="vertical"
     android:gravity="end">
-
-    <TextView
-        android:id="@+id/messageDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"
-        android:layout_marginEnd="8dp" />
 
     <TextView
         android:id="@+id/messageBody"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingHorizontal="17dp"
+        android:paddingVertical="14dp"
+        android:text="@string/app_name"
+        android:fontFamily="@font/product_sans_regular"
+        android:textFontWeight="400"
+        android:textColor="@color/textcolor"
         android:background="@drawable/bg_message_outgoing"
-        android:padding="10dp"
-        android:textSize="16sp"
-        android:textColor="@android:color/white" />
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/messageDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:text=""
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/product_sans_regular"
+        android:textColor="@color/gray_txtcolor"
+        android:layout_marginEnd="5dp" />
 </LinearLayout>

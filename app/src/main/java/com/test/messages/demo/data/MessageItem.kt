@@ -10,5 +10,7 @@ data class MessageItem(
     val reciptid: Int,
     val reciptids: String,
     val profileImageUrl: String,
-    val isPinned: Boolean
+    val isPinned: Boolean,
+    val isGroupChat: Boolean
+
 )

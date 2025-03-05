@@ -62,12 +62,12 @@ object TimeUtils {
 
     fun getRandomColor(input: String): Int {
         val colors = listOf(
-            Color.parseColor("#FF5733"), // Red
-            Color.parseColor("#FF9800"), // Orange
-            Color.parseColor("#FFEB3B"), // Yellow
-            Color.parseColor("#4CAF50"), // Green
-            Color.parseColor("#03A9F4"), // Blue
-            Color.parseColor("#9C27B0")  // Purple
+            Color.parseColor("#0CA3AE"),
+            Color.parseColor("#FF564D"),
+            Color.parseColor("#6955D2"),
+            Color.parseColor("#4FA784"),
+            Color.parseColor("#1A73E8")
+//            Color.parseColor("#9C27B0")  // Purple
         )
         val index = (input.hashCode() and 0x7FFFFFFF) % colors.size
         return colors[index]
