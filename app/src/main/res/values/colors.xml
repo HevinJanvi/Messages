@@ -27,5 +27,7 @@
     <color name="send_color">#ECF4FF</color>
     <color name="send_bg_color">#F1F1F1</color>
     <color name="incoming_bg_clr">#F1F1F1</color>
+    <color name="otp_bg_clr">#FCFCFE</color>
+
 
 </resources>

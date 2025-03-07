@@ -83,6 +83,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
@@ -111,6 +112,7 @@ dependencies {
     implementation ("com.google.code.gson:gson:2.11.0")
     implementation("org.greenrobot:eventbus:3.1.1")
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
+//    implementation ("android.arch.lifecycle:extensions:1.1.1")
 
 
 

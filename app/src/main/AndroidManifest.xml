@@ -23,9 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
-        <activity
-            android:name=".ui.Activity.PinActivity"
-            android:exported="false" />
+
         <activity
             android:name=".ui.Activity.ArchivedActivity"
             android:exported="false" />
@@ -64,7 +62,7 @@
                 <action android:name="android.provider.Telephony.SMS_DELIVER" />
             </intent-filter>
         </receiver>
-        <receiver
+       <receiver
             android:name=".ui.reciever.MmsReceiver"
             android:enabled="true"
             android:exported="true"
@@ -91,7 +89,7 @@
                 <data android:scheme="mmsto" />
             </intent-filter>
         </service>
-        <service
+       <!-- <service
             android:name=".ui.reciever.MmsService"
             android:exported="true"
             android:permission="android.permission.BROADCAST_WAP_PUSH">
@@ -100,7 +98,7 @@
 
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
-        </service>
+        </service>-->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -117,7 +115,6 @@
             android:name=".ui.Activity.ConversationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity android:name=".ui.Activity.ContactActivtiy" />
-        <activity android:name="com.test.messages.demo.ui.Activity.BlockedMessagesActivity" />
         <activity android:name="com.test.messages.demo.ui.Activity.BlockedContactActivity" />
         <activity android:name="com.test.messages.demo.ui.Activity.BlockMessageActivity" />
 

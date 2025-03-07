@@ -1,7 +1,12 @@
 package com.test.messages.demo.ui.Utils
 
+import android.app.Activity
 import android.graphics.Color
+import com.test.messages.demo.R
+import com.test.messages.demo.ui.Activity.ConversationActivity
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -71,6 +76,38 @@ object TimeUtils {
         )
         val index = (input.hashCode() and 0x7FFFFFFF) % colors.size
         return colors[index]
+    }
+
+    fun formatHeaderDate(context: Activity, timestamp: Long): String {
+        val messageDate = Calendar.getInstance().apply { timeInMillis = timestamp }
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val yesterday = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+
+        return when {
+            timestamp >= today.timeInMillis -> context.getString(
+                R.string.today,
+                timeFormat.format(messageDate.time)
+            )
+            timestamp >= yesterday.timeInMillis -> context.getString(
+                R.string.yesterday,
+                timeFormat.format(messageDate.time)
+            )
+            else -> "${dateFormat.format(messageDate.time)}, ${timeFormat.format(messageDate.time)}"
+        }
     }
 
 }

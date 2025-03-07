@@ -13,12 +13,15 @@ import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.repository.MessageRepository
+import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,6 +63,7 @@ class MessageViewModel @Inject constructor(
             }
         }
     }
+
 
     fun emptyConversation() {
         repository.emptyConversation()

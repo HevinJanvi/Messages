@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 
@@ -315,8 +316,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             projection,
             selection,
             selectionArgs,
-            "${Telephony.Sms.DATE} ASC"
+            "${Telephony.Sms.DATE} DESC"
         )
+
 
         cursor?.use {
             Log.d("SMS", "Conversation loaded. Messages found: ${it.count}")
@@ -330,9 +332,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
                 val subscriptionId =
                     it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
-                Log.d("SMS", "Message: $body | Type: $type | Address: $address")
+//                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
 
-                // Add conversation item
                 conversationList.add(
                     ConversationItem(
                         id,
@@ -342,12 +343,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         address,
                         type,
                         read,
-                        subscriptionId
+                        subscriptionId,
+                        false
                     )
                 )
             }
         }
-
         return conversationList
     }
 

@@ -48,4 +48,29 @@
     <string name="done">Done</string>
     <string name="no_contacts_selected">No contacts selected</string>
     <string name="this_is_the_start_of_your_conversation">This is the start of your conversation, Say \nsomething nice!</string>
+    <string name="messages_copied">Messages copied</string>
+    <string name="copy">Copy \"%1$s\"</string>
+    <string name="can_t_replay">Can’t replay to this short code. | </string>
+    <string name="learn_more">&#160;&#160;<u>Learn More</u></string>
+    <string name="this_sms_is_100_secure">This SMS is 100% secure. Messages never collect data without prior consent. Everything is processed and stored on your phone.</string>
+    <string name="ok">Ok</string>
+    <string name="short_codes_are_local">Short codes are local or personalized numbers for sending international SMS messages.</string>
+    <string name="you_can_reply">You can reply to numbers-only short codes,but not to codes with letters and numbers,like \"MAG007".</string>
+    <string name="otp_copied">OTP Copied!</string>
+    <string name="carrier_error">Couldn\'t send message, carrier error</string>
+    <string name="error_service_unavailable">Couldn\'t send message, service unavailable</string>
+    <string name="error_radio_turn_off">Couldn\'t send message, radio turned off</string>
+    <string name="simcard_not_available">SIM card not available</string>
+    <string name="unknown_error_sending_message">Couldn\'t send message, error code: %d</string>
+    <string name="delivered">Delivered</string>
+    <string name="sending">Sending...</string>
+    <string name="failed_to_send">Failed to send</string>
+    <string name="today">Today, %1$s</string>
+    <string name="yesterday">Yesterday, %1$s</string>
+    <string name="continues">Continue</string>
+    <string name="this_sender_isnot_your_contacts">This sender isn’t one of your\ncontacts</string>
+    <string name="link_from_people">Link from people that you don’t know may open\nunwanted or harmful content</string>
+    <string name="continue_with_possible_risk">Continue with possible risk</string>
+    <string name="i_understand">I Understand that this link may be harmful</string>
+
 </resources>

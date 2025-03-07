@@ -23,21 +23,16 @@ class SmsSender(val app: Application) {
         if (body.isEmpty()) {
             throw IllegalArgumentException("SmsSender: empty text message")
         }
-        // remove spaces and dashes from destination number
-        // (e.g. "801 555 1212" -> "8015551212")
-        // (e.g. "+8211-123-4567" -> "+82111234567")
         dest = PhoneNumberUtils.stripSeparators(dest)
 
         if (dest.isEmpty()) {
             throw SmsException(EMPTY_DESTINATION_ADDRESS)
         }
-        // Divide the input message by SMS length limit
         val smsManager = getSmsManager(subId)
         val messages = smsManager.divideMessage(body)
         if (messages == null || messages.size < 1) {
             throw SmsException(ERROR_SENDING_MESSAGE)
         }
-        // Actually send the sms
         sendInternal(
             subId, dest, messages, serviceCenter, requireDeliveryReport, messageUri
         )
@@ -45,7 +40,7 @@ class SmsSender(val app: Application) {
 
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
     fun isSPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    // Actually sending the message using SmsManager
+
     private fun sendInternal(
         subId: Int, dest: String,
         messages: ArrayList<String>, serviceCenter: String?,
@@ -62,7 +57,7 @@ class SmsSender(val app: Application) {
         }
 
         for (i in 0 until messageCount) {
-            // Make pending intents different for each message part
+
             val partId = if (messageCount <= 1) 0 else i + 1
             if (requireDeliveryReport && i == messageCount - 1) {
              /*   deliveryIntents.add(
@@ -87,7 +82,6 @@ class SmsSender(val app: Application) {
         }
         try {
             if (sendMultipartSmsAsSeparateMessages) {
-                // If multipart sms is not supported, send them as separate messages
                 for (i in 0 until messageCount) {
                     smsManager.sendTextMessage(
                         dest,
@@ -113,11 +107,6 @@ class SmsSender(val app: Application) {
         return intent
     }
 
-//    private fun getDeliveredStatusIntent(requestUri: Uri, subId: Int): Intent {
-//        val intent = Intent(SendStatusReceiver.SMS_DELIVERED_ACTION, requestUri, app, SmsStatusDeliveredReceiver::class.java)
-//        intent.putExtra(SendStatusReceiver.EXTRA_SUB_ID, subId)
-//        return intent
-//    }
 
     companion object {
         private var instance: SmsSender? = null

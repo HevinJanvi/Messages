@@ -8,67 +8,151 @@
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/action_bar"
+        android:id="@+id/Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/icBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:adjustViewBounds="true"
-            android:padding="1dp"
-            android:src="@drawable/ic_back"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/address"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="15dp"
-            android:fontFamily="@font/product_sans_medium"
-            android:text="@string/app_name"
-            android:textColor="@color/textcolor"
-            android:textFontWeight="500"
-            android:textSize="20dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/icBack"
-            app:layout_constraintEnd_toStartOf="@+id/btnCall"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/btnCall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
-            android:adjustViewBounds="true"
-            android:src="@drawable/ic_call"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnInfo"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/btnInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
-            android:adjustViewBounds="true"
-            android:src="@drawable/ic_info"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/actionbar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/icBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:adjustViewBounds="true"
+                android:padding="1dp"
+                android:src="@drawable/ic_back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:fontFamily="@font/product_sans_medium"
+                android:text="@string/app_name"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="500"
+                android:textSize="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnCall"
+                app:layout_constraintStart_toEndOf="@+id/icBack"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnCall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_call"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnInfo"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_info"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/actionSelectItem"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/icClose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:adjustViewBounds="true"
+                android:padding="1dp"
+                android:src="@drawable/ic_close"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/countText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:fontFamily="@font/product_sans_medium"
+                android:text="@string/app_name"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="500"
+                android:textSize="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnStar"
+                app:layout_constraintStart_toEndOf="@+id/icClose"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnStar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_star"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnCopy"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnCopy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_copy"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnDelete"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_delete"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/colorPrimary" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="5dp"
             android:background="@color/view_color"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -76,18 +160,19 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+
     <androidx.cardview.widget.CardView
         android:id="@+id/blockLy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="13dp"
         android:layout_marginVertical="10dp"
+        android:visibility="gone"
         app:cardBackgroundColor="@color/block_bg2"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp"
-        android:visibility="gone"
         app:cardUseCompatPadding="false"
-        app:layout_constraintTop_toBottomOf="@+id/action_bar">
+        app:layout_constraintTop_toBottomOf="@+id/Toolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -157,18 +242,18 @@
         android:id="@+id/emptyText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/gray_txtcolor"
-        android:fontFamily="@font/product_sans_regular"
-        android:textSize="14dp"
-        android:gravity="center"
-        android:visibility="gone"
-        android:lineSpacingExtra="5dp"
-        android:text="@string/this_is_the_start_of_your_conversation"
         android:layout_marginHorizontal="30dp"
         android:layout_marginVertical="25dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:fontFamily="@font/product_sans_regular"
+        android:gravity="center"
+        android:lineSpacingExtra="5dp"
+        android:text="@string/this_is_the_start_of_your_conversation"
+        android:textColor="@color/gray_txtcolor"
+        android:textSize="14dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/action_bar"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewConversation"
@@ -177,76 +262,132 @@
         android:clipToPadding="false"
         android:paddingBottom="8dp"
         android:scrollbars="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/msgSendLayout"
+        android:layout_marginTop="6dp"
+        app:layout_constraintBottom_toTopOf="@+id/secureLy"
         app:layout_constraintTop_toBottomOf="@+id/blockLy" />
 
-    <LinearLayout
-        android:id="@+id/msgSendLayout"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/secureLy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:gravity="center_vertical"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/block_bg2"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
+        app:cardUseCompatPadding="false"
+        app:layout_constraintBottom_toTopOf="@+id/bottomLy">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:adjustViewBounds="true"
+                android:padding="5dp"
+                android:src="@drawable/ic_secure" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="5dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:justificationMode="inter_word"
+                android:lineSpacingExtra="3dp"
+                android:text="@string/this_sms_is_100_secure"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="400"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottomLy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <EditText
-            android:id="@+id/editTextMessage"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/msgSendLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textFontWeight="400"
-            android:textSize="15dp"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="5dp"
-            android:textColor="@color/gray_txtcolor"
-            android:fontFamily="@font/product_sans_regular"
-            android:hint="@string/write_a_message"
-            android:paddingVertical="17dp"
-            android:paddingHorizontal="15dp"
-            android:background="@drawable/send_msg_bg"
-            android:inputType="text" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-        <ImageView
-            android:id="@+id/buttonSend"
-            android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/editTextMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/send_msg_bg"
+                android:fontFamily="@font/product_sans_regular"
+                android:hint="@string/write_a_message"
+                android:inputType="text"
+                android:paddingHorizontal="15dp"
+                android:paddingVertical="17dp"
+                android:textColor="@color/gray_txtcolor"
+                android:textFontWeight="400"
+                android:textSize="15dp" />
+
+            <ImageView
+                android:id="@+id/buttonSend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:padding="3dp"
+                android:src="@drawable/ic_send" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/learnMoreLy"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:padding="3dp"
-            android:src="@drawable/ic_send"/>
+            android:background="@color/send_bg_color"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="20dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="@string/can_t_replay"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="400"
+                android:textSize="14sp" />
 
-<!--    <LinearLayout-->
-<!--        android:id="@+id/msgSendLayout"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="@android:color/white"-->
-<!--        android:elevation="4dp"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:padding="8dp"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent">-->
+            <TextView
+                android:id="@+id/learnMore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/product_sans_medium"
+                android:text="@string/learn_more"
+                android:textColor="@color/colorPrimary"
+                android:textFontWeight="500"
+                android:textSize="14sp" />
+        </LinearLayout>
 
-<!--        <EditText-->
-<!--            android:id="@+id/editTextMessage"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:background="@android:color/transparent"-->
-<!--            android:hint="Type a message..."-->
-<!--            android:maxLines="5"-->
-<!--            android:padding="10dp"-->
-<!--            android:textSize="16sp" />-->
 
-<!--        <Button-->
-<!--            android:id="@+id/buttonSend"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:padding="10dp"-->
-<!--            android:text="Send"-->
-<!--            android:textSize="16sp" />-->
-<!--    </LinearLayout>-->
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
