@@ -1,10 +1,12 @@
 package com.test.messages.demo.ui.reciever
 
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Telephony
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -20,6 +22,7 @@ class SmsReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var repository: MessageRepository
+    private val messageCounts = mutableMapOf<Long, Int>()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onReceive(context: Context, intent: Intent) {
@@ -49,27 +52,90 @@ class SmsReceiver : BroadcastReceiver() {
                 val isDropMessagesEnabled = prefs.getBoolean("drop_messages", false)
                 val isDeleted = repository.isDeletedConversation(address)
 
+
+
                 if (isDeleted) {
                     if (isDropMessagesEnabled) {
                         Log.d("SmsReceiver", "Drop Messages is ON, ignoring message from: $address")
                         return@launch  // Exit without inserting message
                     }
-                    threadId = getThreadId(context,address)
-                    insertMessageIntoSystemDatabase(context, address, subject, body, date, threadId, read, type, subscriptionId, status)
-                    threadId = getThreadId(context,address)
+                    threadId = getThreadId(context, address)
+                    insertMessageIntoSystemDatabase(
+                        context,
+                        address,
+                        subject,
+                        body,
+                        date,
+                        threadId,
+                        read,
+                        type,
+                        subscriptionId,
+                        status
+                    )
+                    threadId = getThreadId(context, address)
                     val isAlreadyBlocked = repository.isBlockedConversation(threadId)
                     if (!isAlreadyBlocked) {
                         repository.blockConversation(threadId, address)
                         repository.removeOldBlockedThreadIds(address, threadId)
-                        Log.d("TAG", "onReceive: Blocked new thread ID $threadId and removed old ones for $address")
+                        Log.d(
+                            "TAG",
+                            "onReceive: Blocked new thread ID $threadId and removed old ones for $address"
+                        )
                     } else {
-                        Log.d("TAG", "onReceive: Thread ID $threadId is already blocked, skipping...")
+                        Log.d(
+                            "TAG",
+                            "onReceive: Thread ID $threadId is already blocked, skipping..."
+                        )
                     }
 
                 } else {
                     Log.d("SmsReceiver", "Message from unblocked number: $address")
                     threadId = getThreadId(context, address)
-                    insertMessageIntoSystemDatabase(context, address, subject, body, date, threadId, read, type, subscriptionId, status)
+                    insertMessageIntoSystemDatabase(
+                        context,
+                        address,
+                        subject,
+                        body,
+                        date,
+                        threadId,
+                        read,
+                        type,
+                        subscriptionId,
+                        status
+                    )
+                }
+
+
+
+
+
+                val sharedPreferences = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+// Check global wake setting
+                val isGlobalWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_GLOBAL", false)
+// Check thread-specific wake setting, defaulting to global if not set
+                val isThreadWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_$threadId", isGlobalWakeEnabled)
+// Wake screen if global mode is ON or if the specific thread has it ON
+                if (isThreadWakeEnabled) {
+                    Log.d("TAG", "Waking up screen for thread ID: $threadId (Global: $isGlobalWakeEnabled, Thread: $isThreadWakeEnabled)")
+                    wakeUpScreen(context)
+                } else {
+                    Log.d("TAG", "Wake-up skipped for thread ID: $threadId")
+                }
+
+
+                val archivedThreads = repository.getArchivedThreadIds()
+                val blockedThreads = repository.getBlockThreadIds()
+
+                val isArchived = archivedThreads.contains(threadId)
+                val isBlocked = blockedThreads.contains(threadId)
+
+                if (!isArchived && !isBlocked) {
+//                    showNotification(context, address, body, threadId)
+                    incrementMessageCount(threadId)  // ✅ Increment count
+                    showNotification(context, address, body, threadId)
+
+                } else {
+                    Log.d("SmsReceiver", "Skipping notification for archived thread ID: $threadId")
                 }
                 repository.getMessages()
                 repository.getConversation(threadId)
@@ -77,7 +143,33 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
+    private fun wakeUpScreen(context: Context) {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val wakeLock = powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "${context.packageName}:WakeLock"
+        )
 
+        wakeLock.acquire(3000)
+
+        val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val keyguardLock = keyguardManager.newKeyguardLock("MyApp:KeyguardLock")
+        keyguardLock.disableKeyguard()
+        wakeLock.release()
+    }
+
+
+
+
+    private fun incrementMessageCount(threadId: Long) {
+        val count = messageCounts[threadId] ?: 0
+        messageCounts[threadId] = count + 1
+    }
+
+
+    fun resetMessageCount(threadId: Long) {
+        messageCounts[threadId] = 0
+    }
     private fun insertMessageIntoSystemDatabase(
         context: Context,
         address: String,

@@ -44,6 +44,7 @@ class SmsStatusSentReceiver : SendStatusReceiver() {
                     showSendingFailedNotification(context, messageId)
                     Sms.MESSAGE_TYPE_FAILED
                 }
+//                MessageUtils(context).updateSmsMessageSendingStatus(messageUri, type)
                 EventBus.getDefault().post(RefreshMessagesEvent())
 
             }

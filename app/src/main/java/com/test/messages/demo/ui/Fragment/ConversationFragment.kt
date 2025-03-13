@@ -146,6 +146,7 @@ class ConversationFragment : Fragment() {
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
             intent.putExtra("NUMBER", message.number)
             intent.putExtra("isGroup", message.isGroupChat)
+            intent.putExtra("ProfileUrl", message.profileImageUrl)
             startActivity(intent)
         }
     }

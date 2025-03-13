@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
@@ -9,6 +10,8 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.provider.Telephony.SMS_RECEIVED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature android:name="android.hardware.telephony" />
 
@@ -23,7 +26,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ui.Activity.NotificationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.Activity.GroupProfileActivity"
+            android:exported="false"
+            android:label="@string/title_activity_group_profile"
+            android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".ui.Activity.ProfileActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.Activity.ArchivedActivity"
             android:exported="false" />
@@ -62,7 +75,7 @@
                 <action android:name="android.provider.Telephony.SMS_DELIVER" />
             </intent-filter>
         </receiver>
-       <receiver
+        <receiver
             android:name=".ui.reciever.MmsReceiver"
             android:enabled="true"
             android:exported="true"
@@ -89,7 +102,8 @@
                 <data android:scheme="mmsto" />
             </intent-filter>
         </service>
-       <!-- <service
+        <!--
+ <service
             android:name=".ui.reciever.MmsService"
             android:exported="true"
             android:permission="android.permission.BROADCAST_WAP_PUSH">
@@ -98,8 +112,8 @@
 
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
-        </service>-->
-
+        </service>
+        -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.smsprovider"
@@ -115,10 +129,19 @@
             android:name=".ui.Activity.ConversationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity android:name=".ui.Activity.ContactActivtiy" />
-        <activity android:name="com.test.messages.demo.ui.Activity.BlockedContactActivity" />
-        <activity android:name="com.test.messages.demo.ui.Activity.BlockMessageActivity" />
+        <activity android:name=".ui.Activity.BlockedContactActivity" />
+        <activity android:name=".ui.Activity.BlockMessageActivity" />
+        <activity android:name=".ui.Activity.StarredMessagesActivity" />
 
         <receiver android:name=".ui.reciever.SmsStatusSentReceiver" />
+        <receiver
+            android:name=".ui.reciever.NotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

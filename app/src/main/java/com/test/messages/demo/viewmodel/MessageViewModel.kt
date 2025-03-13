@@ -2,6 +2,7 @@ package com.test.messages.demo.viewmodel
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,15 +14,12 @@ import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.repository.MessageRepository
-import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,9 +43,9 @@ class MessageViewModel @Inject constructor(
     private val _pinnedThreadIds = MutableLiveData<Set<Long>>()
     val pinnedThreadIds: LiveData<Set<Long>> get() = _pinnedThreadIds
 
-    init {
-        _pinnedThreadIds.value = emptySet() // or load from database/storage
-    }
+//    init {
+//        _pinnedThreadIds.value = emptySet() // or load from database/storage
+//    }
 
     private val _blockedMessages = MutableLiveData<List<MessageItem>>()
     val blockedMessages: LiveData<List<MessageItem>> get() = _blockedMessages
@@ -81,6 +79,17 @@ class MessageViewModel @Inject constructor(
     fun getContactNameOrNumber(phoneNumber: String): String {
         return repository.getContactNameOrNumber(phoneNumber)
     }
+    fun getContactNameOrNumberLive(phoneNumber: String): LiveData<String> {
+        val liveData = MutableLiveData<String>()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val contactName = getContactNameOrNumber(phoneNumber)
+            liveData.postValue(contactName)
+        }
+
+        return liveData
+    }
+
 
     fun findGroupThreadId(addresses: Set<String>): Long? {
         return repository.findGroupThreadId(addresses)
@@ -187,7 +196,6 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-
     suspend fun getBlockedNumbers(): List<String> {
         return repository.getBlockedNumbers()
     }
@@ -240,6 +248,22 @@ class MessageViewModel @Inject constructor(
             _blockThreadIds.postValue(updatedBlockIds)
             val updatedMessages = repository.getMessages()
             (repository.messages as MutableLiveData).postValue(updatedMessages)
+        }
+    }
+
+
+    private val _lastStarredMessages = MutableLiveData<Map<Long, String>>()
+    val lastStarredMessages: LiveData<Map<Long, String>> get() = _lastStarredMessages
+
+
+    fun loadLastStarredMessages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val starredMessages = repository.getAllStarredMessages()
+            val lastStarredMessagesMap = starredMessages
+                .groupBy { it.thread_id }
+                .mapValues { (_, messages) -> messages.maxByOrNull { it.message_id }?.message ?: "" }
+            _lastStarredMessages.postValue(lastStarredMessagesMap)
+
         }
     }
 

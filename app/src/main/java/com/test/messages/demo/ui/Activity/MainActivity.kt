@@ -99,8 +99,17 @@ class MainActivity : AppCompatActivity() {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
         binding.include.lyBlock.setOnClickListener {
-//            val intent = Intent(this, BlockedMessagesActivity::class.java)
             val intent = Intent(this, BlockMessageActivity::class.java)
+            startActivity(intent)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+        binding.include.lyStarred.setOnClickListener {
+            val intent = Intent(this, StarredMessagesActivity::class.java)
+            startActivity(intent)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+        binding.include.lySetting.setOnClickListener {
+            val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }

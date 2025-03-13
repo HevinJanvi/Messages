@@ -2,6 +2,7 @@ package com.test.messages.demo.ui.Activity
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.app.NotificationManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentValues
@@ -24,6 +25,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.test.messages.demo.Database.Starred.StarredMessage
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
@@ -33,9 +35,14 @@ import com.test.messages.demo.ui.Utils.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.ui.Utils.TimeUtils.formatHeaderDate
 import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.ui.Utils.ViewUtils.resetMessageCount
+import com.test.messages.demo.ui.reciever.MessageUnstarredEvent
 import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
+import com.test.messages.demo.ui.reciever.SmsReceiver
+import com.test.messages.demo.ui.reciever.UpdateGroupNameEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,11 +61,14 @@ class ConversationActivity : AppCompatActivity() {
     private lateinit var adapter: ConversationAdapter
     private var threadId: Long = -1
     private lateinit var number: String
+    private lateinit var profileUrl: String
+    private lateinit var groupName: String
     private var subscriptionId: Int = -1
     private lateinit var messagingUtils: MessageUtils
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var oldBottom = 0
     var isfromBlock: Boolean = false
+    private val starredMessageIds = mutableSetOf<Long>()
 
     private fun markThreadAsRead(threadId: Long) {
         if (threadId == -1L) return
@@ -78,14 +88,24 @@ class ConversationActivity : AppCompatActivity() {
         binding = ActivityConversationBinding.inflate(layoutInflater)
         setContentView(binding.root)
         messagingUtils = MessageUtils(this)
+        EventBus.getDefault().register(this)
 
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
         number = intent.getStringExtra("NUMBER").toString()
+        profileUrl = intent.getStringExtra("ProfileUrl").toString()
         isfromBlock = intent.getBooleanExtra("fromBlock", false)
+
+
         Log.d("TAG", "onCreate: threadId :- " + threadId)
         setupRecyclerView()
         if (threadId != -1L) {
+
+            resetMessageCount(this, threadId)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.cancel(threadId.toInt())
+
             viewModel.loadConversation(threadId)
+
         } else {
             threadId = getThreadId(setOf(number))
         }
@@ -93,6 +113,7 @@ class ConversationActivity : AppCompatActivity() {
 
         viewModel.loadConversation(threadId)
         observeViewModel()
+        loadStarredMessages()
 
         val cleanedNumber = number.replace("[^+\\d]".toRegex(), "")
         if (cleanedNumber.contains(",") || !cleanedNumber.matches(Regex("^[+]?[0-9]{7,15}$"))) {
@@ -100,6 +121,7 @@ class ConversationActivity : AppCompatActivity() {
         } else {
             binding.btnCall.visibility = View.VISIBLE
         }
+
         if (isfromBlock) {
             binding.blockLy.visibility = View.VISIBLE
             binding.btnUnblock.setOnClickListener {
@@ -117,6 +139,30 @@ class ConversationActivity : AppCompatActivity() {
         }
         binding.btnCall.setOnClickListener {
             makeCall(number)
+        }
+        binding.btnInfo.setOnClickListener {
+            val numbersList = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }
+
+            Log.d("TAG", "setupClickListeners:numbersList "+numbersList)
+            if (numbersList.size > 1) {
+                // It's a group chat
+                val intent = Intent(this, GroupProfileActivity::class.java)
+                intent.putExtra("EXTRA_THREAD_ID", threadId)
+                intent.putExtra("GROUP_NAME", groupName)
+                intent.putStringArrayListExtra("GROUP_MEMBERS", ArrayList(numbersList))
+                startActivity(intent)
+            } else {
+                // It's a one-on-one chat
+                val intent = Intent(this, ProfileActivity::class.java)
+                intent.putExtra("EXTRA_THREAD_ID", threadId)
+                intent.putExtra("NUMBER", number)
+                intent.putExtra("PROFILE_URL", profileUrl)
+                startActivity(intent)
+            }
+
+            if (isfromBlock) {
+                finish()
+            }
         }
         binding.buttonSend.setOnClickListener {
             sendMessage()
@@ -136,16 +182,20 @@ class ConversationActivity : AppCompatActivity() {
             updateUI(selectedCount)
         }
         linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.stackFromEnd = true
         binding.recyclerViewConversation.layoutManager = linearLayoutManager
         binding.recyclerViewConversation.adapter = adapter
-        scrolltoBottom()
+//        scrolltoBottom()
         setKeyboardVisibilityListener()
+        binding.learnMoreLy.visibility = View.GONE
+        binding.secureLy.visibility = View.GONE
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
         viewModel.emptyConversation()
+        EventBus.getDefault().unregister(this)
     }
 
     private fun setKeyboardVisibilityListener() {
@@ -176,31 +226,31 @@ class ConversationActivity : AppCompatActivity() {
         layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
     }
 
-/*    private fun observeViewModel() {
-        viewModel.conversation.observe(this) { conversationList ->
+    /*    private fun observeViewModel() {
+            viewModel.conversation.observe(this) { conversationList ->
 
-            Log.d("ConversationActivity", "Received ${conversationList.size} messages")
+                Log.d("ConversationActivity", "Received ${conversationList.size} messages")
 
-            val sortedList = conversationList.sortedBy { it.date }.toList()
-            Log.d("ConversationActivity", "Sorted messages from oldest to newest")
+                val sortedList = conversationList.sortedBy { it.date }.toList()
+                Log.d("ConversationActivity", "Sorted messages from oldest to newest")
 
-            adapter.submitList(sortedList) {
-                scrolltoBottom()
+                adapter.submitList(sortedList) {
+                    scrolltoBottom()
+                }
+
+                if (sortedList.isNotEmpty()) {
+                    binding.emptyText.visibility = View.GONE
+                    val senderNumber = sortedList.firstOrNull()?.address ?: number
+    //                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
+
+                    updateLyouts(ViewUtils.isOfferSender(senderNumber))
+
+                    markThreadAsRead(threadId)
+                } else {
+                    binding.emptyText.visibility = View.VISIBLE
+                }
             }
-
-            if (sortedList.isNotEmpty()) {
-                binding.emptyText.visibility = View.GONE
-                val senderNumber = sortedList.firstOrNull()?.address ?: number
-//                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
-
-                updateLyouts(ViewUtils.isOfferSender(senderNumber))
-
-                markThreadAsRead(threadId)
-            } else {
-                binding.emptyText.visibility = View.VISIBLE
-            }
-        }
-    }*/
+        }*/
 
     private fun observeViewModel() {
         viewModel.conversation.observe(this) { conversationList ->
@@ -210,7 +260,7 @@ class ConversationActivity : AppCompatActivity() {
             for (message in sortedList) {
                 val headerTimestamp = getStartOfDayTimestamp(message.date)
                 if (!addedHeaders.contains(headerTimestamp)) {
-                    val formattedDate = formatHeaderDate(this@ConversationActivity,message.date)
+                    val formattedDate = formatHeaderDate(this@ConversationActivity, message.date)
                     groupedList.add(ConversationItem.createHeader(formattedDate, headerTimestamp))
                     addedHeaders.add(headerTimestamp)
                 }
@@ -224,11 +274,32 @@ class ConversationActivity : AppCompatActivity() {
             if (groupedList.isNotEmpty()) {
                 binding.emptyText.visibility = View.GONE
                 val senderNumber = sortedList.firstOrNull()?.address ?: number
-                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
+                CoroutineScope(Dispatchers.IO).launch {
+                    val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
+                    val savedGroupName = sharedPreferences.getString("group_name_$threadId", null)
+                    val contactName = savedGroupName ?: viewModel.getContactNameOrNumber(senderNumber)
+
+
+//                    val contactName = viewModel.getContactNameOrNumber(senderNumber)
+                    withContext(Dispatchers.Main) {
+                        binding.address.text = contactName
+                        groupName = contactName
+                    }
+                }
+
                 updateLyouts(ViewUtils.isOfferSender(senderNumber))
                 markThreadAsRead(threadId)
             } else {
                 binding.emptyText.visibility = View.VISIBLE
+                val senderNumber = sortedList.firstOrNull()?.address ?: number
+                CoroutineScope(Dispatchers.IO).launch {
+                    val contactName = viewModel.getContactNameOrNumber(senderNumber)
+                    withContext(Dispatchers.Main) {
+                        binding.address.text = contactName
+                    }
+                }
+                updateLyouts(ViewUtils.isOfferSender(senderNumber))
+
             }
         }
     }
@@ -345,9 +416,10 @@ class ConversationActivity : AppCompatActivity() {
         if (threadId == -1L) return
         CoroutineScope(Dispatchers.IO).launch {
             viewModel.unblockConversations(listOf(threadId))
-            binding.blockLy.visibility = View.GONE
-            isfromBlock = false
+
             withContext(Dispatchers.Main) {
+                binding.blockLy.visibility = View.GONE
+                isfromBlock = false
                 Toast.makeText(
                     this@ConversationActivity,
                     getString(R.string.contact_blocked), Toast.LENGTH_SHORT
@@ -404,10 +476,66 @@ class ConversationActivity : AppCompatActivity() {
 
     private fun starSelectedMessages() {
         if (adapter.selectedItems.isNotEmpty()) {
-            for (messageId in adapter.selectedItems) {
-                // Update message as starred
+            CoroutineScope(Dispatchers.IO).launch {
+                val toStar = mutableSetOf<Long>()
+                val toUnstar = mutableSetOf<Long>()
+
+                for (message in adapter.selectedItems) {
+                    if (starredMessageIds.contains(message.id)) {
+                        // If message is already starred, unstar it
+                        AppDatabase.getDatabase(this@ConversationActivity)
+                            .starredMessageDao()
+                            .deleteStarredMessageById(message.id)
+
+                        toUnstar.add(message.id)
+                        withContext(Dispatchers.Main) {
+                            EventBus.getDefault().post(MessageUnstarredEvent(threadId))
+                        }
+
+                    } else {
+                        val starredMessage = StarredMessage(
+                            message_id = message.id,
+                            thread_id = message.threadId,
+                            message = message.body
+                        )
+                        AppDatabase.getDatabase(this@ConversationActivity)
+                            .starredMessageDao()
+                            .insertStarredMessage(starredMessage)
+
+                        toStar.add(message.id)
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    starredMessageIds.removeAll(toUnstar)
+                    starredMessageIds.addAll(toStar)
+                    adapter.setStarredMessages(starredMessageIds)
+                    adapter.clearSelection()
+                    updateStarIcon()
+                }
             }
-            adapter.clearSelection()
+        }
+    }
+
+    private fun updateStarIcon() {
+        val allSelectedAreStarred = adapter.selectedItems.all { starredMessageIds.contains(it.id) }
+
+        if (allSelectedAreStarred) {
+            binding.btnStar.setImageResource(R.drawable.ic_unstar)
+        } else {
+            binding.btnStar.setImageResource(R.drawable.ic_star)
+        }
+    }
+
+    private fun loadStarredMessages() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val ids = AppDatabase.getDatabase(this@ConversationActivity).starredMessageDao()
+                .getStarredMessageIds()
+            withContext(Dispatchers.Main) {
+                starredMessageIds.clear()
+                starredMessageIds.addAll(ids)
+                adapter.setStarredMessages(starredMessageIds)
+            }
         }
     }
 
@@ -417,17 +545,29 @@ class ConversationActivity : AppCompatActivity() {
             binding.actionbar.visibility = View.GONE
             binding.countText.text = "$selectedCount" + " " + getString(R.string.selected)
 
+            if (selectedCount == 1) {
+                binding.btnStar.visibility = View.VISIBLE
+                val selectedMessage = adapter.selectedItems.first()
+                val isStarred = starredMessageIds.contains(selectedMessage.id)
+                binding.btnStar.setImageResource(if (isStarred) R.drawable.ic_unstar else R.drawable.ic_star)
+            } else {
+                binding.btnStar.visibility = View.GONE
+            }
         } else {
             binding.actionSelectItem.visibility = View.GONE
             binding.actionbar.visibility = View.VISIBLE
         }
     }
 
-
     fun scrolltoBottom() {
         binding.recyclerViewConversation.postDelayed({
             binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
         }, 100)
+    }
+
+    private fun isGroupChat(): Boolean {
+        val cleanedNumber = number.replace(" ", "")
+        return cleanedNumber.contains(",")
     }
 
     override fun onBackPressed() {
@@ -445,15 +585,28 @@ class ConversationActivity : AppCompatActivity() {
         viewModel.loadConversation(threadId)
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onGroupNameUpdated(event: UpdateGroupNameEvent) {
+        Log.d("TAG", "onGroupNameUpdated:evnt ")
+        if (event.threadId == threadId) {
+            binding.address.text = event.newName
+            groupName = event.newName
+        }
+        viewModel.loadMessages()
+        viewModel.loadConversation(threadId)
+    }
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+//        EventBus.getDefault().register(this)
     }
+
 
     override fun onStop() {
         super.onStop()
-        EventBus.getDefault().unregister(this)
+//        EventBus.getDefault().unregister(this)
     }
+
+
 
 }

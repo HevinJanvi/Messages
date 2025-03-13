@@ -107,7 +107,7 @@ class MessageUtils(val context: Context) {
     fun maybeShowErrorToast(resultCode: Int, errorCode: Int) {
         if (resultCode != Activity.RESULT_OK) {
             val msg = if (errorCode != SendStatusReceiver.NO_ERROR_CODE) {
-                context.getString(R.string.carrier_error)
+//                context.getString(R.string.carrier_error)
             } else {
                 when (resultCode) {
                     SmsManager.RESULT_ERROR_NO_SERVICE -> context.getString(R.string.error_service_unavailable)
@@ -116,9 +116,9 @@ class MessageUtils(val context: Context) {
                     else -> context.getString(R.string.unknown_error_sending_message, resultCode)
                 }
             }
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-            }
+//            Handler(Looper.getMainLooper()).post {
+//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+//            }
         } else {
         }
     }

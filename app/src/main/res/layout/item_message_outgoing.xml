@@ -8,19 +8,39 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/messageBody"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_message_outgoing"
-        android:fontFamily="@font/product_sans_regular"
-        android:paddingHorizontal="17dp"
-        android:paddingVertical="12dp"
-        android:text="@string/app_name"
-        android:textColor="@color/textcolor"
-        android:lineSpacingExtra="3dp"
-        android:textFontWeight="400"
-        android:textSize="15sp" />
+        android:layout_marginStart="30dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/messageBody"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_message_incoming"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="17dp"
+            android:text="uuuuuuuuuuuuuu"
+            android:textSize="15sp"
+            android:lineSpacingExtra="3dp"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textColor="@color/textcolor" />
+
+        <ImageView
+            android:id="@+id/starIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/add_star"
+            android:visibility="visible"
+            android:layout_gravity="bottom|end"
+            android:layout_marginTop="-11dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="15dp"/>
+
+    </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="wrap_content"

@@ -17,6 +17,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.test.messages.demo.Database.Archived.ArchivedConversation
 import com.test.messages.demo.Database.Block.BlockConversation
 import com.test.messages.demo.Database.Pin.PinMessage
+import com.test.messages.demo.Database.Starred.StarredMessage
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
@@ -38,7 +39,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     private val _conversation = MutableLiveData<List<ConversationItem>>()
     val conversation: LiveData<List<ConversationItem>> get() = _conversation
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+
+   /* @RequiresApi(Build.VERSION_CODES.Q)
     fun getMessages(): List<MessageItem> {
         val messageList = getConversations()
         val recipientMap = getRecipientAddresses().toMap()
@@ -46,6 +48,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val contactPhotoMap =
             getContactDetails().associateBy({ it.normalizeNumber }, { it.profileImageUrl })
 
+        val sharedPreferences = context.getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
 
         val newMsgList = messageList
             .filter {
@@ -97,7 +100,70 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         Log.d("ObserverDebug", "getMessages: " + newMsgList.size)
         _messages.postValue(newMsgList)
         return newMsgList
+    }*/
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun getMessages(): List<MessageItem> {
+        val messageList = getConversations()
+        val recipientMap = getRecipientAddresses().toMap()
+        val contactMap = getContactDetails().associateBy({ normalizePhoneNumber(it.normalizeNumber) }, { it.name })
+        val contactPhotoMap = getContactDetails().associateBy({ normalizePhoneNumber(it.normalizeNumber) }, { it.profileImageUrl })
+
+        val sharedPreferences = context.getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
+
+        val newMsgList = messageList
+            .filter {
+                it.body != null && it.body?.trim()?.isNotEmpty() == true && it.sender != null
+            }
+            .map { messageItem ->
+                val reciptids = messageItem.reciptids.trim()
+                val displayName: String
+                val rawPhoneNumber: String
+                val photoUri: String
+                val isGroupChat = reciptids.contains(" ")
+
+                if (isGroupChat) {
+                    val receiptIdList = reciptids.split(" ")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+
+                    val rawPhoneNumbers = receiptIdList.map { id ->
+                        recipientMap[id] ?: id
+                    }
+
+                    // 🟢 Get the group name from SharedPreferences using `threadId`
+                    val savedGroupName = sharedPreferences.getString("group_name_${messageItem.threadId}", null)
+
+                    // If a custom group name exists, use it; otherwise, generate from contacts
+                    displayName = savedGroupName ?: rawPhoneNumbers.map { number ->
+                        val normalizedNumber = normalizePhoneNumber(number)
+                        contactMap[normalizedNumber] ?: number
+                    }.joinToString(", ")
+
+                    rawPhoneNumber = rawPhoneNumbers.joinToString(", ")
+                    photoUri = ""
+                } else {
+                    rawPhoneNumber = recipientMap[reciptids] ?: reciptids
+                    val normalizedNumber = normalizePhoneNumber(rawPhoneNumber)
+                    displayName = contactMap[normalizedNumber] ?: rawPhoneNumber
+                    photoUri = contactPhotoMap[normalizedNumber].toString()
+                }
+
+                messageItem.copy(
+                    sender = displayName,
+                    number = rawPhoneNumber,
+                    profileImageUrl = photoUri,
+                    isRead = messageItem.isRead,
+                    isGroupChat = isGroupChat
+                )
+            }
+
+        Log.d("ObserverDebug", "getMessages: ${newMsgList.size}")
+        _messages.postValue(newMsgList)
+        return newMsgList
     }
+
 
     fun emptyConversation() {
         _conversation.value = emptyList()
@@ -332,7 +398,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
                 val subscriptionId =
                     it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
-//                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
+                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
 
                 conversationList.add(
                     ConversationItem(
@@ -344,6 +410,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         type,
                         read,
                         subscriptionId,
+                        "",
                         false
                     )
                 )
@@ -352,12 +419,21 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         return conversationList
     }
 
+    private val contactCache = mutableMapOf<String, String>()
+
     fun getContactNameOrNumber(phoneNumber: String): String {
+
+        contactCache[phoneNumber]?.let { return it }
+
         val contactMap = getContactDetails().associateBy(
             { it.phoneNumber },
             { it.name }
         )
-        contactMap[phoneNumber]?.let { return it }
+        contactMap[phoneNumber]?.let {
+            contactCache[phoneNumber] = it  // Save to cache
+            return it
+        }
+//        contactMap[phoneNumber]?.let { return it }
 
         val contentResolver: ContentResolver = context.contentResolver
         val uri = Uri.withAppendedPath(
@@ -366,10 +442,18 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         )
         val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
 
-        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+       /* contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) {
                 val nameIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)
                 return cursor.getString(nameIndex)
+            }
+        }*/
+        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)
+                val contactName = cursor.getString(nameIndex)
+                contactCache[phoneNumber] = contactName  // Save to cache
+                return contactName
             }
         }
         return phoneNumber
@@ -396,7 +480,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
     suspend fun getArchivedConversations(): List<ArchivedConversation> {
-        return AppDatabase.getDatabase(context).archivedDao().getAllArchivedConversations()
+        return withContext(Dispatchers.IO) {
+             AppDatabase.getDatabase(context).archivedDao().getAllArchivedConversations()
+        }
     }
 
     suspend fun getArchivedThreadIds(): List<Long> {
@@ -423,7 +509,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getPinnedThreadIds(): List<Long> {
         return AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
     }
-
 
     fun addPinnedMessage(threadId: Long) {
         AppDatabase.getDatabase(context).pinDao()
@@ -506,8 +591,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         }
         return null
     }
-
-
 
 
     //blocked contacts
@@ -624,5 +707,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         return blockedNumbers
     }
 
+    fun getAllStarredMessages(): List<StarredMessage> {
+        return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessages()
+    }
 
 }

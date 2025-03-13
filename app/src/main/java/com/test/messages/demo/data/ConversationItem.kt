@@ -11,7 +11,8 @@ data class ConversationItem(
     val type: Int,
     val read: Boolean,
     val subscriptionId: Int,
-    val isHeader:Boolean
+    val profileImageUrl: String,
+    val isHeader: Boolean
 ) {
     companion object {
         fun createHeader(headerText: String, date: Long): ConversationItem {
@@ -24,6 +25,7 @@ data class ConversationItem(
                 type = -1,
                 read = true,
                 subscriptionId = -1,
+                profileImageUrl = "",
                 isHeader = true
             )
         }

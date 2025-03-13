@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="15dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/txtDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="start"
+            android:text="@string/notification_previews"
+            android:textColor="@color/textcolor"
+            android:textFontWeight="500"
+            android:textSize="19sp" />
+
+
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="15dp">
+
+            <RadioButton
+                android:id="@+id/check1"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/round_checkbox"
+                android:button="@null"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/txt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="@string/show_sender_message"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="400"
+                android:textSize="15dp"
+                app:layout_constraintBottom_toBottomOf="@+id/check1"
+                app:layout_constraintStart_toEndOf="@+id/check1"
+                app:layout_constraintTop_toTopOf="@+id/check1" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="15dp">
+
+            <RadioButton
+                android:id="@+id/check2"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/round_checkbox"
+                android:button="@null"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/txt2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="@string/show_only_sender"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="400"
+                android:textSize="15dp"
+                app:layout_constraintBottom_toBottomOf="@+id/check2"
+                app:layout_constraintStart_toEndOf="@+id/check2"
+                app:layout_constraintTop_toTopOf="@+id/check2" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="15dp">
+
+            <RadioButton
+                android:id="@+id/check3"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/round_checkbox"
+                android:button="@null"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/txt3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="@string/show_nothing"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="400"
+                android:textSize="15dp"
+                app:layout_constraintBottom_toBottomOf="@+id/check3"
+                app:layout_constraintStart_toEndOf="@+id/check3"
+                app:layout_constraintTop_toTopOf="@+id/check3" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/btnOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:backgroundTint="@color/gray"
+            android:fontFamily="@font/product_sans_medium"
+            android:paddingVertical="5dp"
+            android:paddingStart="20dp"
+            android:text="@string/ok"
+            android:textColor="@color/colorPrimary"
+            android:textFontWeight="500"
+            android:textSize="17dp" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

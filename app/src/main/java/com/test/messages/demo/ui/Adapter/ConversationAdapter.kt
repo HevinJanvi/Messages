@@ -4,19 +4,18 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.provider.Telephony
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
-import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -26,12 +25,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ConversationItem
-import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -72,6 +66,7 @@ class ConversationAdapter(
         val messageDate: TextView = view.findViewById(R.id.messageDate)
         val otptext: TextView = view.findViewById(R.id.otptext)
         val messageStatus: TextView = view.findViewById(R.id.messageStatus)
+        val starIcon: ImageView = view.findViewById(R.id.starIcon)
         private val headerText: TextView? = view.findViewById(R.id.headerText)
 
         fun bind(message: ConversationItem, isLastMessage: Boolean) {
@@ -150,6 +145,13 @@ class ConversationAdapter(
                     }
                 }
 
+                val isStarred = starredMessageIds.contains(message.id)
+                if (isStarred) {
+                    starIcon.visibility = View.VISIBLE
+                } else {
+                    starIcon.visibility = View.GONE
+                }
+
                 itemView.setOnClickListener {
                     if (isMultiSelectionEnabled) {
                         toggleSelection(message)
@@ -178,14 +180,28 @@ class ConversationAdapter(
 
                             override fun updateDrawState(ds: TextPaint) {
                                 super.updateDrawState(ds)
-                                ds.color = ContextCompat.getColor(itemView.context, R.color.textcolor)
+                                ds.color =
+                                    ContextCompat.getColor(itemView.context, R.color.textcolor)
                                 ds.isUnderlineText = true
-                                val typeface = ResourcesCompat.getFont(itemView.context, R.font.product_sans_medium)
+                                val typeface = ResourcesCompat.getFont(
+                                    itemView.context,
+                                    R.font.product_sans_medium
+                                )
                                 ds.typeface = typeface
                             }
                         }
-                        spannable.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        spannable.setSpan(UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        spannable.setSpan(
+                            clickableSpan,
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        spannable.setSpan(
+                            UnderlineSpan(),
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
                     }
                     messageBody.text = spannable
                     messageBody.movementMethod = LinkMovementMethod.getInstance()
@@ -260,6 +276,12 @@ class ConversationAdapter(
         notifyItemChanged(position)
     }
 
+         var starredMessageIds: Set<Long> = emptySet()
+
+    fun setStarredMessages(starredIds: Set<Long>) {
+        starredMessageIds = starredIds
+        notifyDataSetChanged()
+    }
 
     private fun toggleSelection(message: ConversationItem) {
         if (selectedItems.contains(message)) {

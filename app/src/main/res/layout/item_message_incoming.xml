@@ -1,26 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="8dp"
     android:layout_marginStart="8dp"
     android:orientation="vertical"
     android:gravity="start">
 
-    <TextView
-        android:id="@+id/messageBody"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_message_incoming"
-        android:paddingVertical="12dp"
-        android:paddingHorizontal="17dp"
         android:layout_marginEnd="30dp"
-        android:text="@string/empty_item_text_archive"
-        android:textSize="15sp"
-        android:lineSpacingExtra="3dp"
-        android:textFontWeight="400"
-        android:fontFamily="@font/product_sans_regular"
-        android:textColor="@color/textcolor" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/messageBody"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_message_incoming"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="17dp"
+            android:text="uuuuuuuuuuuuuu"
+            android:textSize="15sp"
+            android:lineSpacingExtra="3dp"
+            android:textFontWeight="400"
+            android:fontFamily="@font/product_sans_regular"
+            android:textColor="@color/textcolor" />
+
+        <ImageView
+            android:id="@+id/starIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/add_star"
+            android:visibility="visible"
+            android:layout_gravity="bottom|end"
+            android:layout_marginTop="-11dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="15dp"/>
+
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/messageDate"
@@ -56,7 +75,7 @@
         android:gravity="center_vertical"
         android:fontFamily="@font/product_sans_regular"
         android:drawableLeft="@drawable/ic_copy"
-        android:visibility="visible"
+        android:visibility="gone"
         android:background="@drawable/otp_bg"
         android:layout_gravity="end"
         android:layout_marginTop="5dp"
@@ -72,4 +91,7 @@
         android:textStyle="bold"
         android:gravity="center"
         android:visibility="gone"/>
+
+
+
 </LinearLayout>
