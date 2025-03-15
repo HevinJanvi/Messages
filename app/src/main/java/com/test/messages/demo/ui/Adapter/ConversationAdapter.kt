@@ -4,12 +4,17 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Typeface
 import android.provider.Telephony
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
+import android.text.style.BackgroundColorSpan
 import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -51,6 +56,7 @@ class ConversationAdapter(
     var isMultiSelectionEnabled = false
     private val expandedMessages = mutableSetOf<Long>()
     private var lastMessagePosition: Int? = null
+    private var searchQuery: String? = null
 
 
     override fun getItemViewType(position: Int): Int {
@@ -78,7 +84,11 @@ class ConversationAdapter(
                 headerText?.visibility = View.GONE
                 messageBody.visibility = View.VISIBLE
 
-                messageBody.text = message.body
+                if (!searchQuery.isNullOrEmpty()) {
+                    messageBody.text = highlightText(message.body, searchQuery!!,itemView.context)
+                } else {
+                    messageBody.text = message.body
+                }
                 messageDate.text =
                     SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
 
@@ -243,6 +253,7 @@ class ConversationAdapter(
                 lastMessagePosition?.let { notifyItemChanged(it) }
                 notifyItemChanged(newLastMessagePosition)
                 lastMessagePosition = newLastMessagePosition
+
             }
         }
     }
@@ -309,5 +320,25 @@ class ConversationAdapter(
         return selectedItems.toList()
     }
 
+    fun setSearchQuery(query: String?) {
+        searchQuery = query
+        notifyDataSetChanged()
+    }
+
+    private fun highlightText(fullText: String, searchText: String, context: Context): SpannableString {
+        val spannable = SpannableString(fullText)
+        if (searchText.isNotEmpty()) {
+            val start = fullText.lowercase(Locale.getDefault()).indexOf(searchText.lowercase(Locale.getDefault()))
+            if (start >= 0) {
+                val end = start + searchText.length
+                val highlightColor = ContextCompat.getColor(context, R.color.yellow)
+                val textColor = ContextCompat.getColor(context, R.color.textcolor)
+                spannable.setSpan(BackgroundColorSpan(highlightColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(ForegroundColorSpan(textColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+        return spannable
+    }
 
 }

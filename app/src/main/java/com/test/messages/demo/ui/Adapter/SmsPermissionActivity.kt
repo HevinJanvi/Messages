@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.Activity
+package com.test.messages.demo.ui.Adapter
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.test.messages.demo.R
+import com.test.messages.demo.ui.Activity.MainActivity
 
 class SmsPermissionActivity : AppCompatActivity() {
     private lateinit var intentLauncher: ActivityResultLauncher<Intent>

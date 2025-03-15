@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityMainBinding
+import com.test.messages.demo.ui.Adapter.SmsPermissionActivity
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.viewmodel.MessageViewModel
@@ -61,6 +62,10 @@ class MainActivity : AppCompatActivity() {
         //toolbar
         binding.icMore.setOnClickListener {
             showPopupHome(it)
+        }
+        binding.icSearch.setOnClickListener {
+            val intent = Intent(this, SearchActivity::class.java)
+            startActivity(intent)
         }
 
         binding.icDelete.setOnClickListener {

@@ -133,5 +133,9 @@
     <string name="show_sender_message"><![CDATA[Show sender & Message]]></string>
     <string name="show_only_sender">Show Only Sender</string>
     <string name="show_nothing">Show Nothing</string>
+    <string name="conversation">Conversation</string>
+    <string name="search_messages">Search messages</string>
+    <string name="contacts">Contacts</string>
+    <string name="your_conversation_will_apper_here">Your conversation will apper here</string>
 
 </resources>

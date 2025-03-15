@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/toolBarContact"
+        android:id="@+id/toolBar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:layout_marginHorizontal="15dp"
@@ -17,7 +17,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout"
@@ -44,115 +43,103 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:id="@+id/editTextSearch"
+                android:id="@+id/searchInput"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_weight="1"
                 android:background="@null"
                 android:fontFamily="@font/product_sans_regular"
-                android:hint="@string/type_a_name_or_number"
+                android:hint="@string/search_messages"
                 android:inputType="text"
                 android:textFontWeight="400"
                 android:textSize="15dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/btnKeypad"
+                app:layout_constraintEnd_toStartOf="@+id/btnclose"
                 app:layout_constraintStart_toEndOf="@+id/icBack"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
-                android:id="@+id/btnKeypad"
+                android:id="@+id/btnclose"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_num_keypad"
+                android:src="@drawable/ic_close"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/listLy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/toolBar">
+
+        <TextView
+            android:id="@+id/messagesHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:layout_marginStart="22dp"
+            android:fontFamily="@font/product_sans_regular"
+            android:text="@string/conversation"
+            android:textColor="@color/textcolor"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewMessages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/messagesHeader" />
+
+        <TextView
+            android:id="@+id/contactsHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:layout_marginStart="22dp"
+            android:fontFamily="@font/product_sans_regular"
+            android:text="@string/contacts"
+            android:textColor="@color/textcolor"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/recyclerViewMessages" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewContacts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/contactsHeader" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <HorizontalScrollView
-        android:id="@+id/selectedContactsScroll"
+
+    <TextView
+        android:id="@+id/emptyList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
-        android:fillViewport="true"
-        android:padding="8dp"
-        android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@+id/toolBarContact">
-
-        <LinearLayout
-            android:id="@+id/selectedContactsLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:gravity="start"
-            android:orientation="horizontal" />
-
-    </HorizontalScrollView>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/btmly"
-        app:layout_constraintTop_toBottomOf="@+id/selectedContactsScroll">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/contactRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp" />
-
-        <RelativeLayout
-            android:layout_width="4.6dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_marginVertical="18dp"
-            android:layout_marginEnd="7.5dp"
-            android:background="@drawable/scroll_bg" />
-
-        <com.test.messages.demo.AlphabticScroll.RecyclerViewFastScroller
-            android:id="@+id/fastscroller"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true" />
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/btmly"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginHorizontal="50dp"
+        android:fontFamily="@font/product_sans_regular"
+        android:gravity="center"
+        android:text="@string/your_conversation_will_apper_here"
+        android:textColor="@color/gray_txtcolor"
+        android:textFontWeight="400"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/view_color" />
-
-        <TextView
-            android:id="@+id/btnDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginVertical="20dp"
-            android:fontFamily="@font/product_sans_medium"
-            android:text="@string/done"
-            android:textColor="@color/textcolor"
-            android:textFontWeight="500"
-            android:textSize="18dp" />
-
-    </LinearLayout>
-
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolBar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,7 +8,9 @@ import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +18,10 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.telephony.SmsManager
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
@@ -69,6 +75,7 @@ class ConversationActivity : AppCompatActivity() {
     private var oldBottom = 0
     var isfromBlock: Boolean = false
     private val starredMessageIds = mutableSetOf<Long>()
+    private var highlightQuery: String? = null
 
     private fun markThreadAsRead(threadId: Long) {
         if (threadId == -1L) return
@@ -83,6 +90,7 @@ class ConversationActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
@@ -94,10 +102,11 @@ class ConversationActivity : AppCompatActivity() {
         number = intent.getStringExtra("NUMBER").toString()
         profileUrl = intent.getStringExtra("ProfileUrl").toString()
         isfromBlock = intent.getBooleanExtra("fromBlock", false)
-
+        highlightQuery = intent.getStringExtra("QUERY") // Get search query
 
         Log.d("TAG", "onCreate: threadId :- " + threadId)
         setupRecyclerView()
+
         if (threadId != -1L) {
 
             resetMessageCount(this, threadId)
@@ -180,6 +189,7 @@ class ConversationActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = ConversationAdapter { selectedCount ->
             updateUI(selectedCount)
+            adapter.setSearchQuery(highlightQuery)
         }
         linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.stackFromEnd = true
@@ -196,34 +206,6 @@ class ConversationActivity : AppCompatActivity() {
         super.onDestroy()
         viewModel.emptyConversation()
         EventBus.getDefault().unregister(this)
-    }
-
-    private fun setKeyboardVisibilityListener() {
-        val rootView = findViewById<View>(android.R.id.content)
-        rootView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-            override fun onPreDraw(): Boolean {
-                val rect = Rect()
-                val rootView = findViewById<View>(android.R.id.content)
-                rootView.getWindowVisibleDisplayFrame(rect)
-
-                val bottom = rect.bottom
-                val heightDifference = oldBottom - bottom
-                oldBottom = bottom
-                val lastVisibleItem = linearLayoutManager.findLastCompletelyVisibleItemPosition()
-                val totalItems = linearLayoutManager.itemCount
-                if (heightDifference > 0) {
-                    binding.recyclerViewConversation.scrollBy(0, heightDifference)
-                } else if (heightDifference < 0 && lastVisibleItem != totalItems - 1) {
-                    scrollToBottom()
-                }
-                return true
-            }
-        })
-    }
-
-    private fun scrollToBottom() {
-        val layoutManager = binding.recyclerViewConversation.layoutManager as LinearLayoutManager
-        layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
     }
 
     /*    private fun observeViewModel() {
@@ -268,6 +250,9 @@ class ConversationActivity : AppCompatActivity() {
             }
 
             adapter.submitList(groupedList) {
+                if (!highlightQuery.isNullOrEmpty()) {
+                    adapter.setSearchQuery(highlightQuery) // Now update the adapter with search query
+                }
                 scrolltoBottom()
             }
 
@@ -304,7 +289,6 @@ class ConversationActivity : AppCompatActivity() {
         }
     }
 
-
     private fun getStartOfDayTimestamp(timestamp: Long): Long {
         val calendar = Calendar.getInstance().apply {
             timeInMillis = timestamp
@@ -316,6 +300,33 @@ class ConversationActivity : AppCompatActivity() {
         return calendar.timeInMillis
     }
 
+    private fun setKeyboardVisibilityListener() {
+        val rootView = findViewById<View>(android.R.id.content)
+        rootView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+            override fun onPreDraw(): Boolean {
+                val rect = Rect()
+                val rootView = findViewById<View>(android.R.id.content)
+                rootView.getWindowVisibleDisplayFrame(rect)
+
+                val bottom = rect.bottom
+                val heightDifference = oldBottom - bottom
+                oldBottom = bottom
+                val lastVisibleItem = linearLayoutManager.findLastCompletelyVisibleItemPosition()
+                val totalItems = linearLayoutManager.itemCount
+                if (heightDifference > 0) {
+                    binding.recyclerViewConversation.scrollBy(0, heightDifference)
+                } else if (heightDifference < 0 && lastVisibleItem != totalItems - 1) {
+                    scrollToBottom()
+                }
+                return true
+            }
+        })
+    }
+
+    private fun scrollToBottom() {
+        val layoutManager = binding.recyclerViewConversation.layoutManager as LinearLayoutManager
+        layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
+    }
     private fun updateLyouts(isServiceNumber: Boolean) {
         if (isServiceNumber) {
             binding.msgSendLayout.visibility = View.GONE
@@ -329,6 +340,7 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun sendMessage() {
+        highlightQuery = null
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
             Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG)
@@ -366,6 +378,7 @@ class ConversationActivity : AppCompatActivity() {
         scrolltoBottom()
         viewModel.loadMessages()
         viewModel.loadConversation(threadId)
+        adapter.setSearchQuery(null)
     }
 
     @SuppressLint("NewApi")

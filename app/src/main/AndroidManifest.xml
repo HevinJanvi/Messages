@@ -27,6 +27,9 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".ui.Activity.SearchActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.Activity.NotificationActivity"
             android:exported="false" />
         <activity
@@ -47,7 +50,7 @@
             android:name=".ui.Activity.NewConversationActivtiy"
             android:exported="false" />
         <activity
-            android:name=".ui.Activity.SmsPermissionActivity"
+            android:name=".ui.Adapter.SmsPermissionActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyApplication">
@@ -141,7 +144,6 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

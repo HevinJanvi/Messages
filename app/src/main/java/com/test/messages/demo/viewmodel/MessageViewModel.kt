@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,20 +37,14 @@ class MessageViewModel @Inject constructor(
     val contacts: LiveData<List<ContactItem>> get() = _contacts
 
     private val _archivedThreadIds = MutableLiveData<Set<Long>>()
-    val archivedThreadIds: LiveData<Set<Long>> get() = _archivedThreadIds
 
     private val _blockThreadIds = MutableLiveData<Set<Long>>()
-    val blockThreadIds: LiveData<Set<Long>> get() = _blockThreadIds
 
     private val _pinnedThreadIds = MutableLiveData<Set<Long>>()
-    val pinnedThreadIds: LiveData<Set<Long>> get() = _pinnedThreadIds
-
-//    init {
-//        _pinnedThreadIds.value = emptySet() // or load from database/storage
-//    }
 
     private val _blockedMessages = MutableLiveData<List<MessageItem>>()
     val blockedMessages: LiveData<List<MessageItem>> get() = _blockedMessages
+    private var contactList = mutableListOf<ContactItem>()
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -61,6 +57,9 @@ class MessageViewModel @Inject constructor(
             }
         }
     }
+
+
+
 
 
     fun emptyConversation() {
@@ -267,5 +266,44 @@ class MessageViewModel @Inject constructor(
         }
     }
 
+    //search
+
+    private val _fmessages = MutableLiveData<List<MessageItem>>()
+    val Filetrmessages: LiveData<List<MessageItem>> get() = _fmessages
+
+    fun searchMessages(query: String, threadId: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val allMessages = repository.getAllMessages(threadId)
+            val filteredMessages = allMessages.filter { it.body.contains(query, ignoreCase = true) }
+            val groupedMessages = filteredMessages
+                .sortedBy { it.timestamp }
+                .groupBy { it.number }
+                .map { (number, messages) ->
+                    val lastMessage = messages.last()
+                    lastMessage
+                }
+            withContext(Dispatchers.Main) {
+                _fmessages.value = groupedMessages
+            }
+        }
+    }
+
+    private val _filteredContacts = MutableLiveData<List<ContactItem>>()
+    val filteredContacts: LiveData<List<ContactItem>> get() = _filteredContacts
+
+    fun searchContacts(query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d("ViewModel", "Searching contacts for: $query")
+
+            val allContacts = repository.getContactDetails()
+            val filteredContacts = allContacts.filter {
+                it.name!!.contains(query, ignoreCase = true) || it.phoneNumber.contains(query, ignoreCase = true)
+            }
+
+            withContext(Dispatchers.Main) {
+                _filteredContacts.value = filteredContacts
+            }
+        }
+    }
 
 }
