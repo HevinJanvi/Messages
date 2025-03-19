@@ -16,6 +16,7 @@ import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.ActivitySearchBinding
 import com.test.messages.demo.ui.Adapter.SearchContactAdapter
 import com.test.messages.demo.ui.Adapter.SearchMessageAdapter
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,9 +40,11 @@ class SearchActivity : AppCompatActivity() {
 
         binding.recyclerViewMessages.layoutManager = LinearLayoutManager(this)
         adapter = SearchMessageAdapter(messageList) { message, searchedText ->
+
             val intent = Intent(this, ConversationActivity::class.java).apply {
                 putExtra("EXTRA_THREAD_ID", message.threadId)
                 putExtra("NUMBER", message.number)
+                putExtra("NAME", message.sender)
                 putExtra("QUERY", searchedText)
             }
             startActivity(intent)
@@ -50,9 +53,13 @@ class SearchActivity : AppCompatActivity() {
 
         binding.recyclerViewContacts.layoutManager = LinearLayoutManager(this)
         contactAdapter = SearchContactAdapter(contactList) { contact ->
+            Log.d("TAG", "onCreate:search "+contact.name)
+
             val intent = Intent(this, ConversationActivity::class.java).apply {
                 putExtra("EXTRA_THREAD_ID", threadId)
                 putExtra("NUMBER", contact.phoneNumber)
+                putExtra("NAME", contact.name)
+
             }
             startActivity(intent)
         }
@@ -125,6 +132,13 @@ class SearchActivity : AppCompatActivity() {
             binding.emptyList.visibility = View.VISIBLE
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
         }
     }
 

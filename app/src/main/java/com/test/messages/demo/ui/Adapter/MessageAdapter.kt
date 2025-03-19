@@ -54,7 +54,9 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(message.timestamp)
-        if (message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+        val firstChar = message.sender.trim().firstOrNull()
+        val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+        if (startsWithSpecialChar || message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
             Glide.with(holder.itemView.context)

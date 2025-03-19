@@ -31,6 +31,7 @@ import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Fragment.ConversationFragment
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.TimeUtils
 import com.test.messages.demo.ui.Utils.ViewUtils.isServiceNumber
 import com.test.messages.demo.viewmodel.MessageViewModel
@@ -47,6 +48,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private var threadId: Long = -1
     private lateinit var number: String
+    private lateinit var name: String
     private lateinit var profileUrl: String
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var addContactLauncher: ActivityResultLauncher<Intent>
@@ -65,6 +67,7 @@ class ProfileActivity : AppCompatActivity() {
 
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
         number = intent.getStringExtra("NUMBER").toString()
+        name = intent.getStringExtra("NAME").toString()
         profileUrl = intent.getStringExtra("PROFILE_URL").toString()
         loadContactDetails()
         setupClickListeners()
@@ -129,6 +132,7 @@ class ProfileActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", threadId)
             intent.putExtra("NUMBER", number)
+            intent.putExtra("NAME", name)
             intent.putExtra("isGroup", false)
             startActivity(intent)
         }
@@ -295,5 +299,10 @@ class ProfileActivity : AppCompatActivity() {
         )
         binding.icArchiveText.setTextColor(ContextCompat.getColor(this, R.color.textcolor))
     }
-
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 }

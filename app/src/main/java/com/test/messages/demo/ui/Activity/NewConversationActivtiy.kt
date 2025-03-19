@@ -27,6 +27,7 @@ import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.databinding.ActivityNewConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationContactAdapter
 import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -192,6 +193,8 @@ class NewConversationActivtiy : AppCompatActivity() {
 
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
         val selectedNumbers = selectedContacts.map { it.phoneNumber }.toSet()
+        val selectedNames = selectedContacts.map { it.name ?: it.phoneNumber }.toSet()
+
         if (selectedNumbers.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_contacts_selected), Toast.LENGTH_SHORT).show()
             return
@@ -231,6 +234,7 @@ class NewConversationActivtiy : AppCompatActivity() {
         val intent = Intent(this, ConversationActivity::class.java).apply {
             putExtra("EXTRA_THREAD_ID", threadId)
             putExtra("NUMBER", firstNumber)
+            putExtra("NAME",selectedNames.joinToString(", "))
         }
         startActivity(intent)
 //        overrideActivityTransition(0,0)
@@ -291,6 +295,13 @@ class NewConversationActivtiy : AppCompatActivity() {
             view.clearFocus()
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
         }
     }
 }

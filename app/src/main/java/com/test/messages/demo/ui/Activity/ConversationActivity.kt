@@ -2,15 +2,15 @@ package com.test.messages.demo.ui.Activity
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.app.DatePickerDialog
 import android.app.NotificationManager
+import android.app.TimePickerDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -20,17 +20,20 @@ import android.provider.Telephony
 import android.telephony.SmsManager
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.test.messages.demo.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.Database.Starred.StarredMessage
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ConversationItem
@@ -38,13 +41,14 @@ import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
 import com.test.messages.demo.ui.Dialogs.LearnMoreDialog
 import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.ui.Utils.TimeUtils.formatHeaderDate
 import com.test.messages.demo.ui.Utils.ViewUtils
 import com.test.messages.demo.ui.Utils.ViewUtils.resetMessageCount
+import com.test.messages.demo.ui.reciever.MessageScheduler
 import com.test.messages.demo.ui.reciever.MessageUnstarredEvent
 import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
-import com.test.messages.demo.ui.reciever.SmsReceiver
 import com.test.messages.demo.ui.reciever.UpdateGroupNameEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,7 +60,9 @@ import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -66,7 +72,8 @@ class ConversationActivity : AppCompatActivity() {
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var adapter: ConversationAdapter
     private var threadId: Long = -1
-    private lateinit var number: String
+    private var number: String = ""
+    private var name: String = number
     private lateinit var profileUrl: String
     private lateinit var groupName: String
     private var subscriptionId: Int = -1
@@ -74,8 +81,10 @@ class ConversationActivity : AppCompatActivity() {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var oldBottom = 0
     var isfromBlock: Boolean = false
+    var isScheduled: Boolean = false
     private val starredMessageIds = mutableSetOf<Long>()
     private var highlightQuery: String? = null
+    private var selectedTimeInMillis: Long = 0L
 
     private fun markThreadAsRead(threadId: Long) {
         if (threadId == -1L) return
@@ -90,7 +99,14 @@ class ConversationActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
@@ -100,26 +116,34 @@ class ConversationActivity : AppCompatActivity() {
 
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
         number = intent.getStringExtra("NUMBER").toString()
+        name = intent.getStringExtra("NAME").toString()
+        Log.d("TAG", "onCreate:name " + name)
         profileUrl = intent.getStringExtra("ProfileUrl").toString()
         isfromBlock = intent.getBooleanExtra("fromBlock", false)
-        highlightQuery = intent.getStringExtra("QUERY") // Get search query
+        highlightQuery = intent.getStringExtra("QUERY")
+        isScheduled = intent.getBooleanExtra("isScheduled", false)
 
+        if (isScheduled) {
+            showDateTimePickerDialog()
+            binding.close.setOnClickListener {
+                binding.schedulLy.visibility = View.GONE
+                isScheduled = false
+            }
+        } else {
+            binding.schedulLy.visibility = View.GONE
+        }
         Log.d("TAG", "onCreate: threadId :- " + threadId)
         setupRecyclerView()
 
         if (threadId != -1L) {
-
             resetMessageCount(this, threadId)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.cancel(threadId.toInt())
-
             viewModel.loadConversation(threadId)
-
         } else {
             threadId = getThreadId(setOf(number))
         }
         markThreadAsRead(threadId)
-
         viewModel.loadConversation(threadId)
         observeViewModel()
         loadStarredMessages()
@@ -142,6 +166,7 @@ class ConversationActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun setupClickListeners() {
         binding.icBack.setOnClickListener {
             onBackPressed()
@@ -152,7 +177,7 @@ class ConversationActivity : AppCompatActivity() {
         binding.btnInfo.setOnClickListener {
             val numbersList = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }
 
-            Log.d("TAG", "setupClickListeners:numbersList "+numbersList)
+            Log.d("TAG", "setupClickListeners:numbersList " + numbersList)
             if (numbersList.size > 1) {
                 // It's a group chat
                 val intent = Intent(this, GroupProfileActivity::class.java)
@@ -165,6 +190,7 @@ class ConversationActivity : AppCompatActivity() {
                 val intent = Intent(this, ProfileActivity::class.java)
                 intent.putExtra("EXTRA_THREAD_ID", threadId)
                 intent.putExtra("NUMBER", number)
+                intent.putExtra("NAME", name)
                 intent.putExtra("PROFILE_URL", profileUrl)
                 startActivity(intent)
             }
@@ -174,7 +200,11 @@ class ConversationActivity : AppCompatActivity() {
             }
         }
         binding.buttonSend.setOnClickListener {
-            sendMessage()
+            if (!isDefaultSmsApp()) {
+                requestDefaultSmsApp()
+            } else {
+                proceedWithMessageSending()
+            }
         }
         binding.icClose.setOnClickListener { adapter.clearSelection() }
         binding.btnDelete.setOnClickListener { deleteSelectedMessages() }
@@ -208,32 +238,6 @@ class ConversationActivity : AppCompatActivity() {
         EventBus.getDefault().unregister(this)
     }
 
-    /*    private fun observeViewModel() {
-            viewModel.conversation.observe(this) { conversationList ->
-
-                Log.d("ConversationActivity", "Received ${conversationList.size} messages")
-
-                val sortedList = conversationList.sortedBy { it.date }.toList()
-                Log.d("ConversationActivity", "Sorted messages from oldest to newest")
-
-                adapter.submitList(sortedList) {
-                    scrolltoBottom()
-                }
-
-                if (sortedList.isNotEmpty()) {
-                    binding.emptyText.visibility = View.GONE
-                    val senderNumber = sortedList.firstOrNull()?.address ?: number
-    //                binding.address.text = viewModel.getContactNameOrNumber(senderNumber)
-
-                    updateLyouts(ViewUtils.isOfferSender(senderNumber))
-
-                    markThreadAsRead(threadId)
-                } else {
-                    binding.emptyText.visibility = View.VISIBLE
-                }
-            }
-        }*/
-
     private fun observeViewModel() {
         viewModel.conversation.observe(this) { conversationList ->
             val sortedList = conversationList.sortedBy { it.date }
@@ -251,40 +255,30 @@ class ConversationActivity : AppCompatActivity() {
 
             adapter.submitList(groupedList) {
                 if (!highlightQuery.isNullOrEmpty()) {
-                    adapter.setSearchQuery(highlightQuery) // Now update the adapter with search query
+                    adapter.setSearchQuery(highlightQuery)
                 }
                 scrolltoBottom()
             }
 
             if (groupedList.isNotEmpty()) {
                 binding.emptyText.visibility = View.GONE
-                val senderNumber = sortedList.firstOrNull()?.address ?: number
                 CoroutineScope(Dispatchers.IO).launch {
                     val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
                     val savedGroupName = sharedPreferences.getString("group_name_$threadId", null)
-                    val contactName = savedGroupName ?: viewModel.getContactNameOrNumber(senderNumber)
-
-
-//                    val contactName = viewModel.getContactNameOrNumber(senderNumber)
+                    val contactName =
+                        savedGroupName ?: name
                     withContext(Dispatchers.Main) {
                         binding.address.text = contactName
                         groupName = contactName
                     }
                 }
 
-                updateLyouts(ViewUtils.isOfferSender(senderNumber))
+                updateLyouts(ViewUtils.isOfferSender(name))
                 markThreadAsRead(threadId)
             } else {
                 binding.emptyText.visibility = View.VISIBLE
-                val senderNumber = sortedList.firstOrNull()?.address ?: number
-                CoroutineScope(Dispatchers.IO).launch {
-                    val contactName = viewModel.getContactNameOrNumber(senderNumber)
-                    withContext(Dispatchers.Main) {
-                        binding.address.text = contactName
-                    }
-                }
-                updateLyouts(ViewUtils.isOfferSender(senderNumber))
-
+                binding.address.text = name
+                updateLyouts(ViewUtils.isOfferSender(name))
             }
         }
     }
@@ -327,6 +321,7 @@ class ConversationActivity : AppCompatActivity() {
         val layoutManager = binding.recyclerViewConversation.layoutManager as LinearLayoutManager
         layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
     }
+
     private fun updateLyouts(isServiceNumber: Boolean) {
         if (isServiceNumber) {
             binding.msgSendLayout.visibility = View.GONE
@@ -620,6 +615,244 @@ class ConversationActivity : AppCompatActivity() {
 //        EventBus.getDefault().unregister(this)
     }
 
+    /*
+        private fun showDateTimePickerDialog() {
+            val calendar = Calendar.getInstance()
+            val currentYear = calendar.get(Calendar.YEAR)
+            val currentMonth = calendar.get(Calendar.MONTH)
+            val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+            val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+            val currentMinute = calendar.get(Calendar.MINUTE)
 
+            DatePickerDialog(this, { _, year, month, dayOfMonth ->
+                val selectedDate = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, year)
+                    set(Calendar.MONTH, month)
+                    set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                }
+
+                val timePickerDialog = TimePickerDialog(this, { _, hourOfDay, minute ->
+                    val selectedCalendar = Calendar.getInstance().apply {
+                        set(Calendar.YEAR, year)
+                        set(Calendar.MONTH, month)
+                        set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                        set(Calendar.HOUR_OF_DAY, hourOfDay)
+                        set(Calendar.MINUTE, minute)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    // Prevent past time selection
+                    if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.cannot_select_past_time), Toast.LENGTH_SHORT
+                        ).show()
+                        showDateTimePickerDialog()
+                    } else {
+                        selectedTimeInMillis = selectedCalendar.timeInMillis
+
+                        val formattedTime =
+                            SimpleDateFormat("dd MMM yyyy hh:mm a", Locale.getDefault()).format(
+                                selectedCalendar.time
+                            )
+
+                        val spannable = SpannableStringBuilder().apply {
+                            append(getString(R.string.schedule_at))
+                            setSpan(
+                                ForegroundColorSpan(
+                                    ContextCompat.getColor(
+                                        this@ConversationActivity,
+                                        R.color.colorPrimary
+                                    )
+                                ),
+                                0, getString(R.string.schedule_at).length,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                            val timeSpan = SpannableString(formattedTime)
+                            timeSpan.setSpan(
+                                ForegroundColorSpan(
+                                    ContextCompat.getColor(
+                                        this@ConversationActivity,
+                                        R.color.colorPrimary
+                                    )
+                                ),
+                                0, timeSpan.length,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+
+                            append(timeSpan)
+                        }
+
+                        binding.selectedTimeTextView.text = spannable
+                    }
+                }, currentHour, currentMinute, false)
+
+                timePickerDialog.show()
+            }, currentYear, currentMonth, currentDay).show()
+        }
+    */
+
+    private fun showDateTimePickerDialog() {
+        val calendar = Calendar.getInstance()
+        val currentYear = calendar.get(Calendar.YEAR)
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+
+        val datePickerDialog = DatePickerDialog(
+            this,
+            R.style.CustomDatePickerDialog, // ✅ Apply custom style
+            { _, year, month, dayOfMonth ->
+                val selectedDate = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, year)
+                    set(Calendar.MONTH, month)
+                    set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                }
+
+                val timePickerDialog = TimePickerDialog(
+                    this,
+                    R.style.CustomTimePickerDialog, // ✅ Apply custom style
+                    { _, hourOfDay, minute ->
+                        val selectedCalendar = Calendar.getInstance().apply {
+                            set(Calendar.YEAR, year)
+                            set(Calendar.MONTH, month)
+                            set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                            set(Calendar.HOUR_OF_DAY, hourOfDay)
+                            set(Calendar.MINUTE, minute)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+
+                        // ✅ Prevent past time selection
+                        if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.cannot_select_past_time),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            showDateTimePickerDialog()
+                        } else {
+                            selectedTimeInMillis = selectedCalendar.timeInMillis
+                            binding.schedulLy.visibility = View.VISIBLE
+
+                            // ✅ Format selected date & time
+                            val formattedTime =
+                                SimpleDateFormat("dd MMM yyyy hh:mm a", Locale.getDefault())
+                                    .format(selectedCalendar.time)
+
+                            // ✅ Display the selected time with custom color
+                            val spannable = SpannableStringBuilder().apply {
+                                append(getString(R.string.schedule_at) + " ")
+                                setSpan(
+                                    ForegroundColorSpan(
+                                        ContextCompat.getColor(
+                                            this@ConversationActivity,
+                                            R.color.colorPrimary
+                                        )
+                                    ),
+                                    0,
+                                    getString(R.string.schedule_at).length,
+                                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                                val timeSpan = SpannableString(formattedTime)
+                                timeSpan.setSpan(
+                                    ForegroundColorSpan(
+                                        ContextCompat.getColor(
+                                            this@ConversationActivity,
+                                            R.color.colorPrimary
+                                        )
+                                    ),
+                                    0,
+                                    timeSpan.length,
+                                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                                append(timeSpan)
+                            }
+                            binding.selectedTimeTextView.text = spannable
+                        }
+                    },
+                    currentHour,
+                    currentMinute,
+                    false
+                )
+                timePickerDialog.show()
+
+            },
+            currentYear,
+            currentMonth,
+            currentDay
+        )
+        datePickerDialog.show()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun scheduleMessage() {
+        val messageText = binding.editTextMessage.text.toString().trim()
+        if (messageText.isEmpty() || selectedTimeInMillis == 0L) {
+            Toast.makeText(this, getString(R.string.please_enter), Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+        val recipientNameOrNumber = if (viewModel.getContactNameOrNumber(number).isNotEmpty()) {
+            viewModel.getContactNameOrNumber(number)
+        } else {
+            number
+        }
+        val scheduledMessage = ScheduledMessage(
+            id = 0,
+            recipient = recipientNameOrNumber,
+            message = messageText,
+            scheduledTime = selectedTimeInMillis,
+            threadId = threadId.toString(),
+            profileUrl = profileUrl
+        )
+
+        Thread {
+            AppDatabase.getDatabase(this).scheduledMessageDao().insert(scheduledMessage)
+            runOnUiThread {
+                MessageScheduler.scheduleMessage(this, scheduledMessage)
+                Toast.makeText(this, getString(R.string.message_scheduled), Toast.LENGTH_SHORT)
+                    .show()
+                val intent = Intent(this, ScheduleActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }.start()
+    }
+
+
+    private fun isDefaultSmsApp(): Boolean {
+        return Telephony.Sms.getDefaultSmsPackage(this) == packageName
+    }
+
+    private fun requestDefaultSmsApp() {
+        val intent = Intent(this, SmsPermissionActivity::class.java)
+        smsPermissionLauncher.launch(intent) // ✅ Wait for result before sending
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private val smsPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (isDefaultSmsApp()) {
+                proceedWithMessageSending()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Please set this app as default SMS handler",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun proceedWithMessageSending() {
+        if (isScheduled) {
+            scheduleMessage()
+        } else {
+            sendMessage()
+        }
+    }
 
 }

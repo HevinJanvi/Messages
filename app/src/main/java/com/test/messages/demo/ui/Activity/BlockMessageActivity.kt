@@ -18,6 +18,7 @@ import com.test.messages.demo.databinding.ActivityBlockBinding
 import com.test.messages.demo.ui.Adapter.BlockedMessagesAdapter
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -54,6 +55,7 @@ class BlockMessageActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
             intent.putExtra("NUMBER", message.number)
+            intent.putExtra("NAME", message.sender)
             intent.putExtra("fromBlock",true)
             startActivity(intent)
         }
@@ -182,6 +184,13 @@ class BlockMessageActivity : AppCompatActivity() {
             adapter.clearSelection()
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
         }
     }
 }

@@ -146,8 +146,9 @@ class ContactAdapter(
         fun bind(contact: ContactItem) {
             contactName.text = contact.name
             contactNumber.text = contact.phoneNumber
-
-            if (contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {
+            val firstChar = contact.name!!.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+            if (startsWithSpecialChar || contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {
                 icUser.visibility = View.VISIBLE
                 initialsTextView.visibility = View.GONE
                 Glide.with(itemView.context)
@@ -196,8 +197,6 @@ class ContactAdapter(
         } else {
             return "#"
         }
-
-
     }
 
     fun String.startsWithAtoZ(): Boolean {

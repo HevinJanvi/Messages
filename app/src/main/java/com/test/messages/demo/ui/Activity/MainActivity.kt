@@ -17,9 +17,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityMainBinding
-import com.test.messages.demo.ui.Adapter.SmsPermissionActivity
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +29,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var selectedMessagesCount = 0
     val viewModel: MessageViewModel by viewModels()
+
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,6 +117,11 @@ class MainActivity : AppCompatActivity() {
         }
         binding.include.lyStarred.setOnClickListener {
             val intent = Intent(this, StarredMessagesActivity::class.java)
+            startActivity(intent)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+        binding.include.lySchedule.setOnClickListener {
+            val intent = Intent(this, ScheduleActivity::class.java)
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }

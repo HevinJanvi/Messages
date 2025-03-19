@@ -52,8 +52,6 @@ class SmsReceiver : BroadcastReceiver() {
                 val isDropMessagesEnabled = prefs.getBoolean("drop_messages", false)
                 val isDeleted = repository.isDeletedConversation(address)
 
-
-
                 if (isDeleted) {
                     if (isDropMessagesEnabled) {
                         Log.d("SmsReceiver", "Drop Messages is ON, ignoring message from: $address")

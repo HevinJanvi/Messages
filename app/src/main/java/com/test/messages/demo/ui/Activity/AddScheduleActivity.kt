@@ -1,28 +1,26 @@
 package com.test.messages.demo.ui.Activity
 
-
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Telephony
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.internal.ViewUtils.hideKeyboard
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ContactItem
-import com.test.messages.demo.databinding.ActivityContactBinding
+import com.test.messages.demo.databinding.ActivityAddScheduleBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
 import com.test.messages.demo.ui.Utils.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsPermissionUtils
@@ -30,8 +28,9 @@ import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ContactActivtiy : AppCompatActivity() {
-    private lateinit var binding: ActivityContactBinding
+class AddScheduleActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityAddScheduleBinding
     private lateinit var contactAdapter: ContactAdapter
     private var selectedContacts = mutableListOf<ContactItem>()
     private val selectedContactViews = mutableMapOf<String, View>()
@@ -45,15 +44,11 @@ class ContactActivtiy : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityContactBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding = ActivityAddScheduleBinding.inflate(layoutInflater)
+        val view: View = binding.getRoot()
+        setContentView(view)
         messageUtils = MessageUtils(this)
 
-        val receivedContacts = intent.getParcelableArrayListExtra<ContactItem>("selectedContacts")
-        receivedContacts?.let {
-            selectedContacts.addAll(it)
-            updateSelectedContactsHeader()
-        }
         binding.icBack.setOnClickListener {
             onBackPressed()
         }
@@ -64,29 +59,17 @@ class ContactActivtiy : AppCompatActivity() {
                 setNumberKeyboard()
             }
         }
-        binding.contactRecyclerView.layoutManager =
-            object : LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) {
-                override fun onLayoutCompleted(state: RecyclerView.State?) {
-                    super.onLayoutCompleted(state)
-                    val firstVisibleItemPosition = findFirstVisibleItemPosition()
-                    val lastVisibleItemPosition = findLastVisibleItemPosition()
-                    val itemsShown = lastVisibleItemPosition - firstVisibleItemPosition + 1
-                    binding.fastscroller.setVisibility(if (contactAdapter.getItemCount() > itemsShown) View.VISIBLE else View.GONE)
-                }
-            }
 
-        contactAdapter = ContactAdapter(allContacts) { contact ->
-            if (!selectedContacts.contains(contact)) {
-                addToSelectedContacts(contact)
-            }
-        }
-        binding.fastscroller.setRecyclerView(binding.contactRecyclerView)
+        binding.SrecyclerView.layoutManager = LinearLayoutManager(this)
+
+        contactAdapter = ContactAdapter(allContacts) { contact -> openConversation(contact) }
+        binding.SrecyclerView.adapter = contactAdapter
+
+        binding.fastscroller.setRecyclerView(binding.SrecyclerView)
         binding.fastscroller.setViewsToUse(
             R.layout.recycler_view_fast_scroller__fast_scroller,
             R.id.fastscroller_bubble, R.id.fastscroller_handle
         )
-        binding.contactRecyclerView.adapter = contactAdapter
-
         viewModel.loadContacts()
         viewModel.contacts.observe(this) { contacts ->
             allContacts = contacts
@@ -122,7 +105,7 @@ class ContactActivtiy : AppCompatActivity() {
                     )
                     filteredContacts = listOf(newContact) + filteredContacts
                 }
-                binding.contactRecyclerView.visibility =
+                binding.SrecyclerView.visibility =
                     if (filteredContacts.isNotEmpty()) View.VISIBLE else View.GONE
                 contactAdapter.submitList(filteredContacts)
             }
@@ -131,20 +114,22 @@ class ContactActivtiy : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        binding.btnDone.setOnClickListener {
-            val resultIntent = Intent()
-            resultIntent.putParcelableArrayListExtra(
-                "selectedContacts",
-                ArrayList(selectedContacts)
-            )
-            setResult(RESULT_OK, resultIntent)
-            finish()
-        }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun openConversation(contact: ContactItem) {
+        val threadId = getThreadId(this, contact.phoneNumber)
+        val intent = Intent(this, ConversationActivity::class.java)
+        intent.putExtra("EXTRA_THREAD_ID", threadId)
+        intent.putExtra("NUMBER", contact.phoneNumber)
+        intent.putExtra("NAME", contact.name)
+        intent.putExtra("isGroup", false)
+        intent.putExtra("ProfileUrl", contact.profileImageUrl)
+        intent.putExtra("isScheduled", true)
+        startActivity(intent)
+    }
     private fun updateSelectedContactsHeader() {
-        binding.selectedContactsLayout.removeAllViews()
-        binding.selectedContactsScroll.visibility = View.GONE
+
         selectedContactViews.clear()
 
         selectedContacts.forEach { contact ->
@@ -159,11 +144,24 @@ class ContactActivtiy : AppCompatActivity() {
                 removeFromSelectedContacts(contact)
             }
 
-            binding.selectedContactsLayout.addView(contactView)
-            binding.selectedContactsScroll.visibility = View.VISIBLE
-
             selectedContactViews[contact.phoneNumber] = contactView
         }
+    }
+
+
+    private fun getThreadId(context: Context, sender: String): Long {
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(Telephony.Sms.THREAD_ID)
+        val selection = "${Telephony.Sms.ADDRESS} = ?"
+        val selectionArgs = arrayOf(sender)
+
+        context.contentResolver.query(uri, projection, selection, selectionArgs, null)
+            ?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    return cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+                }
+            }
+        return 0L
     }
 
     private fun addToSelectedContacts(contact: ContactItem) {
@@ -179,11 +177,8 @@ class ContactActivtiy : AppCompatActivity() {
         selectedContacts.remove(contact)
         val contactView = selectedContactViews[contact.phoneNumber]
         if (contactView != null) {
-            binding.selectedContactsLayout.removeView(contactView)
             selectedContactViews.remove(contact.phoneNumber) // Remove from map
         }
-        if (selectedContacts.isEmpty()) {
-            binding.selectedContactsScroll.visibility = View.GONE        }
     }
 
     private fun setNumberKeyboard() {
@@ -223,4 +218,5 @@ class ContactActivtiy : AppCompatActivity() {
             return
         }
     }
+
 }

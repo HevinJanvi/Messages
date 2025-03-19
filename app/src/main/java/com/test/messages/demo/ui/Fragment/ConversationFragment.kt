@@ -109,6 +109,9 @@ class ConversationFragment : Fragment() {
                     }
                     .sortedByDescending { it.isPinned }
 
+                val unreadMessagesCount = filteredMessages.count { !it.isRead }
+//                Log.d("Messages", "Unread messages count: $unreadMessagesCount")
+
                 withContext(Dispatchers.Main) {
                     if (adapter.selectedMessages != filteredMessages) {
                         adapter.submitList(filteredMessages)
@@ -126,7 +129,6 @@ class ConversationFragment : Fragment() {
             startActivity(intent)
         }
         return binding.getRoot();
-
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -145,6 +147,7 @@ class ConversationFragment : Fragment() {
             val intent = Intent(requireContext(), ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
             intent.putExtra("NUMBER", message.number)
+            intent.putExtra("NAME", message.sender)
             intent.putExtra("isGroup", message.isGroupChat)
             intent.putExtra("ProfileUrl", message.profileImageUrl)
             startActivity(intent)

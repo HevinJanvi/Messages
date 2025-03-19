@@ -35,6 +35,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            isDebuggable =true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -116,6 +117,7 @@ dependencies {
     implementation("org.greenrobot:eventbus:3.1.1")
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
 //    implementation ("android.arch.lifecycle:extensions:1.1.1")
+    implementation("com.tbuonomo:dotsindicator:5.1.0")
 
 
 

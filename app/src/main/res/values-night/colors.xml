@@ -27,5 +27,7 @@
     <color name="send_bg_color">#18181A</color>
     <color name="incoming_bg_clr">#313134</color>
     <color name="otp_bg_clr">#18181A</color>
+    <color name="per_bg_clr">#18181B</color>
+    <color name="dot_clr">#18181B</color>
 
 </resources>

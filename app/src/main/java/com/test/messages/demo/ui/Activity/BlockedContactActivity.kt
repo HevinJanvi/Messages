@@ -19,6 +19,7 @@ import com.test.messages.demo.R
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.ActivityBlockContactBinding
 import com.test.messages.demo.ui.Adapter.BlockedContactAdapter
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -216,6 +217,7 @@ class BlockedContactActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationActivity::class.java).apply {
                 putExtra("EXTRA_THREAD_ID", blockedMessage.threadId)
                 putExtra("NUMBER", blockedMessage.number)
+                .putExtra("NAME", blockedMessage.sender)
             }
             startActivity(intent)
         } else {
@@ -237,6 +239,13 @@ class BlockedContactActivity : AppCompatActivity() {
         binding.btnSelectAll.setOnCheckedChangeListener(null) // Prevent infinite loop
         binding.btnSelectAll.isChecked = adapter.selectedItems.size == adapter.getAllMessages().size
         binding.btnSelectAll.setOnCheckedChangeListener { _, isChecked -> toggleSelectAll(isChecked) }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
     }
 
 }

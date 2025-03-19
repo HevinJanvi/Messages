@@ -19,7 +19,8 @@ class ConversationContactAdapter(
 ) : RecyclerView.Adapter<ConversationContactAdapter.ContactViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_contact_conversation, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_contact_conversation, parent, false)
         return ContactViewHolder(view)
     }
 
@@ -40,12 +41,11 @@ class ConversationContactAdapter(
         private val profileContainer: RelativeLayout = itemView.findViewById(R.id.profileContainer)
 
         fun bind(contact: ContactItem) {
-            // Skip the header item (ContactItem with cid = -1)
-//            if (contact.cid != -1) {
             contactName.text = contact.name
             contactNumber.text = contact.phoneNumber
-
-            if (contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {
+            val firstChar = contact.name!!.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+            if (startsWithSpecialChar || contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {
                 icUser.visibility = View.VISIBLE
                 initialsTextView.visibility = View.GONE
                 Glide.with(itemView.context)
@@ -53,15 +53,14 @@ class ConversationContactAdapter(
                     .placeholder(R.drawable.ic_user)
                     .into(icUser)
             } else {
-               icUser.visibility = View.GONE
-               initialsTextView.visibility = View.VISIBLE
-               initialsTextView.text = TimeUtils.getInitials(contact.name!!)
-               profileContainer.backgroundTintList =
+                icUser.visibility = View.GONE
+                initialsTextView.visibility = View.VISIBLE
+                initialsTextView.text = TimeUtils.getInitials(contact.name!!)
+                profileContainer.backgroundTintList =
                     ColorStateList.valueOf(TimeUtils.getRandomColor(contact.name))
             }
 
             itemView.setOnClickListener { onContactSelected(contact) }
-//            }
         }
     }
 

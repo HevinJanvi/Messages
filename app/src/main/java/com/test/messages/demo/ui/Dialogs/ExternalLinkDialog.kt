@@ -33,6 +33,8 @@ class ExternalLinkDialog(
             )
         )
         window?.setGravity(Gravity.BOTTOM)
+        setCancelable(true)
+        setCanceledOnTouchOutside(true)
 
         val btnCancel = findViewById<TextView>(R.id.btnCancel)
         val btnContinue = findViewById<TextView>(R.id.btnContinue)

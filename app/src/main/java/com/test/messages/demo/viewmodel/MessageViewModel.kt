@@ -44,21 +44,32 @@ class MessageViewModel @Inject constructor(
 
     private val _blockedMessages = MutableLiveData<List<MessageItem>>()
     val blockedMessages: LiveData<List<MessageItem>> get() = _blockedMessages
-    private var contactList = mutableListOf<ContactItem>()
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadMessages() {
         CoroutineScope(Dispatchers.IO).launch {
             val updatedMessages = repository.getMessages()
-            val unreadMessages = updatedMessages.count { !it.isRead }
+//            val unreadMessages = updatedMessages.count { !it.isRead }
             withContext(Dispatchers.Main) {
                 (repository.messages as MutableLiveData).value = updatedMessages
             }
         }
     }
 
+   /* fun loadMessages() {
+        viewModelScope.launch {
+//            _messages.value = repository.getMessages()
+            (repository.messages as MutableLiveData).value = repository.getMessages()
+        }
+    }*/
 
+    /*fun loadMessages() {
+        viewModelScope.launch {
+            val updatedMessages = repository.getMessages() // ✅ Now properly returns a List<MessageItem>
+            (repository.messages as MutableLiveData).value = updatedMessages
+        }
+    }*/
 
 
 

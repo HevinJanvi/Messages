@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.Database.Starred.StarredMessageDao
 import com.test.messages.demo.databinding.ActivityStarredMessagesBinding
 import com.test.messages.demo.ui.Adapter.StarredMessagesAdapter
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.reciever.MessageUnstarredEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -63,6 +64,7 @@ class StarredMessagesActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
             intent.putExtra("NUMBER", message.number)
+            intent.putExtra("NAME", message.sender)
             intent.putExtra("isGroup", message.isGroupChat)
             startActivity(intent)
         }
@@ -107,4 +109,10 @@ class StarredMessagesActivity : AppCompatActivity() {
         EventBus.getDefault().unregister(this)
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 }

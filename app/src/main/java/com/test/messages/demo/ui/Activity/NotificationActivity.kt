@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityNotificationBinding
 import com.test.messages.demo.ui.Dialogs.NotificationViewDialog
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.ViewUtils.getNotificationOption
 import com.test.messages.demo.ui.reciever.createNotificationChannel
 
@@ -104,5 +105,10 @@ class NotificationActivity : AppCompatActivity() {
         }
         context.startActivity(intent)
     }
-
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 }

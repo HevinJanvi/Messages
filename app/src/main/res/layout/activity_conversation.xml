@@ -29,8 +29,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:adjustViewBounds="true"
-                android:padding="1dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="1dp"
                 android:src="@drawable/ic_back"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -43,11 +43,11 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="15dp"
                 android:fontFamily="@font/product_sans_medium"
+                android:maxLines="1"
                 android:text=""
                 android:textColor="@color/textcolor"
                 android:textFontWeight="500"
                 android:textSize="20dp"
-                android:maxLines="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnCall"
                 app:layout_constraintStart_toEndOf="@+id/icBack"
@@ -59,8 +59,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_call"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_call"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnInfo"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -71,8 +71,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_info"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_info"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -264,10 +264,10 @@
         android:id="@+id/recyclerViewConversation"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="6dp"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
         android:scrollbars="vertical"
-        android:layout_marginTop="6dp"
         app:layout_constraintBottom_toTopOf="@+id/secureLy"
         app:layout_constraintTop_toBottomOf="@+id/blockLy" />
 
@@ -322,6 +322,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent">
 
+
         <LinearLayout
             android:id="@+id/msgSendLayout"
             android:layout_width="match_parent"
@@ -330,24 +331,77 @@
             android:orientation="horizontal"
             android:padding="8dp"
             android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <EditText
-                android:id="@+id/editTextMessage"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:layout_marginEnd="5dp"
                 android:layout_weight="1"
                 android:background="@drawable/send_msg_bg"
-                android:fontFamily="@font/product_sans_regular"
-                android:hint="@string/write_a_message"
-                android:inputType="text"
-                android:paddingHorizontal="15dp"
-                android:paddingVertical="17dp"
-                android:textColor="@color/gray_txtcolor"
-                android:textFontWeight="400"
-                android:textSize="15dp" />
+                android:orientation="vertical">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/schedulLy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/selectedTimeTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="15dp"
+                        android:paddingTop="10dp"
+                        android:paddingStart="15dp"
+                        android:lineSpacingExtra="2dp"
+                        app:layout_constraintEnd_toStartOf="@+id/close"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/close"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:adjustViewBounds="true"
+                        android:padding="3dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:src="@drawable/ic_close" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height=".5dp"
+                    android:background="@color/subtext_color"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginHorizontal="10dp"
+                    app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView"/>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                <EditText
+                    android:id="@+id/editTextMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:hint="@string/write_a_message"
+                    android:inputType="text"
+                    android:paddingHorizontal="15dp"
+                    android:paddingVertical="17dp"
+                    android:textColor="@color/gray_txtcolor"
+                    android:textFontWeight="400"
+                    android:textSize="15dp" />
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/buttonSend"

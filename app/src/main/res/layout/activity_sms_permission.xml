@@ -1,23 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/bg"
     android:gravity="center"
-    android:padding="20dp">
+    android:orientation="vertical">
+
+
+    <ImageView
+        android:id="@+id/imgApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txt"
+        android:adjustViewBounds="true"
+        android:src="@drawable/img_defaultapp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="To continue, set this app as your default SMS app."
-        android:textSize="16sp"
-        android:textAlignment="center"
-        android:paddingBottom="20dp"/>
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:fontFamily="@font/product_sans_medium"
+        android:gravity="center_vertical"
+        android:text="@string/welcome_to_messages"
+        android:textColor="@color/textcolor"
+        android:textFontWeight="500"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btnSetDefaultSms"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set as Default SMS App"/>
-</LinearLayout>
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgApp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/txt1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:layout_marginHorizontal="20dp"
+                android:fontFamily="@font/product_sans_medium"
+                android:gravity="center"
+                android:lineSpacingExtra="20px"
+                android:text="@string/to_send_and_receive"
+                android:textColor="@color/textcolor"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/txt2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:drawableLeft="@drawable/bullet"
+                android:drawablePadding="10dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="@string/instant_replies_in_one_tap"
+                android:textColor="@color/gray_txtcolor"
+                android:textFontWeight="400"
+                android:textSize="14dp"
+                android:includeFontPadding="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txt1" />
+
+            <TextView
+                android:id="@+id/txt3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:drawableLeft="@drawable/bullet"
+                android:drawablePadding="10dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="@string/stay_safe_with"
+                android:textColor="@color/gray_txtcolor"
+                android:textFontWeight="400"
+                android:textSize="14dp"
+                android:includeFontPadding="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txt2" />
+
+            <TextView
+                android:id="@+id/btnSetDefaultSms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/set_as_default"
+                app:layout_constraintTop_toBottomOf="@id/txt3"
+                android:layout_marginTop="25dp"
+                android:padding="12dp"
+                android:gravity="center"
+                android:textSize="19dp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/product_sans_medium"
+                android:layout_marginHorizontal="20dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:background="@drawable/add_msg_bg"
+             />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

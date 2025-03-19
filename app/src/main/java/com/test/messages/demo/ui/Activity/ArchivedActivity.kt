@@ -26,6 +26,7 @@ import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +40,13 @@ class ArchivedActivity : AppCompatActivity() {
     private lateinit var adapter: ArchiveMessageAdapter
     private val viewModel: MessageViewModel by viewModels()
     private var pinnedThreadIds: List<Long> = emptyList()
+
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +70,7 @@ class ArchivedActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationActivity::class.java)
             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
             intent.putExtra("NUMBER", message.number)
+            intent.putExtra("NAME", message.sender)
             startActivity(intent)
         }
         viewModel.messages.observe(this) { messageList ->

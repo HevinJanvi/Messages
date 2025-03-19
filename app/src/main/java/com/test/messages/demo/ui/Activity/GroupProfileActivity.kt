@@ -19,6 +19,7 @@ import com.test.messages.demo.databinding.ActivityGroupProfileBinding
 import com.test.messages.demo.ui.Adapter.GroupMemberAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Dialogs.RenameDialog
+import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.reciever.UpdateGroupNameEvent
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -150,6 +151,11 @@ class GroupProfileActivity : AppCompatActivity() {
         val groupName = sharedPreferences.getString("group_name_$threadId", "Unnamed Group")
         binding.textGroupName.text = groupName
     }
-
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+            return
+        }
+    }
 
 }
