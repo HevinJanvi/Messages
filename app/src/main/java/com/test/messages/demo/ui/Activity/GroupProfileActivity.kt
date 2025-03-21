@@ -31,11 +31,11 @@ import org.greenrobot.eventbus.EventBus
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
-class GroupProfileActivity : AppCompatActivity() {
+class GroupProfileActivity : BaseActivity() {
 
     private lateinit var binding: ActivityGroupProfileBinding
     private lateinit var adapter: GroupMemberAdapter
-    private var groupName: String = "Group Chat"
+    private lateinit var groupName: String
     private var threadId: Long = -1
     private val viewModel: MessageViewModel by viewModels()
 
@@ -45,7 +45,7 @@ class GroupProfileActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val numbersList = intent.getStringArrayListExtra("GROUP_MEMBERS") ?: arrayListOf()
-        groupName = intent.getStringExtra("GROUP_NAME") ?: "Group Chat"
+        groupName = intent.getStringExtra("GROUP_NAME") ?: getString(R.string.group_chat)
         threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
 
         if (threadId != -1L) {
@@ -139,7 +139,6 @@ class GroupProfileActivity : AppCompatActivity() {
 
 
     private fun updateGroupName(threadId: Long, newName: String) {
-        Log.d("TAG", "updateGroupName:+ "+newName)
         val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().putString("group_name_$threadId", newName).apply()
         binding.textGroupName.text = newName

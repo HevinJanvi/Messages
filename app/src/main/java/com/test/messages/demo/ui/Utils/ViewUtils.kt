@@ -9,6 +9,7 @@ object ViewUtils {
     val PREF_NAME = "notification_prefs"
     private const val KEY_NOTIFICATION_OPTION = "notification_option"
     private const val KEY_LANGUAGE_SELECTED = "language_selected"
+    private const val KEY_SELECTED_LANGUAGE = "selected_language"
     private const val KEY_INTRO_SHOWN = "intro_shown"
     fun isOfferSender(sender: String): Boolean {
         return sender.matches(Regex("^[A-Z-]+$"))
@@ -48,6 +49,15 @@ object ViewUtils {
     fun setLanguageSelected(context: Context) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         prefs.edit().putBoolean(KEY_LANGUAGE_SELECTED, true).apply()
+    }
+
+    fun getSelectedLanguage(context: Context): String {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_SELECTED_LANGUAGE, "en") ?: "en"
+    }
+    fun setSelectedLanguage(context: Context, language: String) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_SELECTED_LANGUAGE, language).apply()
     }
 
     fun isIntroShown(context: Context): Boolean {

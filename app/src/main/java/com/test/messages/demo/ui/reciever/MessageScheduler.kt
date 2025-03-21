@@ -14,7 +14,6 @@ object MessageScheduler {
     fun scheduleMessage(context: Context, message: ScheduledMessage) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         if (!alarmManager.canScheduleExactAlarms()) {
-            Log.d("MessageScheduler", "Exact alarms not allowed. Requesting permission.")
             return
         }
 
@@ -28,7 +27,6 @@ object MessageScheduler {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        Log.d("MessageScheduler", "Exact alarms allowed.")
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, message.scheduledTime, pendingIntent)
     }
 }

@@ -12,7 +12,7 @@ import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databas
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class RecycleBinActivity : AppCompatActivity() {
+class RecycleBinActivity : BaseActivity() {
     private lateinit var binding: ActivityRecyclebinBinding
     private lateinit var recycleBinAdapter: RecycleBinAdapter
     private val selectedMessages = mutableSetOf<DeletedMessage>()

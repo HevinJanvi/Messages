@@ -30,7 +30,7 @@ import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ContactActivtiy : AppCompatActivity() {
+class ContactActivtiy : BaseActivity() {
     private lateinit var binding: ActivityContactBinding
     private lateinit var contactAdapter: ContactAdapter
     private var selectedContacts = mutableListOf<ContactItem>()

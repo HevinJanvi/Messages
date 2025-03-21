@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,11 +21,12 @@ import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Utils.SmsPermissionUtils
+import com.test.messages.demo.ui.reciever.UnreadMessageListener
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity(), UnreadMessageListener {
 
     private lateinit var binding: ActivityMainBinding
     private var selectedMessagesCount = 0
@@ -148,6 +150,7 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.executePendingTransactions()
         val loadedFragment =
             supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+
         loadedFragment?.let {
             val totalMessages = it.viewModel.messages.value?.size ?: 0
             updateTotalMessagesCount(totalMessages)
@@ -181,17 +184,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    /*private fun updatePinLayout(isPinned: Boolean) {
-        if (isPinned) {
-            binding.icpin.setImageResource(R.drawable.ic_unpin)
-            binding.txtPin.text = getString(R.string.unpin)
-        } else {
-            binding.icpin.setImageResource(R.drawable.ic_pin)
-            binding.txtPin.text = getString(R.string.pin)
-        }
-    }*/
-
     private fun updateSelectedItemsCount(count: Int) {
         selectedMessagesCount = count
         binding.txtSelectedCount.text =
@@ -210,6 +202,13 @@ class MainActivity : AppCompatActivity() {
     fun updateTotalMessagesCount(count: Int) {
         binding.include.newMessage.text = "$count"
     }
+
+    override fun onUnreadMessagesCountUpdated(count: Int) {
+        // Update UI (e.g., show badge count)
+        Log.d("MainActivity", "Unread Messages: $count")
+        binding.include.unreadCount.text = "$count"
+    }
+
 
     fun showPopupHome(view: View) {
         val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater

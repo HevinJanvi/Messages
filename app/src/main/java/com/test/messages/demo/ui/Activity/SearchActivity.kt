@@ -21,7 +21,7 @@ import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySearchBinding
     private val viewModel: MessageViewModel by viewModels()
@@ -53,8 +53,6 @@ class SearchActivity : AppCompatActivity() {
 
         binding.recyclerViewContacts.layoutManager = LinearLayoutManager(this)
         contactAdapter = SearchContactAdapter(contactList) { contact ->
-            Log.d("TAG", "onCreate:search "+contact.name)
-
             val intent = Intent(this, ConversationActivity::class.java).apply {
                 putExtra("EXTRA_THREAD_ID", threadId)
                 putExtra("NUMBER", contact.phoneNumber)
@@ -69,7 +67,6 @@ class SearchActivity : AppCompatActivity() {
         binding.searchInput.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 val query = s.toString()
-                Log.d("SearchActivity", "User typed: $query")
                 if (query.isNotEmpty()) {
                     viewModel.searchMessages(query, threadId)
                     viewModel.searchContacts(query)

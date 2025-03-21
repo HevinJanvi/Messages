@@ -439,7 +439,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val threadId = it.getLong(it.getColumnIndexOrThrow("thread_id"))
                 threadId
             } else {
-                null // No group thread found
+                null
             }
         }
     }
@@ -644,12 +644,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val uri =
                     contentResolver.insert(BlockedNumberContract.BlockedNumbers.CONTENT_URI, values)
                 if (uri != null) {
-                    Log.d("BlockMessages", "Successfully blocked number: ${message.number}")
                 } else {
-                    Log.d("BlockMessages", "Failed to block number: ${message.number}")
                 }
             } catch (e: Exception) {
-                Log.d("BlockMessages", "Error blocking number: ${message.number}", e)
             }
         }
     }
@@ -685,56 +682,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
 
-    /*     fun getAllMessages(threadId: String?): List<MessageItem> {
-            val messages = mutableListOf<MessageItem>()
-            val uri = Telephony.Sms.CONTENT_URI
-            val projection = arrayOf(
-                Telephony.Sms._ID,
-                Telephony.Sms.BODY,
-                Telephony.Sms.THREAD_ID,
-                Telephony.Sms.ADDRESS,
-                Telephony.Sms.DATE,
-                Telephony.Sms.READ
-            )
-
-            val selection = if (threadId != null) "${Telephony.Sms.THREAD_ID}=?" else null
-            val selectionArgs = if (threadId != null) arrayOf(threadId) else null
-
-            val cursor: Cursor? = context.contentResolver.query(uri, projection, selection, selectionArgs, null)
-            cursor?.use {
-                val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-                val threadIdIndex = it.getColumnIndex(Telephony.Sms.THREAD_ID)
-                val senderIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-                val timestampIndex = it.getColumnIndex(Telephony.Sms.DATE)
-                val isReadIndex = it.getColumnIndex(Telephony.Sms.READ)
-
-                while (it.moveToNext()) {
-                    val body = it.getString(bodyIndex)
-                    val tId = it.getLong(threadIdIndex) // Convert to Long correctly
-                    val sender = it.getString(senderIndex) ?: "Unknown"
-                    val timestamp = it.getLong(timestampIndex)
-                    val isRead = it.getInt(isReadIndex) == 1
-
-                    // Add missing fields with default values
-                    messages.add(
-                        MessageItem(
-                            threadId = tId,
-                            sender = sender,
-                            number = sender, // Assuming sender is the number
-                            body = body,
-                            timestamp = timestamp,
-                            isRead = isRead,
-                            reciptid = 0, // Default value
-                            reciptids = "", // Default value
-                            profileImageUrl = "", // Default value
-                            isPinned = false, // Default value
-                            isGroupChat = false // Default value
-                        )
-                    )
-                }
-            }
-            return messages
-        }*/
     fun getAllMessages(threadId: String?): List<MessageItem> {
         val messages = mutableListOf<MessageItem>()
         val uri = Telephony.Sms.CONTENT_URI

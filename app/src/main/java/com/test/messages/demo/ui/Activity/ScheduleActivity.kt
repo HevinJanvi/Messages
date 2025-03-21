@@ -23,7 +23,7 @@ import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
-class ScheduleActivity : AppCompatActivity() {
+class ScheduleActivity : BaseActivity() {
     private lateinit var binding: ActivityScheduleBinding
     private lateinit var adapter: ScheduledMessageAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +82,6 @@ class ScheduleActivity : AppCompatActivity() {
     }
 
     private fun sendMessageImmediately(message: ScheduledMessage) {
-        Log.d("ScheduleActivity", "Sending now: ${message.threadId}")
         val messagingUtils = MessageUtils(this)
 
         Thread {
@@ -109,13 +108,8 @@ class ScheduleActivity : AppCompatActivity() {
                         requireDeliveryReport = false,
                         messageUri = messageUri
                     )
-                    Log.d(
-                        "TAG",
-                        "Scheduled message sent to: ${it.recipient} at ${System.currentTimeMillis()}"
-                    )
                     AppDatabase.getDatabase(this).scheduledMessageDao().delete(it)
                 } catch (e: Exception) {
-                    Log.d("TAG", "Failed to send scheduled message to ${it.recipient}", e)
                 }
             }
         }.start()

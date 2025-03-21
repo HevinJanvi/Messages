@@ -54,8 +54,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                 if (isDeleted) {
                     if (isDropMessagesEnabled) {
-                        Log.d("SmsReceiver", "Drop Messages is ON, ignoring message from: $address")
-                        return@launch  // Exit without inserting message
+                        return@launch
                     }
                     threadId = getThreadId(context, address)
                     insertMessageIntoSystemDatabase(
@@ -75,19 +74,9 @@ class SmsReceiver : BroadcastReceiver() {
                     if (!isAlreadyBlocked) {
                         repository.blockConversation(threadId, address)
                         repository.removeOldBlockedThreadIds(address, threadId)
-                        Log.d(
-                            "TAG",
-                            "onReceive: Blocked new thread ID $threadId and removed old ones for $address"
-                        )
-                    } else {
-                        Log.d(
-                            "TAG",
-                            "onReceive: Thread ID $threadId is already blocked, skipping..."
-                        )
                     }
 
                 } else {
-                    Log.d("SmsReceiver", "Message from unblocked number: $address")
                     threadId = getThreadId(context, address)
                     insertMessageIntoSystemDatabase(
                         context,
@@ -103,24 +92,12 @@ class SmsReceiver : BroadcastReceiver() {
                     )
                 }
 
-
-
-
-
                 val sharedPreferences = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
-// Check global wake setting
                 val isGlobalWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_GLOBAL", false)
-// Check thread-specific wake setting, defaulting to global if not set
                 val isThreadWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_$threadId", isGlobalWakeEnabled)
-// Wake screen if global mode is ON or if the specific thread has it ON
                 if (isThreadWakeEnabled) {
-                    Log.d("TAG", "Waking up screen for thread ID: $threadId (Global: $isGlobalWakeEnabled, Thread: $isThreadWakeEnabled)")
                     wakeUpScreen(context)
-                } else {
-                    Log.d("TAG", "Wake-up skipped for thread ID: $threadId")
                 }
-
-
                 val archivedThreads = repository.getArchivedThreadIds()
                 val blockedThreads = repository.getBlockThreadIds()
 
@@ -128,12 +105,10 @@ class SmsReceiver : BroadcastReceiver() {
                 val isBlocked = blockedThreads.contains(threadId)
 
                 if (!isArchived && !isBlocked) {
-//                    showNotification(context, address, body, threadId)
-                    incrementMessageCount(threadId)  // ✅ Increment count
+                    incrementMessageCount(threadId)
                     showNotification(context, address, body, threadId)
 
                 } else {
-                    Log.d("SmsReceiver", "Skipping notification for archived thread ID: $threadId")
                 }
                 repository.getMessages()
                 repository.getConversation(threadId)
@@ -165,9 +140,6 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
 
-    fun resetMessageCount(threadId: Long) {
-        messageCounts[threadId] = 0
-    }
     private fun insertMessageIntoSystemDatabase(
         context: Context,
         address: String,
@@ -195,12 +167,9 @@ class SmsReceiver : BroadcastReceiver() {
 
             val uri = context.contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values)
             if (uri != null) {
-                Log.d("SmsReceiver", "SMS inserted into system database: $uri")
             } else {
-                Log.e("SmsReceiver", "Failed to insert SMS into system database")
             }
         } catch (e: Exception) {
-            Log.e("SmsReceiver", "Error inserting SMS: ${e.message}")
         }
     }
 

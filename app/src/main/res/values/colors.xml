@@ -31,6 +31,7 @@
     <color name="yellow">#FFF5AB</color>
     <color name="per_bg_clr">#F3F8FF</color>
     <color name="dot_clr">#D9D9D9</color>
+    <color name="done_clr">#E5EEFC</color>
 
 
 </resources>

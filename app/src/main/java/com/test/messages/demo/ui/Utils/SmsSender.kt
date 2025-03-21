@@ -60,14 +60,7 @@ class SmsSender(val app: Application) {
 
             val partId = if (messageCount <= 1) 0 else i + 1
             if (requireDeliveryReport && i == messageCount - 1) {
-             /*   deliveryIntents.add(
-                    PendingIntent.getBroadcast(
-                        app,
-                        partId,
-                        getDeliveredStatusIntent(messageUri, subId),
-                        flags
-                    )
-                )*/
+
             } else {
                 deliveryIntents.add(null)
             }

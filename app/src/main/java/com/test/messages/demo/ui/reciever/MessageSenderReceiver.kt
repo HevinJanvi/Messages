@@ -13,7 +13,6 @@ import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databas
 class MessageSenderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val threadId = intent.getStringExtra("threadId") ?: return
-        Log.d("MessageSenderReceiver", "Received threadId: $threadId")
 
         val messagingUtils = MessageUtils(context)
 
@@ -40,11 +39,9 @@ class MessageSenderReceiver : BroadcastReceiver() {
                         requireDeliveryReport = false,
                         messageUri = messageUri
                     )
-                    Log.d("TAG", "Scheduled message sent to: ${it.recipient} at ${System.currentTimeMillis()}")
 
                     AppDatabase.getDatabase(context).scheduledMessageDao().delete(it)
                 } catch (e: Exception) {
-                    Log.d("TAG", "Failed to send scheduled message to ${it.recipient}", e)
                 }
             }
         }.start()

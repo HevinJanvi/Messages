@@ -18,7 +18,7 @@ object SmsPermissionUtils {
             context.startActivity(intent)
             false
         } else {
-            true // ✅ Continue execution
+            true
         }
     }
 }

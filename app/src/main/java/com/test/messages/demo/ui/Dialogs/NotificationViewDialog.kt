@@ -51,12 +51,9 @@ class NotificationViewDialog(
         }
 
         val radioButtons = listOf(check1, check2, check3)
-
-        // Set listener for each radio button
         radioButtons.forEach { radioButton ->
             radioButton.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    // Uncheck all other radio buttons
                     radioButtons.forEach { other ->
                         if (other != radioButton) other.isChecked = false
                     }

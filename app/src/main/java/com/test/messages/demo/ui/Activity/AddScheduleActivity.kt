@@ -28,7 +28,7 @@ import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class AddScheduleActivity : AppCompatActivity() {
+class AddScheduleActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAddScheduleBinding
     private lateinit var contactAdapter: ContactAdapter
@@ -177,7 +177,7 @@ class AddScheduleActivity : AppCompatActivity() {
         selectedContacts.remove(contact)
         val contactView = selectedContactViews[contact.phoneNumber]
         if (contactView != null) {
-            selectedContactViews.remove(contact.phoneNumber) // Remove from map
+            selectedContactViews.remove(contact.phoneNumber)
         }
     }
 

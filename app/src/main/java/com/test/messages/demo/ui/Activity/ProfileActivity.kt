@@ -44,7 +44,7 @@ import kotlinx.coroutines.withContext
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
 
-class ProfileActivity : AppCompatActivity() {
+class ProfileActivity : BaseActivity() {
     private lateinit var binding: ActivityProfileBinding
     private var threadId: Long = -1
     private lateinit var number: String
@@ -77,7 +77,6 @@ class ProfileActivity : AppCompatActivity() {
         if (threadId != -1L) {
             checkIfArchived(threadId)
         }
-
 
     }
 
@@ -129,11 +128,13 @@ class ProfileActivity : AppCompatActivity() {
             makeCall(number)
         }
         binding.profileMessage.setOnClickListener {
-            val intent = Intent(this, ConversationActivity::class.java)
-            intent.putExtra("EXTRA_THREAD_ID", threadId)
-            intent.putExtra("NUMBER", number)
-            intent.putExtra("NAME", name)
-            intent.putExtra("isGroup", false)
+            val intent = Intent(this, ConversationActivity::class.java).apply {
+                putExtra("EXTRA_THREAD_ID", threadId)
+                putExtra("NUMBER", number)
+                putExtra("NAME", name)
+                putExtra("isGroup", false)
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            }
             startActivity(intent)
         }
 

@@ -18,23 +18,15 @@ object TimeUtils {
         val messageTime = Calendar.getInstance().apply { timeInMillis = timestamp }
 
         return when {
-            // Today: Show time (e.g., 9:30 AM)
             isSameDay(now, messageTime) -> {
                 SimpleDateFormat("h:mm a", context).format(messageTime.time)
             }
-            // Yesterday: Show "Yesterday"
             isYesterday(now, messageTime) -> {
                 "Yesterday"
             }
-            // Within last 7 days (excluding today and yesterday): Show weekday name (e.g., "Thursday")
-//            isWithinLast7Days(now, messageTime) -> {
-//                SimpleDateFormat("EEEE", context).format(messageTime.time)
-//            }
-            // This year but older than a week: Show "12 Feb"
             isSameYear(now, messageTime) -> {
                 SimpleDateFormat("d MMM", context).format(messageTime.time)
             }
-            // Older than a year: Show "12 Feb 24"
             else -> {
                 SimpleDateFormat("d MMM yy", context).format(messageTime.time)
             }
@@ -53,7 +45,7 @@ object TimeUtils {
         val diff = now.timeInMillis - messageTime.timeInMillis
         val daysDiff = TimeUnit.MILLISECONDS.toDays(diff)
 
-        return daysDiff in 2..6 // Exclude today (0) and yesterday (1)
+        return daysDiff in 2..6
     }
 
 
@@ -72,7 +64,6 @@ object TimeUtils {
             Color.parseColor("#6955D2"),
             Color.parseColor("#4FA784"),
             Color.parseColor("#1A73E8")
-//            Color.parseColor("#9C27B0")  // Purple
         )
         val index = (input.hashCode() and 0x7FFFFFFF) % colors.size
         return colors[index]

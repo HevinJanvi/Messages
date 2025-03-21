@@ -11,14 +11,6 @@ class HeadlessSmsSendService : Service() {
             if (intent == null) {
                 return START_NOT_STICKY
             }
-
-//            val number = Uri.decode(intent.dataString!!.removePrefix("sms:").removePrefix("smsto:").removePrefix("mms").removePrefix("mmsto:").trim())
-//            val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-//            if (!text.isNullOrEmpty()) {
-//                val addresses = listOf(number)
-//                val subId = Settings.DEFAULT_SUBSCRIPTION_ID
-//                sendMessageCompat(text, addresses, subId, emptyList())
-//            }
         } catch (ignored: Exception) {
         }
 

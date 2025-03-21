@@ -17,7 +17,7 @@ import java.util.Date
 import java.util.Locale
 
 class RecycleBinAdapter(
-    private val onSelectionChanged: (Int) -> Unit // Callback to notify selection count
+    private val onSelectionChanged: (Int) -> Unit
 ) : RecyclerView.Adapter<RecycleBinAdapter.ViewHolder>() {
 
     private var messages: MutableList<DeletedMessage> = mutableListOf()
@@ -31,7 +31,6 @@ class RecycleBinAdapter(
         val date: TextView = itemView.findViewById(R.id.date)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
 
-        //        val checkbox: CheckBox = itemView.findViewById(R.id.checkbox)
         val container: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
     }
 
@@ -83,7 +82,6 @@ class RecycleBinAdapter(
 
         updateSelectionUI(holder, message)
         onSelectionChanged(selectedMessages.size)
-        // Exit selection mode if no items selected
         if (selectedMessages.isEmpty()) {
             isMultiSelectionMode = false
             notifyDataSetChanged()

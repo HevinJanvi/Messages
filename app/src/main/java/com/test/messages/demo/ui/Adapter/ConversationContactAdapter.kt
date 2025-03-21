@@ -65,7 +65,6 @@ class ConversationContactAdapter(
     }
 
     fun submitList(newContacts: List<ContactItem>) {
-        // Filter out header items (those with cid = -1)
         this.contacts = newContacts
         notifyDataSetChanged()
     }

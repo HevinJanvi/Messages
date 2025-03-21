@@ -44,7 +44,6 @@ class SmsStatusSentReceiver : SendStatusReceiver() {
                     showSendingFailedNotification(context, messageId)
                     Sms.MESSAGE_TYPE_FAILED
                 }
-//                MessageUtils(context).updateSmsMessageSendingStatus(messageUri, type)
                 EventBus.getDefault().post(RefreshMessagesEvent())
 
             }
@@ -56,13 +55,6 @@ class SmsStatusSentReceiver : SendStatusReceiver() {
             if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 return@post
             }
-//            val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-//            ensureBackgroundThread {
-//                val address = context.getMessageRecipientAddress(messageId)
-//                val threadId = context.getThreadId(address)
-//                val recipientName = context.getNameFromAddress(address, privateCursor)
-//                context.notificationHelper.showSendingFailedNotification(recipientName, threadId)
-//            }
         }
     }
 

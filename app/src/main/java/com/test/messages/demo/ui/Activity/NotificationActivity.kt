@@ -16,7 +16,7 @@ import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.ViewUtils.getNotificationOption
 import com.test.messages.demo.ui.reciever.createNotificationChannel
 
-class NotificationActivity : AppCompatActivity() {
+class NotificationActivity : BaseActivity() {
 
     private lateinit var binding: ActivityNotificationBinding
     private var threadId: Long = -1
@@ -83,19 +83,10 @@ class NotificationActivity : AppCompatActivity() {
         var myNotificationChannel = notificationManager.getNotificationChannel(channelId)
 
         if (myNotificationChannel == null) {
-            Log.e(
-                "NotificationSettings",
-                "Notification channel for $contactNumber not found! Creating it now..."
-            )
             createNotificationChannel(context, contactNumber)
             myNotificationChannel = notificationManager.getNotificationChannel(channelId)
 
             if (myNotificationChannel == null) {
-                Toast.makeText(
-                    context,
-                    "Failed to create notification channel!",
-                    Toast.LENGTH_SHORT
-                ).show()
                 return
             }
         }

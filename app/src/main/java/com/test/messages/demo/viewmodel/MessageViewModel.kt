@@ -57,21 +57,6 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-   /* fun loadMessages() {
-        viewModelScope.launch {
-//            _messages.value = repository.getMessages()
-            (repository.messages as MutableLiveData).value = repository.getMessages()
-        }
-    }*/
-
-    /*fun loadMessages() {
-        viewModelScope.launch {
-            val updatedMessages = repository.getMessages() // ✅ Now properly returns a List<MessageItem>
-            (repository.messages as MutableLiveData).value = updatedMessages
-        }
-    }*/
-
-
 
     fun emptyConversation() {
         repository.emptyConversation()
@@ -304,8 +289,6 @@ class MessageViewModel @Inject constructor(
 
     fun searchContacts(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("ViewModel", "Searching contacts for: $query")
-
             val allContacts = repository.getContactDetails()
             val filteredContacts = allContacts.filter {
                 it.name!!.contains(query, ignoreCase = true) || it.phoneNumber.contains(query, ignoreCase = true)

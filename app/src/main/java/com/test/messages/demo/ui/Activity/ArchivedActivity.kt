@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class ArchivedActivity : AppCompatActivity() {
+class ArchivedActivity : BaseActivity() {
     private lateinit var binding: ActivityArchivedBinding
     private lateinit var adapter: ArchiveMessageAdapter
     private val viewModel: MessageViewModel by viewModels()
@@ -74,7 +74,6 @@ class ArchivedActivity : AppCompatActivity() {
             startActivity(intent)
         }
         viewModel.messages.observe(this) { messageList ->
-            Log.e("TAG", "onCreate:archive ")
             CoroutineScope(Dispatchers.IO).launch {
                 val archivedConversationIds =
                     viewModel.getArchivedConversations().map { it.conversationId }
@@ -87,9 +86,6 @@ class ArchivedActivity : AppCompatActivity() {
                     }
                     .sortedByDescending { it.isPinned }
 
-                /*val archivedMessages = messageList.filter { message ->
-                    archivedConversationIds.contains(message.threadId)
-                }*/
                 withContext(Dispatchers.Main) {
                     val layoutManager =
                         binding.archiveRecyclerView.layoutManager as LinearLayoutManager
@@ -297,7 +293,7 @@ class ArchivedActivity : AppCompatActivity() {
         val pinnedIds = selectedIds.filter { it in pinnedThreadIds }
 
         if (selectedIds.isEmpty()) {
-            binding.txtPinArchiv.text = getString(R.string.pin) // Default state when no selection
+            binding.txtPinArchiv.text = getString(R.string.pin)
             binding.icPinArchiv.setImageResource(R.drawable.ic_pin)
             return
         }
@@ -311,31 +307,12 @@ class ArchivedActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-//        EventBus.getDefault().register(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-//        EventBus.getDefault().unregister(this)
-    }
-
-    //    @RequiresApi(Build.VERSION_CODES.Q)
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    fun onNewSmsReceived(event: NewSmsEvent) {
-//        Log.d("ArchivedActivity", "📩 New SMS received for thread: ${event.threadId}")
-//        viewModel.loadMessages()
-//
-//    }
-
 
     override fun onBackPressed() {
         if (adapter.selectedMessages.size > 0) {
             adapter.clearSelection()
         } else {
             super.onBackPressed()
-
         }
     }
 }

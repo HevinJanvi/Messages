@@ -27,7 +27,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 @AndroidEntryPoint
 
-class StarredMessagesActivity : AppCompatActivity() {
+class StarredMessagesActivity : BaseActivity() {
 
     private lateinit var adapter: StarredMessagesAdapter
     private lateinit var binding: ActivityStarredMessagesBinding
@@ -50,8 +50,6 @@ class StarredMessagesActivity : AppCompatActivity() {
         starredMessageDao = database.starredMessageDao()
         loadFilteredMessages()
         viewModel.lastStarredMessages.observe(this) { lastStarredMessages ->
-            Log.d("DEBUG", "Observed Last Starred Messages: $lastStarredMessages")
-
             adapter.setLastStarredMessages(lastStarredMessages)
             binding.recyclerViewStarred.post {
                 adapter.notifyDataSetChanged()

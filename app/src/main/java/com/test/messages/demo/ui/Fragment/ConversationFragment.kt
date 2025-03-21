@@ -1,6 +1,7 @@
 package com.test.messages.demo.ui.Fragment
 
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -24,6 +25,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
+import com.test.messages.demo.R
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
 import com.test.messages.demo.ui.Activity.ConversationActivity
@@ -31,6 +33,7 @@ import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
+import com.test.messages.demo.ui.reciever.UnreadMessageListener
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -54,6 +57,19 @@ class ConversationFragment : Fragment() {
     var onSelectionChanged: ((Int, Int) -> Unit)? = null
     private var blockedNumbers: List<String> = emptyList()
 
+    private var unreadMessageListener: UnreadMessageListener? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is UnreadMessageListener) {
+            unreadMessageListener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        unreadMessageListener = null
+    }
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -110,9 +126,11 @@ class ConversationFragment : Fragment() {
                     .sortedByDescending { it.isPinned }
 
                 val unreadMessagesCount = filteredMessages.count { !it.isRead }
-//                Log.d("Messages", "Unread messages count: $unreadMessagesCount")
+                Log.d("Messages", "Unread messages count: $unreadMessagesCount")
 
                 withContext(Dispatchers.Main) {
+                    unreadMessageListener?.onUnreadMessagesCountUpdated(unreadMessagesCount)
+
                     if (adapter.selectedMessages != filteredMessages) {
                         adapter.submitList(filteredMessages)
                     }
@@ -169,13 +187,7 @@ class ConversationFragment : Fragment() {
                     val deletedRows = contentResolver.delete(uri, null, null)
 
                     if (deletedRows > 0) {
-                        Log.d(
-                            "SMS_DELETE",
-                            "Deleted thread ID $threadId with $deletedRows messages."
-                        )
                         updatedList.removeAll { it.threadId == threadId }
-                    } else {
-                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
                     }
                 }
                 Handler(Looper.getMainLooper()).post {
@@ -187,7 +199,6 @@ class ConversationFragment : Fragment() {
                 }
 
             } catch (e: Exception) {
-                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
             }
         }.start()
     }
@@ -207,9 +218,9 @@ class ConversationFragment : Fragment() {
         val selectedIds = adapter.selectedMessages.map { it.threadId }
         CoroutineScope(Dispatchers.IO).launch {
             val pinnedIds =
-                selectedIds.filter { viewModel.isPinned(it) } // Get only pinned messages
+                selectedIds.filter { viewModel.isPinned(it) }
             val unpinnedIds =
-                selectedIds.filterNot { viewModel.isPinned(it) } // Get only unpinned messages
+                selectedIds.filterNot { viewModel.isPinned(it) }
             when {
                 pinnedIds.isNotEmpty() && unpinnedIds.isNotEmpty() -> {
                     if (pinnedIds.size > unpinnedIds.size) {
@@ -293,7 +304,6 @@ class ConversationFragment : Fragment() {
             adapter.selectedMessages.clear()
             val allMessages = adapter.getAllMessages()
             adapter.selectedMessages.addAll(allMessages)
-            Log.d("ConversationFragment", "All messages selected: ${adapter.selectedMessages.size}")
         } else {
             adapter.selectedMessages.clear()
         }
@@ -315,7 +325,6 @@ class ConversationFragment : Fragment() {
         )
 
         if (smsPermission == PackageManager.PERMISSION_GRANTED && contactsPermission == PackageManager.PERMISSION_GRANTED) {
-            Log.d("ObserverDebug", "checkPermissionsAndLoadMessages: ")
             viewModel.loadMessages()
         } else {
             requestPermissions(
@@ -346,7 +355,8 @@ class ConversationFragment : Fragment() {
                 if (smsPermissionGranted && contactsPermissionGranted) {
                     viewModel.loadMessages()
                 } else {
-                    Toast.makeText(requireActivity(), "Permissions denied", Toast.LENGTH_SHORT)
+                    Toast.makeText(requireActivity(),
+                        getString(R.string.permissions_denied), Toast.LENGTH_SHORT)
                         .show()
                 }
             }

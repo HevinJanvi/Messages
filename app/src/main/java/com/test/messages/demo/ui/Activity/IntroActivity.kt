@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
@@ -12,7 +13,7 @@ import com.test.messages.demo.databinding.ActivityIntroBinding
 import com.test.messages.demo.ui.Adapter.IntroPagerAdapter
 import com.test.messages.demo.ui.Utils.ViewUtils
 
-class IntroActivity : AppCompatActivity() {
+class IntroActivity : BaseActivity() {
 
     private lateinit var binding: ActivityIntroBinding
     private val images = arrayOf(
@@ -26,6 +27,9 @@ class IntroActivity : AppCompatActivity() {
         binding = ActivityIntroBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+
+        val selectedLanguage = ViewUtils.getSelectedLanguage(this)
+        Log.d("Activity", "Selected Language on Splash i: $selectedLanguage")
 
         titles = arrayOf(
             getString(R.string.intro_txt1),

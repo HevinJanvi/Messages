@@ -44,7 +44,7 @@ class GroupMemberAdapter(
         val number = members[position]
 
         CoroutineScope(Dispatchers.IO).launch {
-            val contactName = getContactNameOrNumber(context, number) // Get contact name
+            val contactName = getContactNameOrNumber(context, number)
             withContext(Dispatchers.Main) {
                 holder.nameText.text = contactName
             }
@@ -81,6 +81,6 @@ class GroupMemberAdapter(
                 return it.getString(0)
             }
         }
-        return phoneNumber // Return number if no contact name found
+        return phoneNumber
     }
 }

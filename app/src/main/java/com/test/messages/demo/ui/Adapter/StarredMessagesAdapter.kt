@@ -33,7 +33,6 @@ class StarredMessagesAdapter :
 
     fun setLastStarredMessages(messages: Map<Long, String>) {
         lastStarredMessages = messages
-        Log.d("DEBUG", "Adapter Updated with Last Starred Messages: $lastStarredMessages")
         notifyDataSetChanged()
     }
 

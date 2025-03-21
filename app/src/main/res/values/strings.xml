@@ -55,6 +55,7 @@
     <string name="learn_more">&#160;&#160;<u>Learn More</u></string>
     <string name="this_sms_is_100_secure">This SMS is 100% secure. Messages never collect data without prior consent. Everything is processed and stored on your phone.</string>
     <string name="ok">Ok</string>
+
     <string name="short_codes_are_local">Short codes are local or personalized numbers for sending international SMS messages.</string>
     <string name="you_can_reply">You can reply to numbers-only short codes,but not to codes with letters and numbers,like \"MAG007".</string>
     <string name="otp_copied">OTP Copied!</string>
@@ -79,13 +80,8 @@
     <string name="customize_notification">Customize notification</string>
     <string name="archive">Archive</string>
     <string name="copied">Copied</string>
-    <string name="title_activity_group_profile">GroupProfileActivity</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-
     <string name="conversation_title">Conversation title</string>
     <string name="save">Save</string>
     <string name="notifications">Notifications</string>
@@ -111,6 +107,7 @@
     <string name="copy_text">Copy Text</string>
     <string name="schedule_at">Schedule at\n</string>
     <string name="welcome_to_messages">Welcome to <font fgcolor="#1A73E8">Messages</font></string>
+
     <string name="to_send_and_receive">To send and receive messages, set Messages\nas your default SMS app.</string>
     <string name="instant_replies_in_one_tap">Instant replies in one tap.</string>
     <string name="stay_safe_with">Stay safe with secure messaging.</string>
@@ -122,5 +119,63 @@
     <string name="intro_subtxt1">Stay connected with a clean, organized inbox.Chat effortlessly anytime!</string>
     <string name="intro_subtxt2">Schedule texts to send automatically—never forget a message!</string>
     <string name="intro_subtxt3">Easily block spam and unwanted contacts to keep your inbox clean.</string>
+    <string name="select_language">Select Language</string>
+    <string name="flag">flag</string>
+    <string name="chinese">Chinese ( Simplified )</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="ukrainian">Ukrainian</string>
+    <string name="turkish">Turkish</string>
+    <string name="thai">Thai</string>
+    <string name="spanish">Spanish</string>
+    <string name="russian">Russian</string>
+    <string name="portuguese">Portuguese</string>
+    <string name="polish">Polish</string>
+    <string name="korean">Korean</string>
+    <string name="japanese">Japanese</string>
+    <string name="italian">Italian</string>
+    <string name="indonesian">Indonesian</string>
+    <string name="hindi">Hindi</string>
+    <string name="german">German</string>
+    <string name="french">French</string>
+    <string name="filipino">Filipino</string>
+    <string name="arabic">Arabic</string>
+    <string name="bangla">Bangla</string>
+    <string name="afrikaans">Afrikaans</string>
+    <string name="english">English</string>
+    <string name="reminder_deleted">Reminder deleted</string>
+    <string name="reminder_set_for">Reminder set for: </string>
+    <string name="no_image_to_share">No image to share</string>
+    <string name="deleted_selected_messages">Deleted selected messages</string>
+    <string name="no_numbers_selected">No numbers selected</string>
+    <string name="unblocked_selected_numbers">Unblocked selected numbers</string>
+    <string name="please_set_this_app_as_default">Please set this app as default SMS handler</string>
+    <string name="group_chat">Group Chat</string>
+    <string name="failed_to_create_notification">Failed to create notification!</string>
+    <string name="please_set_this_app">Please set this app as the default SMS app</string>
+    <string name="permissions_denied">Permissions denied</string>
+
+
+    <string name="subtext_english" translatable="false">(English)</string>
+    <string name="subtext_German" translatable="false">(Deutsch)</string>
+    <string name="subtext_Spanish" translatable="false">(español)</string>
+    <string name="subtext_French" translatable="false">(Français)</string>
+    <string name="subtext_Indian" translatable="false">(हिंदी)</string>
+    <string name="subtext_Indonesia" translatable="false">(bahasa)</string>
+    <string name="subtext_Japanese" translatable="false">(日本語)</string>
+    <string name="subtext_Korean" translatable="false">(한국인)</string>
+    <string name="subtext_portugal" translatable="false">(Português)</string>
+    <string name="subtext_Russian" translatable="false">(Русский)</string>
+    <string name="subtext_Vietnamese" translatable="false">(Tiếng Việt)</string>
+    <string name="subtext_chinese" translatable="false">(中国人)</string>
+    <string name="subtext_afrikaans" translatable="false">(Afrikaans)</string>
+    <string name="subtext_arabic" translatable="false">(عربي)</string>
+    <string name="subtext_bangla" translatable="false">(বাংলা)</string>
+    <string name="subtext_italian" translatable="false">(Italiana)</string>
+    <string name="subtext_polish" translatable="false">(Polski)</string>
+    <string name="subtext_thai" translatable="false">(แบบไทย)</string>
+    <string name="subtext_turkish" translatable="false">(Türkçe)</string>
+    <string name="subtext_fillipino" translatable="false">(Filipino)</string>
+    <string name="subtext_ukrainian" translatable="false">(українська)</string>
+
 
 </resources>

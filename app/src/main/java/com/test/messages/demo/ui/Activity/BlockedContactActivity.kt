@@ -24,7 +24,7 @@ import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class BlockedContactActivity : AppCompatActivity() {
+class BlockedContactActivity : BaseActivity() {
 
     private lateinit var binding: ActivityBlockContactBinding
     private lateinit var adapter: BlockedContactAdapter
@@ -65,7 +65,7 @@ class BlockedContactActivity : AppCompatActivity() {
     private fun toggleSelectAll(selectAll: Boolean) {
         adapter.selectedItems.clear()
         if (selectAll) {
-            adapter.selectedItems.addAll(adapter.getAllMessages()) // ✅ Select all messages
+            adapter.selectedItems.addAll(adapter.getAllMessages())
             adapter.isMultiSelectMode = true
         } else {
             adapter.isMultiSelectMode = false
@@ -76,20 +76,6 @@ class BlockedContactActivity : AppCompatActivity() {
     }
 
 
-    /*private fun deleteSelectedMessages() {
-        if (adapter.selectedItems.isEmpty()) {
-            Toast.makeText(this, getString(R.string.no_messages_selected), Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-        val selectedMessages = adapter.selectedItems.map { adapter.messages[it] }
-        val updatedList = adapter.messages.toMutableList()
-        selectedMessages.forEach { updatedList.remove(it) }
-        adapter.updateList(updatedList)
-        adapter.clearSelection()
-    }*/
-
-
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun deleteSelectedMessages() {
         if (adapter.selectedItems.isEmpty()) {
@@ -98,12 +84,12 @@ class BlockedContactActivity : AppCompatActivity() {
         }
 
         val contentResolver = contentResolver
-        val selectedMessages = adapter.selectedItems.toList() // Get selected messages
+        val selectedMessages = adapter.selectedItems.toList()
 
         Thread {
             try {
                 for (message in selectedMessages) {
-                    val messageUri = Uri.parse("content://sms/${message.threadId}") // Target specific SMS
+                    val messageUri = Uri.parse("content://sms/${message.threadId}")
                     val deletedRows = contentResolver.delete(messageUri, null, null)
 
                     if (deletedRows > 0) {
@@ -113,14 +99,14 @@ class BlockedContactActivity : AppCompatActivity() {
                     }
                 }
 
-                // Update UI on main thread
                 Handler(Looper.getMainLooper()).post {
                     val updatedList = adapter.messages.toMutableList().apply {
                         removeAll(selectedMessages)
                     }
                     adapter.updateList(updatedList)
                     adapter.clearSelection()
-                    Toast.makeText(this, "Deleted selected messages", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this,
+                        getString(R.string.deleted_selected_messages), Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
@@ -173,7 +159,7 @@ class BlockedContactActivity : AppCompatActivity() {
 
     private fun unblockSelectedNumbers() {
         if (adapter.selectedItems.isEmpty()) {
-            Toast.makeText(this, "No numbers selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_numbers_selected), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -199,7 +185,8 @@ class BlockedContactActivity : AppCompatActivity() {
 
                     adapter.updateList(updatedList)
                     adapter.clearSelection()
-                    Toast.makeText(this, "Unblocked selected numbers", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this,
+                        getString(R.string.unblocked_selected_numbers), Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
@@ -236,7 +223,7 @@ class BlockedContactActivity : AppCompatActivity() {
     }
 
     private fun updateSelectAllCheckbox() {
-        binding.btnSelectAll.setOnCheckedChangeListener(null) // Prevent infinite loop
+        binding.btnSelectAll.setOnCheckedChangeListener(null)
         binding.btnSelectAll.isChecked = adapter.selectedItems.size == adapter.getAllMessages().size
         binding.btnSelectAll.setOnCheckedChangeListener { _, isChecked -> toggleSelectAll(isChecked) }
     }

@@ -48,7 +48,6 @@
         <activity
             android:name=".ui.Activity.GroupProfileActivity"
             android:exported="false"
-            android:label="@string/title_activity_group_profile"
             android:theme="@style/Theme.MyApplication" />
         <activity
             android:name=".ui.Activity.ProfileActivity"

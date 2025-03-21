@@ -175,7 +175,7 @@ class NewConversationActivtiy : AppCompatActivity() {
         val contactView = selectedContactViews[contact.phoneNumber]
         if (contactView != null) {
             binding.selectedContactsLayout.removeView(contactView)
-            selectedContactViews.remove(contact.phoneNumber) // Remove from map
+            selectedContactViews.remove(contact.phoneNumber)
         }
         if (selectedContacts.isEmpty()) {
             binding.selectedContactsScroll.visibility = View.GONE
@@ -237,7 +237,6 @@ class NewConversationActivtiy : AppCompatActivity() {
             putExtra("NAME",selectedNames.joinToString(", "))
         }
         startActivity(intent)
-//        overrideActivityTransition(0,0)
         finish()
 
     }
@@ -272,7 +271,6 @@ class NewConversationActivtiy : AppCompatActivity() {
                     messageUri = messageUri
                 )
             } catch (e: Exception) {
-                Log.d("TAG", "Failed to send message to $address", e)
             }
         }
 

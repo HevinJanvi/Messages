@@ -75,7 +75,6 @@ class MessageUtils(val context: Context) {
         val values = ContentValues().apply {
             put(Sms.Outbox.TYPE, type)
         }
-        Log.d("TAG", "updateSmsMessageSendingStatus:- " +messageUri)
 
         try {
             if (messageUri != null) {
@@ -94,20 +93,13 @@ class MessageUtils(val context: Context) {
                 }
             }
         } catch (e: Exception) {
-//            context.showErrorToast(e)
         }
     }
 
-    fun getSmsMessageFromDeliveryReport(intent: Intent): SmsMessage? {
-        val pdu = intent.getByteArrayExtra("pdu")
-        val format = intent.getStringExtra("format")
-        return SmsMessage.createFromPdu(pdu, format)
-    }
 
     fun maybeShowErrorToast(resultCode: Int, errorCode: Int) {
         if (resultCode != Activity.RESULT_OK) {
             val msg = if (errorCode != SendStatusReceiver.NO_ERROR_CODE) {
-//                context.getString(R.string.carrier_error)
             } else {
                 when (resultCode) {
                     SmsManager.RESULT_ERROR_NO_SERVICE -> context.getString(R.string.error_service_unavailable)
@@ -116,15 +108,9 @@ class MessageUtils(val context: Context) {
                     else -> context.getString(R.string.unknown_error_sending_message, resultCode)
                 }
             }
-//            Handler(Looper.getMainLooper()).post {
-//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-//            }
-        } else {
+
         }
     }
 
 
-    companion object {
-        const val ADDRESS_SEPARATOR = "|"
-    }
 }

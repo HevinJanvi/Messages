@@ -53,11 +53,6 @@ class ContactAdapter(
                 if (sectionIndex in sections.indices) {
                     val section = sections[sectionIndex]
                     (holder as SectionHeaderViewHolder).bind(section)
-                } else {
-                    Log.e(
-                        "ContactAdapter",
-                        "Invalid section index: $sectionIndex for position: $position"
-                    )
                 }
             }
 

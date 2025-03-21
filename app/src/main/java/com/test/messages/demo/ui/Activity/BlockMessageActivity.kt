@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class BlockMessageActivity : AppCompatActivity() {
+class BlockMessageActivity : BaseActivity() {
     private lateinit var binding: ActivityBlockBinding
     private lateinit var adapter: BlockedMessagesAdapter
     private val viewModel: MessageViewModel by viewModels()
@@ -61,7 +61,6 @@ class BlockMessageActivity : AppCompatActivity() {
         }
         viewModel.loadBlockThreads()
         viewModel.messages.observe(this) { messageList ->
-            Log.d("TAG", "onCreate:block ")
             CoroutineScope(Dispatchers.IO).launch {
                 val blockConversationIds =
                     viewModel.getBlockedConversations().map { it.conversationId }
@@ -157,8 +156,6 @@ class BlockMessageActivity : AppCompatActivity() {
                     val deletedRows = contentResolver.delete(uri, null, null)
                     if (deletedRows > 0) {
                         deletedThreads.add(threadId)
-                    } else {
-                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
                     }
                 }
 
@@ -173,7 +170,6 @@ class BlockMessageActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
             }
         }.start()
     }

@@ -3,19 +3,17 @@ package com.test.messages.demo.ui.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Telephony
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.ViewUtils
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-       /* if (isDefaultSmsApp()) {
-            startActivity(Intent(this, MainActivity::class.java))
-        } else {
-            startActivity(Intent(this, SmsPermissionActivity::class.java))
-        }*/
+        /*val selectedLanguage = ViewUtils.getSelectedLanguage(this)
+        Log.d("Activity", "Selected Language on Splash: $selectedLanguage")*/
 
         when {
             !ViewUtils.isLanguageSelected(this) -> {
@@ -35,7 +33,4 @@ class SplashActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun isDefaultSmsApp(): Boolean {
-        return Telephony.Sms.getDefaultSmsPackage(this) == packageName
-    }
 }
