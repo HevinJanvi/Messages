@@ -1,6 +1,7 @@
 package com.test.messages.demo.ui.Activity
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.app.DatePickerDialog
 import android.app.NotificationManager
@@ -29,7 +30,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,15 +37,18 @@ import com.test.messages.demo.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.Database.Starred.StarredMessage
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ConversationItem
+import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
 import com.test.messages.demo.ui.Dialogs.LearnMoreDialog
-import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.ui.Utils.TimeUtils.formatHeaderDate
 import com.test.messages.demo.ui.Utils.ViewUtils
 import com.test.messages.demo.ui.Utils.ViewUtils.resetMessageCount
+import com.test.messages.demo.ui.reciever.ConversationDeletedEvent
+import com.test.messages.demo.ui.reciever.MessageDeletedEvent
 import com.test.messages.demo.ui.reciever.MessageScheduler
 import com.test.messages.demo.ui.reciever.MessageUnstarredEvent
 import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
@@ -442,6 +445,7 @@ class ConversationActivity : BaseActivity() {
         startActivity(chooser)
     }
 
+
     fun deleteSelectedMessages() {
         val contentResolver = contentResolver
         val selectedMessageItems = adapter.getSelectedItems().toList()
@@ -456,7 +460,37 @@ class ConversationActivity : BaseActivity() {
         }
 
         adapter.clearSelection()
+
+        val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
+        val lastMessageText = lastConversationItem?.body
+
+        EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText))
+        viewModel.loadConversation(threadId)
     }
+
+
+    /* fun deleteSelectedMessages() {
+         val contentResolver = contentResolver
+         val selectedMessageItems = adapter.getSelectedItems().toList()
+
+         for (messageItem in selectedMessageItems) {
+             val uri = Uri.parse("content://sms/${messageItem.id}")
+             contentResolver.delete(uri, null, null)
+             val position = adapter.getPositionOfMessage(messageItem)
+             if (position != RecyclerView.NO_POSITION) {
+                 adapter.removeMessageWithAnimation(position)
+             }
+         }
+
+         adapter.clearSelection()
+
+         val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
+         val lastMessageText = lastConversationItem?.body // Get last message text
+
+         EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText))
+         viewModel.loadConversation(threadId)
+     }*/
+
 
     private fun copySelectedMessages() {
         if (adapter.selectedItems.isNotEmpty()) {
@@ -573,8 +607,16 @@ class ConversationActivity : BaseActivity() {
             adapter.clearSelection()
             updateUI(0)
         } else {
+            setActivityResult()
             super.onBackPressed()
         }
+    }
+
+    private fun setActivityResult() {
+        val resultIntent = Intent().apply {
+            putExtra("RESULT_OK", true) // Just a success flag
+        }
+        setResult(Activity.RESULT_OK, resultIntent)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -723,6 +765,7 @@ class ConversationActivity : BaseActivity() {
         return Telephony.Sms.getDefaultSmsPackage(this) == packageName
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun requestDefaultSmsApp() {
         val intent = Intent(this, SmsPermissionActivity::class.java)
         smsPermissionLauncher.launch(intent)

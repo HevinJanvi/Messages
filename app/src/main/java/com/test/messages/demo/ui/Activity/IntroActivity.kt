@@ -29,7 +29,7 @@ class IntroActivity : BaseActivity() {
         setContentView(view)
 
         val selectedLanguage = ViewUtils.getSelectedLanguage(this)
-        Log.d("Activity", "Selected Language on Splash i: $selectedLanguage")
+        Log.d("TAG", "Selected Language on Splash i: $selectedLanguage")
 
         titles = arrayOf(
             getString(R.string.intro_txt1),

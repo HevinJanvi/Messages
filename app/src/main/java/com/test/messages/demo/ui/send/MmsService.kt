@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.reciever
+package com.test.messages.demo.ui.send
 
 import android.app.Service
 import android.content.Intent

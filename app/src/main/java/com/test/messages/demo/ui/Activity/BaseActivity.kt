@@ -25,7 +25,7 @@ open class BaseActivity : AppCompatActivity() {
 
     open fun setLanguage(context: Context): Context? {
         val languageCode = ViewUtils.getSelectedLanguage(context)
-        Log.d("TAG", "setLanguage: "+languageCode)
+//        Log.d("TAG", "setLanguage: "+languageCode)
         val locale = Locale(languageCode)
         Locale.setDefault(locale)
         val configuration = context.resources.configuration

@@ -11,7 +11,17 @@ data class MessageItem(
     val reciptid: Int,
     val reciptids: String,
     val profileImageUrl: String,
-    val isPinned: Boolean,
-    val isGroupChat: Boolean
+    var isPinned: Boolean,
+    val isGroupChat: Boolean,
+    val isMuted: Boolean
+){
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is MessageItem) return false
+        return threadId == other.threadId && body == other.body
+    }
 
-)
+    override fun hashCode(): Int {
+        return threadId.hashCode() * 31 + body.hashCode()
+    }
+}

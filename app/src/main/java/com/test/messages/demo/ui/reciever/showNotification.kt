@@ -27,16 +27,19 @@ fun showNotification(context: Context, sender: String, message: String, threadId
     when (previewOption) {
         0 -> { // Show Sender & Message
             contentTitle = sender
-            contentText =  message
+            contentText = message
         }
+
         1 -> { // Show Only Sender
             contentTitle = sender
             contentText = "$messageCount New message"
         }
+
         2 -> { // Hide Contents
             contentTitle = ""
             contentText = "$messageCount new messages"
         }
+
         else -> {
             contentTitle = sender
             contentText = message
@@ -62,14 +65,11 @@ fun showNotification(context: Context, sender: String, message: String, threadId
     }
 
 
-    val notification = NotificationCompat.Builder(context, channelId)
-        .setSmallIcon(R.drawable.ic_noti)
-        .setContentTitle(contentTitle)
-        .setContentText(contentText)
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setAutoCancel(true)
-        .setContentIntent(pendingIntent)
-        .build()
+    val notification =
+        NotificationCompat.Builder(context, channelId).setSmallIcon(R.drawable.ic_noti)
+            .setContentTitle(contentTitle).setContentText(contentText)
+            .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true)
+            .setContentIntent(pendingIntent).build()
 
     notificationManager.notify(notificationId, notification)
 }
@@ -78,6 +78,18 @@ fun createNotificationChannel(context: Context, contactNumber: String) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val channelId = "sms_channel_$contactNumber"  // Unique channel ID per contact
         val channelName = "$contactNumber"
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val channel = NotificationChannel(channelId, channelName, importance)
+
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
+    }
+}
+
+    fun createNotificationChannelGlobal(context: Context) {
+     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channelId = "sms_channel_"
+        val channelName = "Default"
         val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(channelId, channelName, importance)
 

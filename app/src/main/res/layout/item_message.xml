@@ -112,8 +112,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_mute"
-                android:visibility="gone"
+                android:src="@drawable/ic_mute2"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/icPin" />
@@ -124,7 +124,8 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:src="@drawable/ic_pin_item"
-                android:visibility="gone"
+                android:visibility="visible"
+                android:layout_marginEnd="13dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -149,7 +150,8 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/blue_dot"
                 android:adjustViewBounds="true"
-                android:visibility="gone"
+                android:visibility="visible"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 

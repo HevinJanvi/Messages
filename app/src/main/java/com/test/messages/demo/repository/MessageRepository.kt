@@ -16,6 +16,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.test.messages.demo.Database.Archived.ArchivedConversation
 import com.test.messages.demo.Database.Block.BlockConversation
+import com.test.messages.demo.Database.Notification.NotificationSetting
 import com.test.messages.demo.Database.Pin.PinMessage
 import com.test.messages.demo.Database.Starred.StarredMessage
 import com.test.messages.demo.data.ContactItem
@@ -187,6 +188,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             reciptids,
                             profileImageUrl,
                             false,
+                            false,
                             false
 
                         )
@@ -313,16 +315,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
         }
         return contactList
-    }
-
-    private fun normalizePhoneNumber(phoneNumber: String): String {
-        return try {
-            val phoneUtil = PhoneNumberUtil.getInstance()
-            val number = phoneUtil.parse(phoneNumber, Locale.getDefault().country)
-            phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.E164)
-        } catch (e: Exception) {
-            phoneNumber
-        }
     }
 
     fun getConversationDetails(threadId: Long): List<ConversationItem> {
@@ -601,7 +593,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                                 reciptids = "",
                                 profileImageUrl = "",
                                 isPinned = false,
-                                isGroupChat = false
+                                isGroupChat = false,
+                                isMuted = false
                             )
                         )
                     }
@@ -728,13 +721,51 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         reciptids = "",
                         profileImageUrl = "",
                         isPinned = false,
-                        isGroupChat = savedGroupName != null
+                        isGroupChat = savedGroupName != null,
+                        isMuted = false
                     )
                 )
             }
         }
         return messages
     }
+
+
+
+    private val notificationDao = AppDatabase.getDatabase(context).notificationDao()
+    suspend fun updateOrInsertThread(threadId: Long) {
+        if (threadId == -1L) return
+        val existingSetting = notificationDao.getNotificationSetting(threadId)
+        if (existingSetting == null) {
+            val newSetting = NotificationSetting(threadId = threadId)
+            notificationDao.insertNotificationSetting(newSetting)
+        }
+    }
+
+    suspend fun updatePreviewOption(threadId: Long, previewOption: Int) {
+        if (threadId == -1L) {
+            notificationDao.updateGlobalPreviewOption(previewOption)
+        } else {
+            notificationDao.updatePreviewOption(threadId, previewOption,true)
+        }
+    }
+
+    suspend fun insertMissingThreadIds(newThreadIds: List<Long>) {
+        val existingThreadIds = notificationDao.getAllThreadIds()
+        val missingThreadIds = newThreadIds.filter { it !in existingThreadIds }
+
+        if (missingThreadIds.isNotEmpty()) {
+            val defaultSettings = missingThreadIds.map { threadId ->
+                NotificationSetting(threadId, isNotificationOn = 0, isWakeScreenOn = true, isCustom = false, previewOption = 0)
+            }
+            notificationDao.insertNotificationSettings(defaultSettings)
+        }
+    }
+
+    suspend fun getMutedThreadIds(): List<Long> {
+        return notificationDao.getAllMutedThreads()
+    }
+
 
 
 }

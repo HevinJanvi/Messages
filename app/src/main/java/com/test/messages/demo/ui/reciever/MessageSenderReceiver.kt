@@ -5,8 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsManager
-import android.util.Log
-import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 

@@ -18,15 +18,19 @@ class SplashActivity : BaseActivity() {
         when {
             !ViewUtils.isLanguageSelected(this) -> {
                 startActivity(Intent(this, LanguageActivity::class.java))
+                finish()
             }
             !ViewUtils.isIntroShown(this) -> {
                 startActivity(Intent(this, IntroActivity::class.java))
+                finish()
             }
             !SmsPermissionUtils.isDefaultSmsApp(this) -> {
                 startActivity(Intent(this, SmsPermissionActivity::class.java))
+                finish()
             }
             else -> {
                 startActivity(Intent(this, MainActivity::class.java))
+                finish()
             }
         }
 

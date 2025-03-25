@@ -3,7 +3,6 @@ package com.test.messages.demo.ui.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Telephony
 import android.text.Editable
@@ -17,12 +16,11 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.databinding.ActivityAddScheduleBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
-import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint

@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.test.messages.demo.repository.MessageRepository
 import dagger.hilt.android.AndroidEntryPoint
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -92,23 +93,38 @@ class SmsReceiver : BroadcastReceiver() {
                     )
                 }
 
-                val sharedPreferences = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+                /*val sharedPreferences = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
                 val isGlobalWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_GLOBAL", false)
                 val isThreadWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_$threadId", isGlobalWakeEnabled)
                 if (isThreadWakeEnabled) {
                     wakeUpScreen(context)
+                }*/
+                val database = AppDatabase.getDatabase(context)
+                val notificationDao = database.notificationDao()
+                val isMuted = notificationDao.getNotificationStatus(threadId) ?: false
+                val wakeSetting = notificationDao.getSettings(threadId) ?: notificationDao.getSettings(-1)
+                val isWakeScreenEnabled = wakeSetting?.isWakeScreenOn ?: true
+
+                if (!isMuted) {
+                    Log.d("TAG", "Wake Screen DB Value: $isWakeScreenEnabled")
+                    if (isWakeScreenEnabled) {
+                        wakeUpScreen(context)
+                    }
+                } else {
+                    Log.d("SmsReceiver", "Notifications are muted for thread: $threadId")
                 }
+
+
+
                 val archivedThreads = repository.getArchivedThreadIds()
                 val blockedThreads = repository.getBlockThreadIds()
 
                 val isArchived = archivedThreads.contains(threadId)
                 val isBlocked = blockedThreads.contains(threadId)
 
-                if (!isArchived && !isBlocked) {
+                if (!isMuted && !isArchived && !isBlocked ) {
                     incrementMessageCount(threadId)
                     showNotification(context, address, body, threadId)
-
-                } else {
                 }
                 repository.getMessages()
                 repository.getConversation(threadId)
@@ -131,14 +147,10 @@ class SmsReceiver : BroadcastReceiver() {
         wakeLock.release()
     }
 
-
-
-
     private fun incrementMessageCount(threadId: Long) {
         val count = messageCounts[threadId] ?: 0
         messageCounts[threadId] = count + 1
     }
-
 
     private fun insertMessageIntoSystemDatabase(
         context: Context,

@@ -10,7 +10,9 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import com.test.messages.demo.data.SmsException
 import com.test.messages.demo.data.SmsException.Companion.EMPTY_DESTINATION_ADDRESS
 import com.test.messages.demo.data.SmsException.Companion.ERROR_SENDING_MESSAGE
-import com.test.messages.demo.ui.reciever.SmsStatusSentReceiver
+import com.test.messages.demo.ui.send.SendStatusReceiver
+import com.test.messages.demo.ui.send.SmsStatusSentReceiver
+import com.test.messages.demo.ui.send.getSmsManager
 
 class SmsSender(val app: Application) {
 

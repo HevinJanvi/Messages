@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.test.messages.demo.Database.Archived.ArchivedConversation
 import com.test.messages.demo.Database.Block.BlockConversation
+import com.test.messages.demo.Database.Notification.NotificationSetting
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.data.MessageItem
@@ -298,6 +299,35 @@ class MessageViewModel @Inject constructor(
                 _filteredContacts.value = filteredContacts
             }
         }
+    }
+
+
+
+    fun insertMissingThreadIds(threadIds: List<Long>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insertMissingThreadIds(threadIds)
+        }
+    }
+
+    fun updateOrInsertThread(threadId: Long) {
+        viewModelScope.launch {
+            repository.updateOrInsertThread(threadId)
+        }
+    }
+
+
+    private val _previewOption = MutableLiveData<Int>()
+    fun updatePreviewOption(threadId: Long, option: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updatePreviewOption(threadId, option)
+            withContext(Dispatchers.Main) {
+                _previewOption.value = option
+            }
+        }
+    }
+
+    fun getMutedThreadIds(): List<Long> {
+        return runBlocking { repository.getMutedThreadIds() }
     }
 
 }

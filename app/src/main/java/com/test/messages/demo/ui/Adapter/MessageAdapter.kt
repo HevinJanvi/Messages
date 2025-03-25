@@ -41,6 +41,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
         val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
         val icPin: ImageView = itemView.findViewById(R.id.icPin)
+        val icMute: ImageView = itemView.findViewById(R.id.icMute)
 
     }
 
@@ -86,6 +87,12 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.icPin.visibility = View.GONE
         }
 
+        if (message.isMuted) {
+            holder.icMute.visibility = View.VISIBLE
+        } else {
+            holder.icMute.visibility = View.GONE
+        }
+
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
@@ -121,6 +128,15 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         }
         onSelectionChanged(selectedMessages.size)
         notifyDataSetChanged()
+    }
+
+    fun updatePinIcons(threadIds: List<Long>) {
+        messages.forEachIndexed { index, message ->
+            if (message.threadId in threadIds) {
+                message.isPinned = !message.isPinned
+                notifyItemChanged(index)
+            }
+        }
     }
 
     fun clearSelection() {

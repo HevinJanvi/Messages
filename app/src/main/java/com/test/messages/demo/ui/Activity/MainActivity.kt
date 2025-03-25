@@ -24,6 +24,9 @@ import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.reciever.UnreadMessageListener
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity(), UnreadMessageListener {
@@ -52,6 +55,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             loadConversationFragment()
         }
 
+
         updateSelectedItemsCount(0)
         binding.icSelecteAll.setOnCheckedChangeListener { _, isChecked ->
             val fragment =
@@ -64,7 +68,29 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
         setupClickListeners()
 
+        CoroutineScope(Dispatchers.IO).launch {
+            val threadIds = fetchAllThreadIds() // Get all threads
+            viewModel.insertMissingThreadIds(threadIds) // Store in DB
+        }
     }
+
+    private fun fetchAllThreadIds(): List<Long> {
+        val threadIds = mutableListOf<Long>()
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(Telephony.Sms.THREAD_ID)
+
+        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            val threadIdIndex = cursor.getColumnIndex(Telephony.Sms.THREAD_ID)
+            while (cursor.moveToNext()) {
+                val threadId = cursor.getLong(threadIdIndex)
+                if (threadId != -1L) {
+                    threadIds.add(threadId)
+                }
+            }
+        }
+        return threadIds.distinct() // Remove duplicates before inserting
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupClickListeners() {
@@ -94,6 +120,11 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.pinMessages()
+        }
+        binding.muteLayout.setOnClickListener {
+            val fragment =
+                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+            fragment?.muteMessages()
         }
         binding.blockLayout.setOnClickListener {
             val fragment =
@@ -128,7 +159,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
         binding.include.lySetting.setOnClickListener {
-            val intent = Intent(this, NotificationActivity::class.java)
+            val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
@@ -156,6 +187,19 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             updateTotalMessagesCount(totalMessages)
         }
     }
+
+    fun updateMuteUnmuteUI(isMuted: Boolean) {
+        Log.d("TAG", "updateMuteUnmuteUI: isMuted = $isMuted")
+
+        if (!isMuted) {
+            binding.icmute.setImageResource(R.drawable.ic_unmute)
+            binding.txtMute.text = getString(R.string.unmute)
+        } else {
+            binding.icmute.setImageResource(R.drawable.ic_mute)
+            binding.txtMute.text = getString(R.string.mute)
+        }
+    }
+
 
     private fun updatePinLayout(selectedCount: Int, pinnedCount: Int) {
         if (selectedCount > 0) {
@@ -204,7 +248,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
     override fun onUnreadMessagesCountUpdated(count: Int) {
-        // Update UI (e.g., show badge count)
         Log.d("MainActivity", "Unread Messages: $count")
         binding.include.unreadCount.text = "$count"
     }
@@ -231,11 +274,14 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
     override fun onBackPressed() {
         if (selectedMessagesCount > 0) {
+            Log.d("TAG", "onBackPressed: " + selectedMessagesCount)
             updateSelectedItemsCount(0)
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.clearSelection()
         } else {
+            Log.d("TAG", "onBackPressed:else " + selectedMessagesCount)
+
             super.onBackPressed()
         }
     }

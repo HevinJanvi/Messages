@@ -1,18 +1,12 @@
-package com.test.messages.demo.ui.Utils
+package com.test.messages.demo.ui.send
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.provider.Telephony.Sms
 import android.telephony.SmsManager
-import android.telephony.SmsMessage
-import android.util.Log
-import android.widget.Toast
 import com.klinker.android.send_message.Settings
 import com.test.messages.demo.R
 import com.test.messages.demo.data.SmsException

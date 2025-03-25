@@ -176,6 +176,29 @@
     <string name="subtext_turkish" translatable="false">(Türkçe)</string>
     <string name="subtext_fillipino" translatable="false">(Filipino)</string>
     <string name="subtext_ukrainian" translatable="false">(українська)</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme_mode">Theme Mode</string>
+    <string name="system_mode">System mode</string>
+    <string name="app_languages">App Languages</string>
+    <string name="conversation_categories">Conversation Categories</string>
+    <string name="recover_or_delete_messages_anytime">Recover or delete messages anytime</string>
+    <string name="call_end_screen">Call End Screen</string>
+    <string name="call_string"><![CDATA[The phone permission & display over other apps gives you instant access about who is calling you. it helps to avoid spam calls and give instant access of recently SMS conversations.]]></string>
+    <string name="font_size">Font Size</string>
+    <string name="normal">Normal</string>
+    <string name="swipe_actions">Swipe actions</string>
+    <string name="configure_swipe_actions_for_conversation">Configure swipe actions for conversation</string>
+    <string name="general">General</string>
+    <string name="notification">Notification</string>
+    <string name="privacy_plicy">Privacy Plicy</string>
+    <string name="rate_on_google_play">Rate on Google Play</string>
+    <string name="share_app">Share App</string>
+    <string name="about_messages">About Messages</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="system">System</string>
+    <string name="unmute">Unmute</string>
+    <string name="mute">Mute</string>
 
 
 </resources>

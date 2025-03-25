@@ -1,0 +1,878 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    tools:context=".ui.Activity.SettingsActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolBarSetting"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/icBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:adjustViewBounds="true"
+            android:padding="1dp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="start"
+            android:text="@string/settings"
+            android:textColor="@color/textcolor"
+            android:textFontWeight="500"
+            android:textSize="19dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/icBack"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolBarSetting">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/subtxt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:paddingHorizontal="20dp"
+                android:text="@string/appearance"
+                android:textColor="@color/subtext_color"
+                android:textFontWeight="400"
+                android:textSize="17dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/themeLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/subtxt1">
+
+                <ImageView
+                    android:id="@+id/icTheme"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_theme"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icTheme"
+                    app:layout_constraintEnd_toStartOf="@+id/nextTheme"
+                    app:layout_constraintStart_toEndOf="@+id/icTheme"
+                    app:layout_constraintTop_toTopOf="@+id/icTheme">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/theme_mode"
+                        android:textColor="@color/textcolor"
+                        android:textFontWeight="400"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/system_mode"
+                        android:textColor="@color/subtext_color"
+                        android:textFontWeight="400"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/nextTheme"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/themeLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/langLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view1">
+
+                <ImageView
+                    android:id="@+id/icLanguage"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_language"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icLanguage"
+                    app:layout_constraintEnd_toStartOf="@+id/nextLang"
+                    app:layout_constraintStart_toEndOf="@+id/icLanguage"
+                    app:layout_constraintTop_toTopOf="@+id/icLanguage">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/app_languages"
+                        android:textColor="@color/textcolor"
+                        android:textFontWeight="400"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/english"
+                        android:textColor="@color/subtext_color"
+                        android:textFontWeight="400"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/nextLang"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view2"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/langLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/categoryLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view2">
+
+                <ImageView
+                    android:id="@+id/icCategory"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_category"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/conversation_categories"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icCategory"
+                    app:layout_constraintEnd_toStartOf="@+id/switchCategory"
+                    app:layout_constraintStart_toEndOf="@+id/icCategory"
+                    app:layout_constraintTop_toTopOf="@+id/icCategory" />
+
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchCategory"
+                    style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
+                    android:layout_width="55dp"
+                    android:layout_height="30dp"
+                    android:checked="true"
+                    android:scaleX=".655"
+                    android:scaleY=".65"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:thumbIcon="@drawable/custom_thumb"
+                    app:thumbIconTint="@color/transparant"
+                    app:thumbTint="@color/white"
+                    app:trackDecorationTint="@android:color/transparent"
+                    app:trackTint="@drawable/custom_track" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view3"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/categoryLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/recycleLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view3">
+
+                <ImageView
+                    android:id="@+id/icRecycle"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_recyclebin"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icRecycle"
+                    app:layout_constraintEnd_toStartOf="@+id/nextRecycle"
+                    app:layout_constraintStart_toEndOf="@+id/icRecycle"
+                    app:layout_constraintTop_toTopOf="@+id/icRecycle">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/recycle_bin"
+                        android:textColor="@color/textcolor"
+                        android:textFontWeight="400"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/recover_or_delete_messages_anytime"
+                        android:textColor="@color/subtext_color"
+                        android:textFontWeight="400"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/nextRecycle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view4"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/recycleLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/callscreenLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view4">
+
+                <ImageView
+                    android:id="@+id/icCall"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/profile_call"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/call_end_screen"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icCall"
+                    app:layout_constraintEnd_toStartOf="@+id/switchCall"
+                    app:layout_constraintStart_toEndOf="@+id/icCall"
+                    app:layout_constraintTop_toTopOf="@+id/icCall" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchCall"
+                    style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
+                    android:layout_width="55dp"
+                    android:layout_height="30dp"
+                    android:checked="true"
+                    android:scaleX=".655"
+                    android:scaleY=".65"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:thumbIcon="@drawable/custom_thumb"
+                    app:thumbIconTint="@color/transparant"
+                    app:thumbTint="@color/white"
+                    app:trackDecorationTint="@android:color/transparent"
+                    app:trackTint="@drawable/custom_track" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/popup_bg"
+                    android:backgroundTint="@color/send_bg_color"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:justificationMode="inter_word"
+                    android:lineSpacingExtra="3dp"
+                    android:text="@string/call_string"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="13sp"
+                    android:padding="15dp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/icCall"
+                    app:layout_constraintTop_toBottomOf="@+id/icCall" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view5"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/callscreenLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/fontLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view5">
+
+                <ImageView
+                    android:id="@+id/icFont"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_font"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icFont"
+                    app:layout_constraintEnd_toStartOf="@+id/nextfont"
+                    app:layout_constraintStart_toEndOf="@+id/icFont"
+                    app:layout_constraintTop_toTopOf="@+id/icFont">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/font_size"
+                        android:textColor="@color/textcolor"
+                        android:textFontWeight="400"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/normal"
+                        android:textColor="@color/subtext_color"
+                        android:textFontWeight="400"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/nextfont"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <View
+                android:id="@+id/view6"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/fontLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/swipeLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view6">
+
+                <ImageView
+                    android:id="@+id/icSwipe"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_swipe"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icSwipe"
+                    app:layout_constraintEnd_toStartOf="@+id/nextSwipe"
+                    app:layout_constraintStart_toEndOf="@+id/icSwipe"
+                    app:layout_constraintTop_toTopOf="@+id/icSwipe">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/swipe_actions"
+                        android:textColor="@color/textcolor"
+                        android:textFontWeight="400"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/configure_swipe_actions_for_conversation"
+                        android:textColor="@color/subtext_color"
+                        android:textFontWeight="400"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/nextSwipe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/subtxt2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:paddingHorizontal="20dp"
+                android:text="@string/general"
+                android:textColor="@color/subtext_color"
+                android:textFontWeight="400"
+                android:textSize="17dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/swipeLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/notificationLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/subtxt2">
+
+                <ImageView
+                    android:id="@+id/icNoti"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_notification"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/notification"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icNoti"
+                    app:layout_constraintEnd_toStartOf="@+id/nextNotify"
+                    app:layout_constraintStart_toEndOf="@+id/icNoti"
+                    app:layout_constraintTop_toTopOf="@+id/icNoti"/>
+
+                <ImageView
+                    android:id="@+id/nextNotify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view7"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/notificationLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/policyLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view7">
+
+                <ImageView
+                    android:id="@+id/icPolicy"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_policy"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/privacy_plicy"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icPolicy"
+                    app:layout_constraintEnd_toStartOf="@+id/nextPolicy"
+                    app:layout_constraintStart_toEndOf="@+id/icPolicy"
+                    app:layout_constraintTop_toTopOf="@+id/icPolicy"/>
+
+                <ImageView
+                    android:id="@+id/nextPolicy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view8"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/policyLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/rateLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view8">
+
+                <ImageView
+                    android:id="@+id/icRate"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_rateus"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/rate_on_google_play"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icRate"
+                    app:layout_constraintEnd_toStartOf="@+id/nextRate"
+                    app:layout_constraintStart_toEndOf="@+id/icRate"
+                    app:layout_constraintTop_toTopOf="@+id/icRate"/>
+
+                <ImageView
+                    android:id="@+id/nextRate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view9"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/rateLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/shareLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view9">
+
+                <ImageView
+                    android:id="@+id/icShare"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_share"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/share_app"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icShare"
+                    app:layout_constraintEnd_toStartOf="@+id/nextShare"
+                    app:layout_constraintStart_toEndOf="@+id/icShare"
+                    app:layout_constraintTop_toTopOf="@+id/icShare"/>
+
+                <ImageView
+                    android:id="@+id/nextShare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/view10"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/shareLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/aboutLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view10">
+
+                <ImageView
+                    android:id="@+id/icAbout"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_about"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="7dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/about_messages"
+                    android:textColor="@color/textcolor"
+                    android:textFontWeight="400"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icAbout"
+                    app:layout_constraintEnd_toStartOf="@+id/nextAbout"
+                    app:layout_constraintStart_toEndOf="@+id/icAbout"
+                    app:layout_constraintTop_toTopOf="@+id/icAbout"/>
+
+                <ImageView
+                    android:id="@+id/nextAbout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

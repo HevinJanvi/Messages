@@ -11,11 +11,9 @@ import android.provider.Telephony
 import android.telephony.SmsManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -26,7 +24,7 @@ import com.test.messages.demo.R
 import com.test.messages.demo.data.ContactItem
 import com.test.messages.demo.databinding.ActivityNewConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationContactAdapter
-import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.ui.Utils.SmsPermissionUtils
 import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.viewmodel.MessageViewModel

@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.reciever
+package com.test.messages.demo.ui.send
 
 import android.app.Activity
 import android.content.Context
@@ -9,9 +9,8 @@ import android.os.Looper
 import android.provider.Telephony.Sms
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.test.messages.demo.ui.Utils.MessageUtils
+import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
 
-import com.test.messages.demo.ui.Utils.SendStatusReceiver
 import org.greenrobot.eventbus.EventBus
 
 class SmsStatusSentReceiver : SendStatusReceiver() {

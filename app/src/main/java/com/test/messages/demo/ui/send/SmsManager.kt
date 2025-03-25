@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.Utils
+package com.test.messages.demo.ui.send
 
 import android.telephony.SmsManager
 import com.klinker.android.send_message.Settings

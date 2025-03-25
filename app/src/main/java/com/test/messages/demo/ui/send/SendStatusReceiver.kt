@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.Utils
+package com.test.messages.demo.ui.send
 
 import android.content.BroadcastReceiver
 import android.content.Context
