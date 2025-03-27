@@ -115,11 +115,9 @@ class ConversationFragment : Fragment() {
         setupRecyclerView()
         checkPermissionsAndLoadMessages()
 
-
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             Log.d("ConversationFragment", "Total Messages Before Filtering: ${messageList.size}")
             (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
-
 
             CoroutineScope(Dispatchers.IO).launch {
                 blockedNumbers = viewModel.getBlockedNumbers()
