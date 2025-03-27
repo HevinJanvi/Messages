@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
@@ -88,7 +89,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
                 }
             }
         }
-        return threadIds.distinct() // Remove duplicates before inserting
+        return threadIds.distinct()
     }
 
 
@@ -266,8 +267,26 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
         val editCat: TextView = dialog.findViewById(R.id.editCategory)
         editCat.setOnClickListener {
+            val fragment =
+                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+            fragment?.openEditCategory()
             popupWindow.dismiss()
         }
+
+        val settings: TextView = dialog.findViewById(R.id.settingsTxt)
+        settings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+            popupWindow.dismiss()
+        }
+        val policy: TextView = dialog.findViewById(R.id.policyTxt)
+        policy.setOnClickListener {
+            val url = "https://yourprivacypolicy.com"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+            popupWindow.dismiss()
+        }
+
         popupWindow.showAsDropDown(view, 0, 0)
     }
 

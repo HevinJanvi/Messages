@@ -7,9 +7,9 @@ data class MessageUnstarredEvent(val threadId: Long)
 data class UpdateGroupNameEvent(val threadId: Long, val newName: String)
 data class MessageDeletedEvent(
     val threadId: Long,
-    val lastMessage: String? // Store the last message text
+    val lastMessage: String?
 )
 
-data class ConversationDeletedEvent(
-    val threadId: Long)
+data class CategoryVisibilityEvent(val isEnabled: Boolean)
 
+data class CategoryUpdateEvent(val updatedCategories: List<String>)

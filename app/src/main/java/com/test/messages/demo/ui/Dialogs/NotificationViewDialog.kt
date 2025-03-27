@@ -2,25 +2,17 @@ package com.test.messages.demo.ui.Dialogs
 
 import android.app.Activity
 import android.app.Dialog
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
-import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import android.widget.CheckBox
-import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import com.test.messages.demo.R
-import com.test.messages.demo.ui.Utils.ViewUtils.getNotificationOption
 import com.test.messages.demo.ui.Utils.ViewUtils.saveNotificationOption
 import com.test.messages.demo.viewmodel.MessageViewModel
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase

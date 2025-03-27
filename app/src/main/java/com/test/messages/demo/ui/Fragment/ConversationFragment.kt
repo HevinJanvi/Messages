@@ -10,9 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.BlockedNumberContract
 import android.provider.Telephony
-import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -25,24 +23,28 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.room.Room
 import com.test.messages.demo.R
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
 import com.test.messages.demo.ui.Activity.ConversationActivity
+import com.test.messages.demo.ui.Activity.EditCategoryActivity
 import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.Activity.NewConversationActivtiy
+import com.test.messages.demo.ui.Adapter.CategoryAdapter
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
-import com.test.messages.demo.ui.reciever.ConversationDeletedEvent
+import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.ui.Utils.ViewUtils.getCategoriesFromPrefs
+import com.test.messages.demo.ui.Utils.ViewUtils.isCategoryEnabled
+import com.test.messages.demo.ui.reciever.CategoryUpdateEvent
+import com.test.messages.demo.ui.reciever.CategoryVisibilityEvent
 import com.test.messages.demo.ui.reciever.MessageDeletedEvent
 import com.test.messages.demo.ui.reciever.UnreadMessageListener
+import com.test.messages.demo.viewmodel.DraftViewModel
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
-import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,6 +54,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.jetbrains.annotations.Nullable
 
+
 @AndroidEntryPoint
 class ConversationFragment : Fragment() {
 
@@ -59,14 +62,16 @@ class ConversationFragment : Fragment() {
     private var archivedConversationIds: List<Long> = emptyList()
     private var pinnedThreadIds: List<Long> = emptyList()
     val viewModel: MessageViewModel by viewModels()
-
+    private val draftViewModel: DraftViewModel by viewModels()
     private lateinit var adapter: MessageAdapter
     private lateinit var binding: FragmentConversationBinding
-    private var lastVisibleItemPosition: Int = 0
     var onSelectionChanged: ((Int, Int) -> Unit)? = null
     private var blockedNumbers: List<String> = emptyList()
-
     private var unreadMessageListener: UnreadMessageListener? = null
+    private lateinit var categoryAdapter: CategoryAdapter
+    private lateinit var selectedCategory: String
+    private var categories: MutableList<String> = mutableListOf()
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -89,37 +94,33 @@ class ConversationFragment : Fragment() {
     ): View? {
         binding = FragmentConversationBinding.inflate(inflater, container, false);
         EventBus.getDefault().register(this)
+        selectedCategory = requireActivity().getString(R.string.inbox)
 
+
+        binding.categoryRecyclerView.visibility = if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
+
+        if (binding.categoryRecyclerView.visibility == View.VISIBLE) {
+            binding.categoryRecyclerView.post {
+                binding.categoryRecyclerView.scrollToPosition(categoryAdapter.itemCount - 1)
+            }
+        }
+
+        categories = getCategoriesFromPrefs(requireContext()).toMutableList()
+        if (categories.isEmpty()) {
+            categories.add(getString(R.string.inbox))
+        }
+        selectedCategory = categories.first()
+
+        setupCategoryRecyclerView()
         setupRecyclerView()
         checkPermissionsAndLoadMessages()
 
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                android.Manifest.permission.READ_SMS
-            )
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(android.Manifest.permission.READ_SMS),
-                100
-            )
-        }
-
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                android.Manifest.permission.READ_CONTACTS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(android.Manifest.permission.READ_CONTACTS),
-                101
-            )
-        }
 
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
+            Log.d("ConversationFragment", "Total Messages Before Filtering: ${messageList.size}")
             (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
+
+
             CoroutineScope(Dispatchers.IO).launch {
                 blockedNumbers = viewModel.getBlockedNumbers()
                 archivedConversationIds =
@@ -127,7 +128,6 @@ class ConversationFragment : Fragment() {
                 blockConversationIds = viewModel.getBlockedConversations().map { it.conversationId }
                 pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
                 val mutedThreads = viewModel.getMutedThreadIds()
-
 
                 val filteredMessages = messageList
                     .filter { it.number !in blockedNumbers }
@@ -139,24 +139,26 @@ class ConversationFragment : Fragment() {
                             isMuted = mutedThreads.contains(message.threadId)
                         )
                     }
+                    .filter { filterByCategory(it, selectedCategory) }
                     .sortedByDescending { it.isPinned }
+                Log.d(
+                    "ConversationFragment",
+                    "Messages After Filtering (${selectedCategory}): ${filteredMessages.size}"
+                )
 
                 val unreadMessagesCount = filteredMessages.count { !it.isRead }
-                Log.d("Messages", "Unread messages count: $unreadMessagesCount")
 
                 withContext(Dispatchers.Main) {
                     unreadMessageListener?.onUnreadMessagesCountUpdated(unreadMessagesCount)
-
-                    if (adapter.selectedMessages != filteredMessages) {
-                        adapter.submitList(filteredMessages)
-                    }
-                    if (lastVisibleItemPosition == adapter.itemCount - 1) {
-                        binding.conversationList.scrollToPosition(lastVisibleItemPosition)
-                    }
+                    adapter.submitList(filteredMessages)
                 }
             }
-
         }
+
+        draftViewModel.draftsLiveData.observe(viewLifecycleOwner) { draftMap ->
+            adapter.updateDrafts(draftMap)
+        }
+        draftViewModel.loadAllDrafts()
 
         binding.newConversation.setOnClickListener {
             val intent = Intent(requireContext(), NewConversationActivtiy::class.java)
@@ -170,6 +172,125 @@ class ConversationFragment : Fragment() {
         return binding.getRoot();
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun setupCategoryRecyclerView() {
+
+        categoryAdapter = CategoryAdapter(requireContext(), categories) { category ->
+            selectedCategory = category
+            Log.d("ConversationFragment", "Selected Category: $category")
+            viewModel.messages.value?.let { messageList ->
+                applyCategoryFilter(messageList)
+            }
+        }
+
+        binding.categoryRecyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.categoryRecyclerView.adapter = categoryAdapter
+        binding.categoryRecyclerView.post {
+            binding.categoryRecyclerView.scrollToPosition(0)
+        }
+    }
+
+    private fun filterByCategory(message: MessageItem, category: String): Boolean {
+        return when (category) {
+            getString(R.string.inbox) -> true
+            getString(R.string.personal) -> {
+                message.number.startsWith("+") || (message.number.length == 10 && message.number.all { it.isDigit() })
+            }
+            getString(R.string.transactions) -> message.body.contains(
+                "transaction",
+                ignoreCase = true
+            )
+            getString(R.string.otps) -> message.body.contains("OTP", ignoreCase = true)
+            getString(R.string.offers) -> message.body.contains("offer", ignoreCase = true)
+            else -> true
+        }
+    }
+
+    private fun applyCategoryFilter(messageList: List<MessageItem>) {
+        val filteredList = messageList.filter { filterByCategory(it, selectedCategory) }
+        Log.d(
+            "ConversationFragment",
+            "Filtered List Size (${selectedCategory}): ${filteredList.size}"
+        )
+        binding.emptyList.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+
+        adapter.submitList(filteredList)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun setupRecyclerView() {
+        adapter = MessageAdapter(
+            onSelectionChanged = { count ->
+                val pinnedCount = adapter.selectedMessages.count { it.isPinned }
+                val mutedCount = adapter.selectedMessages.count { it.isMuted }
+                val unmutedCount = count - mutedCount
+                val shouldUnmute = mutedCount < unmutedCount
+                (activity as? MainActivity)?.updateMuteUnmuteUI(shouldUnmute)
+                onSelectionChanged?.invoke(count, pinnedCount)
+            }
+        )
+        binding.conversationList.itemAnimator = null
+        binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
+        binding.conversationList.adapter = adapter
+        adapter.onItemClickListener = { message ->
+            val intent = Intent(requireContext(), ConversationActivity::class.java).apply {
+                putExtra("EXTRA_THREAD_ID", message.threadId)
+                putExtra("NUMBER", message.number)
+                putExtra("NAME", message.sender)
+                putExtra("isGroup", message.isGroupChat)
+                putExtra("ProfileUrl", message.profileImageUrl)
+            }
+            conversationResultLauncher.launch(intent)
+        }
+    }
+
+
+    companion object {
+        private const val REQUEST_EDIT_CATEGORY = 1001
+    }
+
+    fun openEditCategory() {
+        val intent = Intent(requireContext(), EditCategoryActivity::class.java)
+        intent.putStringArrayListExtra("category_list", ArrayList(categories))
+        startActivityForResult(intent, REQUEST_EDIT_CATEGORY)
+    }
+
+    fun clearSelection() {
+        adapter.clearSelection()
+    }
+
+    fun toggleSelectAll(selectAll: Boolean) {
+        if (selectAll) {
+            adapter.selectedMessages.clear()
+            val allMessages = adapter.getAllMessages()
+            adapter.selectedMessages.addAll(allMessages)
+        } else {
+            adapter.selectedMessages.clear()
+        }
+        onSelectionChanged?.invoke(
+            adapter.selectedMessages.size,
+            adapter.selectedMessages.count { it.isPinned })
+        adapter.notifyDataSetChanged()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCategoryVisibilityEvent(event: CategoryVisibilityEvent) {
+        binding.categoryRecyclerView.visibility = if (event.isEnabled) View.VISIBLE else View.GONE
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCategoryUpdateEvent(event: CategoryUpdateEvent) {
+        categories.clear()
+        categories.addAll(event.updatedCategories)
+        categoryAdapter.updateCategories(categories)
+        ViewUtils.saveCategoriesToPrefs(requireContext(), categories)
+    }
 
     fun getLastMessageForThread(threadId: Long): String? {
         val cursor = requireActivity().contentResolver.query(
@@ -208,7 +329,6 @@ class ConversationFragment : Fragment() {
         adapter.notifyDataSetChanged()
     }
 
-
     private fun fetchAllThreadIds(): List<Long> {
         val threadIds = mutableListOf<Long>()
         val uri = Telephony.Sms.CONTENT_URI
@@ -227,64 +347,15 @@ class ConversationFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun setupRecyclerView() {
-       /* adapter = MessageAdapter(
-            onSelectionChanged = { count ->
-                val pinnedCount = adapter.selectedMessages.count { it.isPinned }
-                onSelectionChanged?.invoke(count, pinnedCount)
-            }
-        )*/
-
-        adapter = MessageAdapter(
-            onSelectionChanged = { count ->
-                val pinnedCount = adapter.selectedMessages.count { it.isPinned }
-                val mutedCount = adapter.selectedMessages.count { it.isMuted }
-                val unmutedCount = count - mutedCount
-
-                val shouldUnmute = mutedCount < unmutedCount // ✅ Unmute if more muted, otherwise mute
-                Log.d("TAG", "setupRecyclerView: Muted: $mutedCount, Unmuted: $unmutedCount, ShouldUnmute: $shouldUnmute")
-
-                (activity as? MainActivity)?.updateMuteUnmuteUI(shouldUnmute) // ✅ Update mute/unmute icon
-
-
-                onSelectionChanged?.invoke(count, pinnedCount)
-            }
-        )
-
-        binding.conversationList.itemAnimator = null
-        binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
-        binding.conversationList.adapter = adapter
-        /* adapter.onItemClickListener = { message ->
-             val intent = Intent(requireContext(), ConversationActivity::class.java)
-             intent.putExtra("EXTRA_THREAD_ID", message.threadId)
-             intent.putExtra("NUMBER", message.number)
-             intent.putExtra("NAME", message.sender)
-             intent.putExtra("isGroup", message.isGroupChat)
-             intent.putExtra("ProfileUrl", message.profileImageUrl)
-             startActivity(intent)
-         }*/
-
-        adapter.onItemClickListener = { message ->
-            val intent = Intent(requireContext(), ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", message.threadId)
-                putExtra("NUMBER", message.number)
-                putExtra("NAME", message.sender)
-                putExtra("isGroup", message.isGroupChat)
-                putExtra("ProfileUrl", message.profileImageUrl)
-            }
-            conversationResultLauncher.launch(intent)
-        }
-
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
     private val conversationResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
             if (data != null) {
+
                 adapter.notifyDataSetChanged()
+                draftViewModel.loadAllDrafts()
                 viewModel.loadMessages()
             }
         }
@@ -354,6 +425,9 @@ class ConversationFragment : Fragment() {
                     viewModel.togglePin(unpinnedIds)
                 }
             }
+
+            pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
+
             withContext(Dispatchers.Main) {
                 adapter.clearSelection()
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -420,7 +494,6 @@ class ConversationFragment : Fragment() {
         blockDialog.show()
     }
 
-
     @RequiresApi(Build.VERSION_CODES.Q)
     fun markReadMessages() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -448,25 +521,6 @@ class ConversationFragment : Fragment() {
                 }
             }
         }
-    }
-
-
-    fun clearSelection() {
-        adapter.clearSelection()
-    }
-
-    fun toggleSelectAll(selectAll: Boolean) {
-        if (selectAll) {
-            adapter.selectedMessages.clear()
-            val allMessages = adapter.getAllMessages()
-            adapter.selectedMessages.addAll(allMessages)
-        } else {
-            adapter.selectedMessages.clear()
-        }
-        onSelectionChanged?.invoke(
-            adapter.selectedMessages.size,
-            adapter.selectedMessages.count { it.isPinned })
-        adapter.notifyDataSetChanged()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

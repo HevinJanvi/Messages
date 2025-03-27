@@ -1,7 +1,13 @@
 package com.test.messages.demo.ui.Adapter
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +15,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,6 +28,7 @@ import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.ui.Utils.TimeUtils.formatTimestamp
 import com.test.messages.demo.ui.Utils.TimeUtils.getInitials
 import com.test.messages.demo.ui.Utils.TimeUtils.getRandomColor
+import com.test.messages.demo.ui.Utils.ViewUtils.extractOtp
 
 
 class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
@@ -29,6 +38,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     private var messages: MutableList<MessageItem> = mutableListOf()
 
     val selectedMessages = mutableSetOf<MessageItem>()
+    private var draftMessages: MutableMap<Long, Pair<String, Long>> = mutableMapOf()
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderName: TextView = itemView.findViewById(R.id.senderName)
@@ -37,6 +47,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val icUser: RoundedImageView = itemView.findViewById(R.id.icUser)
         val profileContainer: RelativeLayout = itemView.findViewById(R.id.profileContainer)
         val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
+        val otpTextView: TextView = itemView.findViewById(R.id.otpTextView)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
         val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
@@ -81,6 +92,55 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
 
+
+        if (draftMessages.containsKey(message.threadId)) {
+            val (draftText, _) = draftMessages[message.threadId]!!
+
+            val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
+            val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
+                setSpan(
+                    ForegroundColorSpan(ContextCompat.getColor(holder.itemView.context, R.color.colorPrimary)),
+                    0, draftLabel.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                append(draftText)
+                setSpan(
+                    ForegroundColorSpan(ContextCompat.getColor(holder.itemView.context, R.color.gray_txtcolor)),
+                    draftLabel.length, draftLabel.length + draftText.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+            holder.messageBody.text = draftTextSpannable
+
+        } else {
+            holder.messageBody.text = message.body
+            holder.messageBody.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.textcolor))
+        }
+
+
+        val otp = message.body.extractOtp()
+        if (!otp.isNullOrEmpty()) {
+            holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_code)
+            holder.otpTextView.visibility = View.VISIBLE
+
+
+            holder.otpTextView.setOnClickListener {
+                copyToClipboard(holder.itemView.context, otp)
+                holder.otpTextView.animate()
+                    .alpha(0.5f)
+                    .setDuration(100)
+                    .withEndAction {
+                        holder.otpTextView.animate()
+                            .alpha(1f)
+                            .setDuration(100)
+                            .start()
+                    }
+                    .start()
+            }
+        } else {
+            holder.otpTextView.visibility = View.GONE
+        }
+
         if (message.isPinned) {
             holder.icPin.visibility = View.VISIBLE
         } else {
@@ -109,7 +169,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             }
         }
 
-
         holder.itemView.setOnLongClickListener {
             toggleSelection(message, holder)
             true
@@ -128,15 +187,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         }
         onSelectionChanged(selectedMessages.size)
         notifyDataSetChanged()
-    }
-
-    fun updatePinIcons(threadIds: List<Long>) {
-        messages.forEachIndexed { index, message ->
-            if (message.threadId in threadIds) {
-                message.isPinned = !message.isPinned
-                notifyItemChanged(index)
-            }
-        }
     }
 
     fun clearSelection() {
@@ -160,4 +210,17 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         messages.addAll(newMessages)
         diffResult.dispatchUpdatesTo(this)
     }
+
+    private fun copyToClipboard(context: Context, text: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("OTP", text)
+        clipboard.setPrimaryClip(clip)
+    }
+
+    fun updateDrafts(drafts: Map<Long, Pair<String, Long>>) {
+        this.draftMessages.clear()
+        this.draftMessages.putAll(drafts)
+        notifyDataSetChanged()  // Refresh UI
+    }
+
 }

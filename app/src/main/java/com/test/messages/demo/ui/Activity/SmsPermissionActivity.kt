@@ -1,5 +1,6 @@
 package com.test.messages.demo.ui.Activity
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.role.RoleManager
@@ -8,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -31,19 +33,25 @@ class SmsPermissionActivity : BaseActivity() {
         }
         prepareIntentLauncher()
         findViewById<TextView>(R.id.btnSetDefaultSms).setOnClickListener {
+            it.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
+                .withEndAction {
+                    it.animate().scaleX(1f).scaleY(1f).setDuration(100)
+                }
             askDefaultSmsHandlerPermission()
         }
     }
 
     private fun prepareIntentLauncher() {
-        intentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (isDefaultSmsApp()) {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            } else {
-                Toast.makeText(this, getString(R.string.please_set_this_app), Toast.LENGTH_LONG).show()
+        intentLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (isDefaultSmsApp()) {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                } else {
+                    Toast.makeText(this, getString(R.string.please_set_this_app), Toast.LENGTH_LONG)
+                        .show()
+                }
             }
-        }
     }
 
     private fun askDefaultSmsHandlerPermission() {

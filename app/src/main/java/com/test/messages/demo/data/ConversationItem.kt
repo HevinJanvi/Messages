@@ -35,7 +35,7 @@ data class ConversationItem(
         return type == Telephony.Sms.MESSAGE_TYPE_INBOX
     }
 
-    fun extractOtp(sender: String): String? {
+    /*fun extractOtp(sender: String): String? {
         if (isOfferSender(sender)) return null
         val otpRegex = "\\b(\\d{4,8})\\b".toRegex()
         otpRegex.findAll(body).forEach { match ->
@@ -46,11 +46,7 @@ data class ConversationItem(
         }
 
         return null
-    }
-
-    private fun isOfferSender(sender: String): Boolean {
-        return sender.matches(Regex("^[A-Z-]+$"))
-    }
+    }*/
 
     fun extractLink(): String? {
         val linkRegex = "(https?://[\\w./?=#%&_-]+)".toRegex()

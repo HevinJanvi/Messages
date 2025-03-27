@@ -226,6 +226,8 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="17dp"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/view2">
@@ -235,7 +237,6 @@
                     android:layout_width="42dp"
                     android:layout_height="42dp"
                     android:adjustViewBounds="true"
-                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_category"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -252,27 +253,18 @@
                     android:textFontWeight="400"
                     android:textSize="17sp"
                     app:layout_constraintBottom_toBottomOf="@+id/icCategory"
-                    app:layout_constraintEnd_toStartOf="@+id/switchCategory"
+                    app:layout_constraintEnd_toStartOf="@+id/nextCategory"
                     app:layout_constraintStart_toEndOf="@+id/icCategory"
                     app:layout_constraintTop_toTopOf="@+id/icCategory" />
 
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchCategory"
-                    style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
-                    android:layout_width="55dp"
-                    android:layout_height="30dp"
-                    android:checked="true"
-                    android:scaleX=".655"
-                    android:scaleY=".65"
+                <ImageView
+                    android:id="@+id/nextCategory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:thumbIcon="@drawable/custom_thumb"
-                    app:thumbIconTint="@color/transparant"
-                    app:thumbTint="@color/white"
-                    app:trackDecorationTint="@android:color/transparent"
-                    app:trackTint="@drawable/custom_track" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

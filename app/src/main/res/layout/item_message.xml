@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/ripple_effect"
-    android:layout_marginVertical="2dp">
+    android:layout_marginVertical="2dp"
+    android:background="@drawable/ripple_effect">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/itemContainer"
@@ -59,7 +59,7 @@
             android:id="@+id/senderName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="18dp"
             android:layout_marginEnd="8dp"
             android:fontFamily="@font/product_sans_medium"
             android:singleLine="true"
@@ -89,6 +89,27 @@
             app:layout_constraintTop_toBottomOf="@id/senderName" />
 
         <TextView
+            android:id="@+id/otpTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="@string/copy_code"
+            android:textSize="13sp"
+            android:layout_marginTop="7dp"
+            android:layout_marginStart="16dp"
+            android:drawableLeft="@drawable/ic_copy2"
+            android:textColor="@color/colorPrimary"
+            android:visibility="gone"
+            android:drawablePadding="3dp"
+            android:textFontWeight="500"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="center_vertical"
+            app:layout_constraintStart_toEndOf="@+id/imageContainer"
+            app:layout_constraintTop_toBottomOf="@+id/messageContent" />
+
+
+        <TextView
             android:id="@+id/date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -104,8 +125,9 @@
             android:id="@+id/lyExtra"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
+            android:layout_marginEnd="7dp"
             app:layout_constraintBottom_toBottomOf="@+id/messageContent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toStartOf="@+id/blueDot">
 
             <ImageView
                 android:id="@+id/icMute"
@@ -113,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:src="@drawable/ic_mute2"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/icPin" />
@@ -124,8 +146,7 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:src="@drawable/ic_pin_item"
-                android:visibility="visible"
-                android:layout_marginEnd="13dp"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -144,18 +165,18 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <ImageView
-                android:id="@+id/blueDot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/blue_dot"
-                android:adjustViewBounds="true"
-                android:visibility="visible"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            android:id="@+id/blueDot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/blue_dot"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/lyExtra"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/lyExtra" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

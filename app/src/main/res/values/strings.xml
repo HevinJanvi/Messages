@@ -199,6 +199,21 @@
     <string name="system">System</string>
     <string name="unmute">Unmute</string>
     <string name="mute">Mute</string>
+    <string name="your_messages_will_appear_here">Your messages will appear here</string>
+    <string name="copy_code">Copy code</string>
+    <string name="draft">📝 Draft :</string>
+    <string name="personal">Personal</string>
+    <string name="transactions">Transactions</string>
+    <string name="otps">OTPs</string>
+    <string name="offers">Offers</string>
+    <string name="categories">Categories</string>
+    <string name="categories_show">Categories Show</string>
+    <string name="organize_your_conversations">Organize your conversations into categories so you can find them easily.</string>
+    <string name="tabbed_categories">Tabbed categories</string>
+    <string name="text_messages">Text Messages</string>
+    <string name="current_version">Current Version:</string>
+    <string name="simple_smart_and_secure">Simple, smart, and secure texting with scheduling, spam protection, and more!</string>
+    <string name="terms_and_conditions">Terms and Conditions</string>
 
 
 </resources>

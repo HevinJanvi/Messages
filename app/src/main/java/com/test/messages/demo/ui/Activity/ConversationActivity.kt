@@ -8,6 +8,7 @@ import android.app.NotificationManager
 import android.app.TimePickerDialog
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -19,9 +20,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.telephony.SmsManager
+import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
@@ -47,12 +50,12 @@ import com.test.messages.demo.ui.Utils.SmsSender
 import com.test.messages.demo.ui.Utils.TimeUtils.formatHeaderDate
 import com.test.messages.demo.ui.Utils.ViewUtils
 import com.test.messages.demo.ui.Utils.ViewUtils.resetMessageCount
-import com.test.messages.demo.ui.reciever.ConversationDeletedEvent
 import com.test.messages.demo.ui.reciever.MessageDeletedEvent
 import com.test.messages.demo.ui.reciever.MessageScheduler
 import com.test.messages.demo.ui.reciever.MessageUnstarredEvent
 import com.test.messages.demo.ui.reciever.RefreshMessagesEvent
 import com.test.messages.demo.ui.reciever.UpdateGroupNameEvent
+import com.test.messages.demo.viewmodel.DraftViewModel
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
@@ -73,6 +76,7 @@ class ConversationActivity : BaseActivity() {
 
     private lateinit var binding: ActivityConversationBinding
     private val viewModel: MessageViewModel by viewModels()
+    private val draftViewModel: DraftViewModel by viewModels()
     private lateinit var adapter: ConversationAdapter
     private var threadId: Long = -1
     private var number: String = ""
@@ -164,6 +168,19 @@ class ConversationActivity : BaseActivity() {
         } else {
             binding.blockLy.visibility = View.GONE
         }
+
+        draftViewModel.getDraft(threadId).observe(this) { draftText ->
+            binding.editTextMessage.setText(draftText)
+        }
+
+        binding.editTextMessage.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                draftViewModel.saveDraft(threadId, s.toString()) // Save draft when typing
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         setupClickListeners()
     }
 
@@ -264,6 +281,7 @@ class ConversationActivity : BaseActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
                     val savedGroupName = sharedPreferences.getString("group_name_$threadId", null)
+                    Log.d("TAG", "conversation observeViewModel: "+savedGroupName)
                     val contactName =
                         savedGroupName ?: name
                     withContext(Dispatchers.Main) {
@@ -350,13 +368,14 @@ class ConversationActivity : BaseActivity() {
             threadId
         }
         if (numbersSet.size > 1) {
-            messagingUtils.insertSmsMessage(
+              messagingUtils.insertSmsMessage(
                 subId = subscriptionId,
                 dest = numbersSet.joinToString("|"), // Group identifier
                 text = text,
                 timestamp = System.currentTimeMillis(),
                 threadId = threadId
             )
+
         }
 
         sendSmsMessage(
@@ -367,6 +386,7 @@ class ConversationActivity : BaseActivity() {
         )
 
         binding.editTextMessage.text.clear()
+        draftViewModel.deleteDraft(threadId)
         binding.recyclerViewConversation.itemAnimator = null
         scrolltoBottom()
         viewModel.loadMessages()
@@ -461,10 +481,10 @@ class ConversationActivity : BaseActivity() {
 
         adapter.clearSelection()
 
-        val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
-        val lastMessageText = lastConversationItem?.body
-
-        EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText))
+//        val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
+//        val lastMessageText = lastConversationItem?.body
+//
+//        EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText))
         viewModel.loadConversation(threadId)
     }
 
@@ -601,6 +621,8 @@ class ConversationActivity : BaseActivity() {
             binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
         }, 100)
     }
+
+
 
     override fun onBackPressed() {
         if (adapter.isMultiSelectionEnabled) {

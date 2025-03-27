@@ -1,11 +1,16 @@
 package com.test.messages.demo.ui.Activity
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.animation.AnimationUtils
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.test.messages.demo.R
@@ -42,7 +47,7 @@ class IntroActivity : BaseActivity() {
             getString(R.string.intro_subtxt3)
         )
 
-        val adapter = IntroPagerAdapter(this,images)
+        val adapter = IntroPagerAdapter(this, images)
         binding.viewPager.adapter = adapter
         binding.dotsIndicator.attachTo(binding.viewPager)
 
@@ -59,15 +64,27 @@ class IntroActivity : BaseActivity() {
             }
         })
 
+
         binding.nextButton.setOnClickListener {
-            if (binding.viewPager.currentItem < adapter.itemCount - 1) {
-                binding.viewPager.currentItem += 1
-            } else {
-                completeIntro()
-            }
+            val blinkAnim = ObjectAnimator.ofFloat(binding.nextButton, View.ALPHA, 1f, 0.8f, 1f)
+            blinkAnim.duration = 200
+            blinkAnim.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    val nextPage = binding.viewPager.currentItem + 1
+                    if (nextPage < binding.viewPager.adapter?.itemCount ?: 0) {
+                        binding.viewPager.currentItem = nextPage
+                    } else {
+                        completeIntro()
+                    }
+                }
+            })
+            blinkAnim.start()
         }
 
         binding.skipButton.setOnClickListener {
+            val animator = ObjectAnimator.ofFloat(binding.skipButton, View.ALPHA, 1f, 0.3f, 1f)
+            animator.duration = 800
+            animator.start()
             completeIntro()
         }
 

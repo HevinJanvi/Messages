@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.test.messages.demo.databinding.ActivitySettingsBinding
+import com.test.messages.demo.ui.Utils.ViewUtils
 
 class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
@@ -27,6 +28,14 @@ class SettingsActivity : BaseActivity() {
             startActivity(intent)
             finish()
         }
+        binding.categoryLy.setOnClickListener {
+
+            val categories = ViewUtils.getCategoriesFromPrefs(this)
+            val intent = Intent(this, EditCategoryActivity::class.java)
+            intent.putStringArrayListExtra("category_list", ArrayList(categories))
+            startActivity(intent)
+            finish()
+        }
         binding.recycleLy.setOnClickListener {
             val intent = Intent(this, RecycleBinActivity::class.java)
             startActivity(intent)
@@ -45,6 +54,10 @@ class SettingsActivity : BaseActivity() {
         }
         binding.shareLy.setOnClickListener {
             shareApp()
+        }
+        binding.aboutLy.setOnClickListener {
+            val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent)
         }
     }
 

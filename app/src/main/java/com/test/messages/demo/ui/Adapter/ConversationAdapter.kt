@@ -16,6 +16,7 @@ import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
+import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +32,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
 import com.test.messages.demo.data.ConversationItem
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
+import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.ui.Utils.ViewUtils.extractOtp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -132,7 +135,7 @@ class ConversationAdapter(
                 }
 
                 val isSelected = selectedItems.contains(message)
-                val otpCode = message.extractOtp(message.address)
+                val otpCode = message.body?.extractOtp()
                 if (otpCode != null) {
                     otptext.visibility = View.VISIBLE
                     otptext.text = itemView.context.getString(R.string.copy, otpCode)

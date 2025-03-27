@@ -63,6 +63,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
             for (messageItem in messageList) {
                 val reciptids = messageItem.reciptids.trim()
+//                Log.d("DEBUG", " Receipt IDs: ${messageItem.threadId} Sender:${messageItem.sender}  Body:${messageItem.body}")
 
                 if (messageItem.body.isNullOrBlank() || messageItem.sender == null) continue
 
@@ -72,19 +73,25 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     val receiptIdList = reciptids.split(" ")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
+//                    Log.d("DEBUG", "Group detected! Receipt IDs: $receiptIdList")
 
                     val rawPhoneNumbers = receiptIdList.map { id -> recipientMap[id] ?: id }
+//                    Log.d("DEBUG", "Mapped phone numbers: $rawPhoneNumbers")
 
                     val savedGroupName =
                         sharedPreferences.getString("group_name_${messageItem.threadId}", null)
+//                    Log.d("DEBUG", "Saved group name for thread ${messageItem.threadId}: $savedGroupName")
 
                     val groupName = savedGroupName ?: rawPhoneNumbers.map { number ->
                         contactDetails[number]?.name ?: number
                     }.joinToString(", ")
+//                    Log.d("DEBUG", "Final group name: $groupName")
 
                     Triple(groupName, rawPhoneNumbers.joinToString(", "), "")
                 } else {
                     val rawPhone = (recipientMap[reciptids] ?: reciptids).replace(" ", "")
+//                    Log.d("DEBUG", "Processing individual chat. Raw phone number: $rawPhone")
+
                     var contactInfo = contactDetails[rawPhone]
                     if (contactInfo == null && rawPhone.length > 5) {
                         //remove +___12345
@@ -94,7 +101,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             ?: contactDetails[rawPhone.substring(3)]
                                     ?: contactDetails[rawPhone.substring(2)]
                                     ?: contactDetails[rawPhone.substring(1)]
-                        /*Log.d(
+                       /* Log.d(
                             "TAG",
                             "getMessages: " + contactInfo?.name + "---------number----" + rawPhone
                         )*/
@@ -106,7 +113,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         contactInfo?.profileImageUrl ?: ""
                     )
                 }
-
+//                Log.d("DEBUG", "getMessages:displayName "+displayName)
                 newMsgList.add(
                     messageItem.copy(
                         sender = displayName,
@@ -175,7 +182,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val senderName = ""
                 val profileImageUrl = ""
 
-//                Log.d("TAG", "getConversations:reciptid " + reciptid)
+//                Log.d("TAG", "getConversations:reciptid " + threadId)
                 if (lastMessage != null) {
                     conversations.add(
                         MessageItem(
@@ -363,7 +370,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         threadId,
                         date,
                         body,
-                        address,
+                        address ?:"",
                         type,
                         read,
                         subscriptionId,
