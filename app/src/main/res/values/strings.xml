@@ -214,6 +214,13 @@
     <string name="current_version">Current Version:</string>
     <string name="simple_smart_and_secure">Simple, smart, and secure texting with scheduling, spam protection, and more!</string>
     <string name="terms_and_conditions">Terms and Conditions</string>
+    <string name="left_swipe">Left swipe</string>
+    <string name="change">Change</string>
+    <string name="change_action">Change action</string>
+    <string name="none">None</string>
+    <string name="call">Call</string>
+    <string name="mark_as_unread">Mark as Unread</string>
+    <string name="right_swipe">Right swipe</string>
 
 
 </resources>

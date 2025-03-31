@@ -3,11 +3,7 @@ package com.test.messages.demo.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import com.test.messages.demo.repository.DraftRepository
-import com.test.messages.demo.repository.MessageRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 
 class DraftViewModel(application: Application) : AndroidViewModel(application) {

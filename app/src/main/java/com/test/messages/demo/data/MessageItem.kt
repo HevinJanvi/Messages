@@ -7,7 +7,7 @@ data class MessageItem(
     val number: String,
     val body: String,
     val timestamp: Long,
-    val isRead: Boolean,
+    var isRead: Boolean,
     val reciptid: Int,
     val reciptids: String,
     val profileImageUrl: String,

@@ -190,7 +190,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
     fun updateMuteUnmuteUI(isMuted: Boolean) {
-        Log.d("TAG", "updateMuteUnmuteUI: isMuted = $isMuted")
+//        Log.d("TAG", "updateMuteUnmuteUI: isMuted = $isMuted")
 
         if (!isMuted) {
             binding.icmute.setImageResource(R.drawable.ic_unmute)

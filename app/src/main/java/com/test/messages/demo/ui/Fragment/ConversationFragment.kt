@@ -5,6 +5,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -23,7 +28,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
 import com.test.messages.demo.data.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
@@ -40,11 +47,13 @@ import com.test.messages.demo.ui.Utils.ViewUtils.isCategoryEnabled
 import com.test.messages.demo.ui.reciever.CategoryUpdateEvent
 import com.test.messages.demo.ui.reciever.CategoryVisibilityEvent
 import com.test.messages.demo.ui.reciever.MessageDeletedEvent
+import com.test.messages.demo.ui.reciever.SwipeActionEvent
 import com.test.messages.demo.ui.reciever.UnreadMessageListener
 import com.test.messages.demo.viewmodel.DraftViewModel
 import com.test.messages.demo.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,8 +65,11 @@ import org.jetbrains.annotations.Nullable
 
 
 @AndroidEntryPoint
+@RequiresApi(Build.VERSION_CODES.Q)
 class ConversationFragment : Fragment() {
 
+    private var leftSwipeAction: String? = null
+    private var rightSwipeAction: String? = null
     private var blockConversationIds: List<Long> = emptyList()
     private var archivedConversationIds: List<Long> = emptyList()
     private var pinnedThreadIds: List<Long> = emptyList()
@@ -72,6 +84,9 @@ class ConversationFragment : Fragment() {
     private lateinit var selectedCategory: String
     private var categories: MutableList<String> = mutableListOf()
 
+    companion object {
+        private const val REQUEST_EDIT_CATEGORY = 1001
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -86,6 +101,17 @@ class ConversationFragment : Fragment() {
     }
 
 
+    private fun updateMessageCount() {
+        val totalMessages = adapter.getAllMessages().size
+        (activity as? MainActivity)?.updateTotalMessagesCount(totalMessages)
+    }
+
+    private fun unreadMessageCount() {
+        val unreadMessages = adapter.getAllMessages().count { !it.isRead }
+        Log.d("ConversationFragment", "Updated Unread Messages: $unreadMessages")
+        unreadMessageListener?.onUnreadMessagesCountUpdated(unreadMessages)
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -97,7 +123,8 @@ class ConversationFragment : Fragment() {
         selectedCategory = requireActivity().getString(R.string.inbox)
 
 
-        binding.categoryRecyclerView.visibility = if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
+        binding.categoryRecyclerView.visibility =
+            if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
 
         if (binding.categoryRecyclerView.visibility == View.VISIBLE) {
             binding.categoryRecyclerView.post {
@@ -195,10 +222,12 @@ class ConversationFragment : Fragment() {
             getString(R.string.personal) -> {
                 message.number.startsWith("+") || (message.number.length == 10 && message.number.all { it.isDigit() })
             }
+
             getString(R.string.transactions) -> message.body.contains(
                 "transaction",
                 ignoreCase = true
             )
+
             getString(R.string.otps) -> message.body.contains("OTP", ignoreCase = true)
             getString(R.string.offers) -> message.body.contains("offer", ignoreCase = true)
             else -> true
@@ -207,10 +236,6 @@ class ConversationFragment : Fragment() {
 
     private fun applyCategoryFilter(messageList: List<MessageItem>) {
         val filteredList = messageList.filter { filterByCategory(it, selectedCategory) }
-        Log.d(
-            "ConversationFragment",
-            "Filtered List Size (${selectedCategory}): ${filteredList.size}"
-        )
         binding.emptyList.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
 
         adapter.submitList(filteredList)
@@ -231,6 +256,7 @@ class ConversationFragment : Fragment() {
         binding.conversationList.itemAnimator = null
         binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
         binding.conversationList.adapter = adapter
+        setupSwipeGesture()
         adapter.onItemClickListener = { message ->
             val intent = Intent(requireContext(), ConversationActivity::class.java).apply {
                 putExtra("EXTRA_THREAD_ID", message.threadId)
@@ -244,8 +270,175 @@ class ConversationFragment : Fragment() {
     }
 
 
-    companion object {
-        private const val REQUEST_EDIT_CATEGORY = 1001
+    val itemTouchHelperCallback = object :
+        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return false
+        }
+
+        override fun getSwipeDirs(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder
+        ): Int {
+            val context = requireContext()
+            val leftAction = ViewUtils.getSwipeAction(context, isRightSwipe = false)
+            val rightAction = ViewUtils.getSwipeAction(context, isRightSwipe = true)
+
+            val leftEnabled = leftAction != "None"
+            val rightEnabled = rightAction != "None"
+
+            return when {
+                leftEnabled && rightEnabled -> ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+                leftEnabled -> ItemTouchHelper.LEFT
+                rightEnabled -> ItemTouchHelper.RIGHT
+                else -> 0
+            }
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.adapterPosition
+            val context = requireContext()
+            val message = adapter.getAllMessages()[position]
+
+            when (direction) {
+                ItemTouchHelper.LEFT -> {
+                    val leftAction = ViewUtils.getSwipeAction(context, false)
+                    handleSwipeAction(leftAction, position, message)
+                }
+
+                ItemTouchHelper.RIGHT -> {
+                    val rightAction = ViewUtils.getSwipeAction(context, true)
+                    handleSwipeAction(rightAction, position, message)
+                }
+            }
+        }
+
+
+        override fun onChildDraw(
+            c: Canvas,
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            dX: Float,
+            dY: Float,
+            actionState: Int,
+            isCurrentlyActive: Boolean
+        ) {
+            if (actionState != ItemTouchHelper.ACTION_STATE_SWIPE) {
+                super.onChildDraw(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
+                return
+            }
+
+            val leftSwipeAction =
+                ViewUtils.getSwipeAction(requireContext(), isRightSwipe = false)
+            val rightSwipeAction =
+                ViewUtils.getSwipeAction(requireContext(), isRightSwipe = true)
+
+            val rightSwipeIcon: Int? = getSwipeIcon(rightSwipeAction)
+            val leftSwipeIcon: Int? = getSwipeIcon(leftSwipeAction)
+            val context = recyclerView.context
+            val colorPrimary = ContextCompat.getColor(context, R.color.colorPrimary)
+            val whiteColor = ContextCompat.getColor(context, R.color.white)
+
+            val decorator = RecyclerViewSwipeDecorator.Builder(
+                c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
+            )
+
+            // Apply Right Swipe (dX > 0)
+            if (dX > 0 && rightSwipeIcon != null) {
+                decorator.addSwipeRightBackgroundColor(colorPrimary)
+                    .addSwipeRightActionIcon(rightSwipeIcon)
+                    .setSwipeRightActionIconTint(whiteColor)
+            }
+
+            // Apply Left Swipe (dX < 0)
+            if (dX < 0 && leftSwipeIcon != null) {
+                decorator.addSwipeLeftBackgroundColor(colorPrimary)
+                    .addSwipeLeftActionIcon(leftSwipeIcon)
+                    .setSwipeLeftActionIconTint(whiteColor)
+            }
+
+            decorator.create().decorate()
+
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
+
+        private fun getSwipeIcon(action: String): Int? {
+            return when (action) {
+                "Delete" -> R.drawable.ic_delete
+                "Archive" -> R.drawable.ic_archive
+                "Call" -> R.drawable.ic_call
+                "Mark as read" -> R.drawable.ic_mark_read2
+                "Mark as Unread" -> R.drawable.ic_mark_read
+                else -> null
+            }
+        }
+
+        private fun handleSwipeAction(action: String, position: Int, message: MessageItem) {
+            when (action) {
+                "Delete" -> {
+                    adapter.selectedMessages.add(message)
+                    deleteSelectedMessages()
+                }
+
+                "Archive" -> {
+                    adapter.selectedMessages.clear()
+                    adapter.selectedMessages.add(message)
+                    archiveMessages()
+                }
+
+                "Call" -> {
+                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                        data = Uri.parse("tel:${message.sender}")
+                    }
+                    adapter.notifyDataSetChanged()
+                    startActivity(intent)
+                    adapter.notifyItemChanged(position)
+                }
+
+                "Mark as read" -> {
+                    adapter.selectedMessages.clear()
+                    markThreadAsread(message.threadId)
+                }
+
+                "Mark as Unread" -> {
+                    adapter.selectedMessages.clear()
+                    markThreadAsUnread(message.threadId)
+                }
+
+                else -> {
+                    adapter.notifyItemChanged(position)
+                }
+
+            }
+        }
+
+    }
+
+    private fun setupSwipeGesture() {
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(binding.conversationList)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSwipeActionChanged(event: SwipeActionEvent) {
+        if (event.isRightSwipe) {
+            rightSwipeAction = event.action
+        } else {
+            leftSwipeAction = event.action
+        }
     }
 
     fun openEditCategory() {
@@ -296,7 +489,7 @@ class ConversationFragment : Fragment() {
             arrayOf(Telephony.Sms.BODY),
             "${Telephony.Sms.THREAD_ID} = ?",
             arrayOf(threadId.toString()),
-            "${Telephony.Sms.DATE} DESC LIMIT 1" // Get latest message
+            "${Telephony.Sms.DATE} DESC LIMIT 1"
         )
 
         cursor?.use {
@@ -383,6 +576,7 @@ class ConversationFragment : Fragment() {
                     onSelectionChanged?.invoke(
                         adapter.selectedMessages.size,
                         adapter.selectedMessages.count { it.isPinned })
+                    updateMessageCount()
                 }
 
             } catch (e: Exception) {
@@ -398,6 +592,7 @@ class ConversationFragment : Fragment() {
         updatedList.removeAll { selectedIds.contains(it.threadId) }
         adapter.submitList(updatedList)
         adapter.clearSelection()
+        updateMessageCount()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -486,6 +681,7 @@ class ConversationFragment : Fragment() {
                     updatedList.removeAll { selectedIds.contains(it.threadId) }
                     adapter.submitList(updatedList)
                     adapter.clearSelection()
+                    updateMessageCount()
                 }
             }
         }
@@ -501,6 +697,77 @@ class ConversationFragment : Fragment() {
             val unreadThreadIds = unreadMessages.map { it.threadId }.distinct()
             val contentValues = ContentValues().apply {
                 put(Telephony.Sms.READ, 1)
+                put(Telephony.Sms.SEEN, 1)
+            }
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
+            val updatedRows = requireContext().contentResolver.update(
+                Telephony.Sms.CONTENT_URI, contentValues, selection, null
+            )
+            if (updatedRows > 0) {
+                updatedList.replaceAll { message ->
+                    if (unreadThreadIds.contains(message.threadId)) message.copy(isRead = true) else message
+                }
+                withContext(Dispatchers.Main) {
+                    adapter.submitList(updatedList)
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        adapter.notifyDataSetChanged()
+                    }, 200)
+                }
+            }
+        }
+    }
+
+    private fun updateMessageList(threadId: Long, isRead: Boolean) {
+        val position = adapter.getPositionForThreadId(threadId)
+        if (position != RecyclerView.NO_POSITION) {
+            adapter.updateThreadStatus(threadId, isRead)
+            Handler(Looper.getMainLooper()).post {
+                adapter.notifyItemChanged(position)
+                adapter.notifyDataSetChanged()
+                unreadMessageCount()
+            }
+        }
+    }
+
+    private fun markThreadAsUnread(threadId: Long) {
+        if (threadId == -1L) return
+        val contentValues = ContentValues().apply {
+            put(Telephony.Sms.READ, 0)
+            put(Telephony.Sms.SEEN, 0)
+        }
+        val uri = Telephony.Sms.CONTENT_URI
+        val selection = "${Telephony.Sms.THREAD_ID} = ?"
+        val selectionArgs = arrayOf(threadId.toString())
+        val updatedRows =
+            requireContext().contentResolver.update(uri, contentValues, selection, selectionArgs)
+            updateMessageList(threadId, false)
+    }
+
+    private fun markThreadAsread(threadId: Long) {
+        if (threadId == -1L) return
+        val contentValues = ContentValues().apply {
+            put(Telephony.Sms.READ, 1)
+            put(Telephony.Sms.SEEN, 1)
+        }
+        val uri = Telephony.Sms.CONTENT_URI
+        val selection = "${Telephony.Sms.THREAD_ID} = ?"
+        val selectionArgs = arrayOf(threadId.toString())
+        val updatedRows =
+            requireContext().contentResolver.update(uri, contentValues, selection, selectionArgs)
+            updateMessageList(threadId, true)
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun markUnreadMessages() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val updatedList = adapter.getAllMessages().toMutableList()
+            val unreadMessages = updatedList.filter { it.isRead }
+            if (unreadMessages.isEmpty()) return@launch
+            val unreadThreadIds = unreadMessages.map { it.threadId }.distinct()
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, 0)
             }
             val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
             val updatedRows = requireContext().contentResolver.update(

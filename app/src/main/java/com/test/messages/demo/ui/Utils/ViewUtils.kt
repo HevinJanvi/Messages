@@ -11,7 +11,8 @@ import org.json.JSONArray
 
 object ViewUtils {
 
-    val PREF_NAME = "notification_prefs"
+//    val PREF_NAME = "notification_prefs"
+    val PREF_NAME = "prefs"
     private const val KEY_NOTIFICATION_OPTION = "notification_option"
     private const val KEY_LANGUAGE_SELECTED = "language_selected"
     private const val KEY_SELECTED_LANGUAGE = "selected_language"
@@ -123,5 +124,24 @@ object ViewUtils {
         val sharedPrefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         sharedPrefs.edit().putBoolean("SHOW_CATEGORIES", isEnabled).apply()
     }
+
+    private const val PREFS_NAME = "SwipePreferences"
+    private const val KEY_LEFT_SWIPE_ACTION = "left_swipe_action"
+    private const val KEY_RIGHT_SWIPE_ACTION = "right_swipe_action"
+
+    fun getSwipeAction(context: Context, isRightSwipe: Boolean): String {
+        val key = if (isRightSwipe) KEY_RIGHT_SWIPE_ACTION else KEY_LEFT_SWIPE_ACTION
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(key, "Archive") ?: "Archive"
+    }
+
+    fun saveSwipeAction(context: Context, action: String, isRightSwipe: Boolean) {
+        val key = if (isRightSwipe) KEY_RIGHT_SWIPE_ACTION else KEY_LEFT_SWIPE_ACTION
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(key, action)
+            .apply()
+    }
+
 }
 

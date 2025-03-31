@@ -118,6 +118,7 @@ dependencies {
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
 //    implementation ("android.arch.lifecycle:extensions:1.1.1")
     implementation("com.tbuonomo:dotsindicator:5.1.0")
+    implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
 
 
 

@@ -44,6 +44,10 @@ class SettingsActivity : BaseActivity() {
             val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
+        binding.swipeLy.setOnClickListener {
+            val intent = Intent(this, SwipeActivity::class.java)
+            startActivity(intent)
+        }
         binding.policyLy.setOnClickListener {
             val url = "https://yourprivacypolicy.com"
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))

@@ -13,3 +13,5 @@ data class MessageDeletedEvent(
 data class CategoryVisibilityEvent(val isEnabled: Boolean)
 
 data class CategoryUpdateEvent(val updatedCategories: List<String>)
+
+data class SwipeActionEvent(val action: String, val isRightSwipe: Boolean)
