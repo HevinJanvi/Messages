@@ -9,14 +9,12 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -24,12 +22,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.MessageDiffCallback
-import com.test.messages.demo.data.MessageItem
-import com.test.messages.demo.ui.Utils.TimeUtils.formatTimestamp
-import com.test.messages.demo.ui.Utils.TimeUtils.getInitials
-import com.test.messages.demo.ui.Utils.TimeUtils.getRandomColor
-import com.test.messages.demo.ui.Utils.ViewUtils.extractOtp
+import com.test.messages.demo.data.Model.MessageDiffCallback
+import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.Util.TimeUtils.formatTimestamp
+import com.test.messages.demo.Util.TimeUtils.getInitials
+import com.test.messages.demo.Util.TimeUtils.getRandomColor
+import com.test.messages.demo.Util.ViewUtils.extractOtp
 
 class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     RecyclerView.Adapter<MessageAdapter.ViewHolder>() {

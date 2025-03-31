@@ -5,16 +5,15 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.test.messages.demo.AlphabticScroll.ItemMoveCallback
+import com.test.messages.demo.ui.AlphabticScroll.ItemMoveCallback
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityEditCategoryBinding
 import com.test.messages.demo.ui.Adapter.EditCategoryAdapter
-import com.test.messages.demo.ui.Utils.ViewUtils
-import com.test.messages.demo.ui.reciever.CategoryUpdateEvent
-import com.test.messages.demo.ui.reciever.CategoryVisibilityEvent
+import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.CategoryUpdateEvent
+import com.test.messages.demo.Util.CategoryVisibilityEvent
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
 

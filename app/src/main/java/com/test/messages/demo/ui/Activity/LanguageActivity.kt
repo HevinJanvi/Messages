@@ -19,8 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityLanguageBinding
-import com.test.messages.demo.ui.Utils.DebouncedOnClickListener
-import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.Util.DebouncedOnClickListener
+import com.test.messages.demo.Util.ViewUtils
 import java.util.Locale
 
 class LanguageActivity : BaseActivity() {

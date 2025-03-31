@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -24,10 +23,9 @@ import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
-import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
-import com.test.messages.demo.ui.Utils.SmsPermissionUtils
-import com.test.messages.demo.viewmodel.MessageViewModel
+import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

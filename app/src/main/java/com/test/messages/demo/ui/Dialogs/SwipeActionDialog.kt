@@ -9,12 +9,14 @@ import android.view.WindowManager
 import android.widget.RadioButton
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.SWIPE_NONE
 import com.test.messages.demo.databinding.DialogSwipeActionBinding
 
 class SwipeActionDialog(
     context: Context,
-    private val selectedAction: String,
-    private val onActionSelected: (String) -> Unit
+    private val selectedAction: Int,
+    private val onActionSelected: (Int) -> Unit
 ) : Dialog(context) {
 
     private lateinit var binding: DialogSwipeActionBinding
@@ -22,42 +24,45 @@ class SwipeActionDialog(
         super.onCreate(savedInstanceState)
         binding = DialogSwipeActionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
-        window?.setBackgroundDrawable(ContextCompat.getDrawable(context, android.R.color.transparent))
+        window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+        window?.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                context,
+                android.R.color.transparent
+            )
+        )
         window?.setGravity(Gravity.BOTTOM)
 
-        val radioButtons = listOf(
-            binding.rbNone,
-            binding.rbDelete,
-            binding.rbArchive,
-            binding.rbCall,
-            binding.rbMarkRead,
-            binding.rbMarkUnread
+        val radioButtons = mapOf(
+            binding.rbNone to CommanConstants.SWIPE_NONE,
+            binding.rbDelete to CommanConstants.SWIPE_DELETE,
+            binding.rbArchive to CommanConstants.SWIPE_ARCHIVE,
+            binding.rbCall to CommanConstants.SWIPE_CALL,
+            binding.rbMarkRead to CommanConstants.SWIPE_MARK_READ,
+            binding.rbMarkUnread to CommanConstants.SWIPE_MARK_UNREAD
         )
-
-
-        radioButtons.forEach { radioButton ->
-            val isSelected = radioButton.text.toString() == selectedAction
-            radioButton.isChecked = isSelected
+        radioButtons.forEach { (radioButton, action) ->
+            radioButton.isChecked = (action == selectedAction)
             updateRadioButtonTint()
 
             radioButton.setOnCheckedChangeListener { _, _ ->
-                updateRadioButtonTint() // Update tint on selection change
+                updateRadioButtonTint()
             }
         }
-
-// Handle OK button click
         binding.btnOk.setOnClickListener {
-            val selectedRadioButtonId = binding.radioGroupSwipeActions.checkedRadioButtonId
-            if (selectedRadioButtonId != -1) {
-                val selectedText = findViewById<RadioButton>(selectedRadioButtonId)?.text.toString()
-                onActionSelected(selectedText)
-            }
+            val selectedAction =
+                radioButtons.entries.find { it.key.isChecked }?.value ?: SWIPE_NONE
+            onActionSelected(selectedAction)
             dismiss()
         }
+
         binding.btnCancel.setOnClickListener {
             dismiss()
         }
+
     }
 
     private fun updateRadioButtonTint() {
@@ -75,8 +80,9 @@ class SwipeActionDialog(
 
         for (radio in radioButtons) {
             val color = if (radio.isChecked) colorPrimary else defaultColor
-            radio.buttonTintList = ColorStateList.valueOf(color)  // Change icon tint only
+            radio.buttonTintList = ColorStateList.valueOf(color)
         }
     }
+
 
 }

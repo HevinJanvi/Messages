@@ -4,9 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import com.test.messages.demo.databinding.ActivitySettingsBinding
-import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.Util.ViewUtils
 
 class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding

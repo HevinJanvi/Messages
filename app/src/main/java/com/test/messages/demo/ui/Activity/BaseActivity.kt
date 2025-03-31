@@ -3,10 +3,9 @@ package com.test.messages.demo.ui.Activity
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.test.messages.demo.R
-import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.Util.ViewUtils
 import java.util.Locale
 
 open class BaseActivity : AppCompatActivity() {

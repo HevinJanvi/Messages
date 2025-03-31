@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
-import com.test.messages.demo.Database.Scheduled.ScheduledMessage
+import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.R
-import com.test.messages.demo.ui.Utils.TimeUtils.formatTimestamp
-import com.test.messages.demo.ui.Utils.TimeUtils.getInitials
-import com.test.messages.demo.ui.Utils.TimeUtils.getRandomColor
+import com.test.messages.demo.Util.TimeUtils.formatTimestamp
+import com.test.messages.demo.Util.TimeUtils.getInitials
+import com.test.messages.demo.Util.TimeUtils.getRandomColor
 
 class ScheduledMessageAdapter(private val onItemClick: (ScheduledMessage) -> Unit) :
     ListAdapter<ScheduledMessage, ScheduledMessageAdapter.ViewHolder>(DIFF_CALLBACK) {

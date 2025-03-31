@@ -3,10 +3,11 @@ package com.test.messages.demo.ui.Activity
 import android.os.Bundle
 import android.view.View
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.databinding.ActivitySwipeBinding
 import com.test.messages.demo.ui.Dialogs.SwipeActionDialog
-import com.test.messages.demo.ui.Utils.ViewUtils
-import com.test.messages.demo.ui.reciever.SwipeActionEvent
+import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.SwipeActionEvent
 import org.greenrobot.eventbus.EventBus
 
 class SwipeActivity : BaseActivity() {
@@ -44,24 +45,24 @@ class SwipeActivity : BaseActivity() {
 
     }
 
-    private fun updateSwipeUI(leftAction: String, rightAction: String) {
-        binding.tvLeftSwipeAction.text = leftAction
+
+    private fun updateSwipeUI(leftAction: Int, rightAction: Int) {
+        binding.tvLeftSwipeAction.text = leftAction.toString()
         val leftIconResId = getSwipeIcon(leftAction, false)
         binding.ivSwipeActionImg.setImageResource(leftIconResId)
 
-        binding.tvRightSwipeAction.text = rightAction
+        binding.tvRightSwipeAction.text = rightAction.toString()
         val rightIconResId = getSwipeIcon(rightAction, true)
         binding.ivSwipeActionImgRight.setImageResource(rightIconResId)
     }
 
-
-    private fun getSwipeIcon(action: String, isRightSwipe: Boolean): Int {
+    private fun getSwipeIcon(action: Int, isRightSwipe: Boolean): Int {
         return when (action) {
-            "Delete" -> if (isRightSwipe) R.drawable.img_delete_action_right else R.drawable.img_delete_action_left
-            "Archive" -> if (isRightSwipe) R.drawable.img_archive_action_right else R.drawable.img_archive_action_left
-            "Call" -> if (isRightSwipe) R.drawable.img_call_action_right else R.drawable.img_call_action_left
-            "Mark as read" -> if (isRightSwipe) R.drawable.img_read_action_right else R.drawable.img_read_action_left
-            "Mark as Unread" -> if (isRightSwipe) R.drawable.img_unread_action_right else R.drawable.img_unread_action_left
+            CommanConstants.SWIPE_DELETE -> if (isRightSwipe) R.drawable.img_delete_action_right else R.drawable.img_delete_action_left
+            CommanConstants.SWIPE_ARCHIVE -> if (isRightSwipe) R.drawable.img_archive_action_right else R.drawable.img_archive_action_left
+            CommanConstants.SWIPE_CALL -> if (isRightSwipe) R.drawable.img_call_action_right else R.drawable.img_call_action_left
+            CommanConstants.SWIPE_MARK_READ -> if (isRightSwipe) R.drawable.img_read_action_right else R.drawable.img_read_action_left
+            CommanConstants.SWIPE_MARK_UNREAD -> if (isRightSwipe) R.drawable.img_unread_action_right else R.drawable.img_unread_action_left
             else -> R.drawable.ic_no_action
         }
     }

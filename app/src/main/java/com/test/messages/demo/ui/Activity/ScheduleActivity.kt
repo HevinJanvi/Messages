@@ -10,14 +10,14 @@ import android.telephony.SmsManager
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.test.messages.demo.Database.Scheduled.ScheduledMessage
+import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityScheduleBinding
 import com.test.messages.demo.ui.Adapter.ScheduledMessageAdapter
 import com.test.messages.demo.ui.Dialogs.ScheduleDialog
 import com.test.messages.demo.ui.send.MessageUtils
-import com.test.messages.demo.ui.Utils.SmsPermissionUtils
-import com.test.messages.demo.ui.Utils.SmsSender
+import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.SmsSender
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
 class ScheduleActivity : BaseActivity() {

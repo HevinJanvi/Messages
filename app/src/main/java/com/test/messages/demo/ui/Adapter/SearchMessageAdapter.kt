@@ -2,7 +2,6 @@ package com.test.messages.demo.ui.Adapter
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableString
@@ -19,8 +18,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.MessageItem
-import com.test.messages.demo.ui.Utils.TimeUtils
+import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.Util.TimeUtils
 import java.util.Locale
 
 class SearchMessageAdapter(

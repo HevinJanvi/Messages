@@ -6,10 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -23,7 +20,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -32,7 +28,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.MessageItem
+import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
 import com.test.messages.demo.ui.Activity.ConversationActivity
 import com.test.messages.demo.ui.Activity.EditCategoryActivity
@@ -41,16 +37,17 @@ import com.test.messages.demo.ui.Activity.NewConversationActivtiy
 import com.test.messages.demo.ui.Adapter.CategoryAdapter
 import com.test.messages.demo.ui.Adapter.MessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
-import com.test.messages.demo.ui.Utils.ViewUtils
-import com.test.messages.demo.ui.Utils.ViewUtils.getCategoriesFromPrefs
-import com.test.messages.demo.ui.Utils.ViewUtils.isCategoryEnabled
-import com.test.messages.demo.ui.reciever.CategoryUpdateEvent
-import com.test.messages.demo.ui.reciever.CategoryVisibilityEvent
-import com.test.messages.demo.ui.reciever.MessageDeletedEvent
-import com.test.messages.demo.ui.reciever.SwipeActionEvent
-import com.test.messages.demo.ui.reciever.UnreadMessageListener
-import com.test.messages.demo.viewmodel.DraftViewModel
-import com.test.messages.demo.viewmodel.MessageViewModel
+import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.ViewUtils.getCategoriesFromPrefs
+import com.test.messages.demo.Util.ViewUtils.isCategoryEnabled
+import com.test.messages.demo.Util.CategoryUpdateEvent
+import com.test.messages.demo.Util.CategoryVisibilityEvent
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.MessageDeletedEvent
+import com.test.messages.demo.Util.SwipeActionEvent
+import com.test.messages.demo.data.reciever.UnreadMessageListener
+import com.test.messages.demo.data.viewmodel.DraftViewModel
+import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
@@ -68,8 +65,8 @@ import org.jetbrains.annotations.Nullable
 @RequiresApi(Build.VERSION_CODES.Q)
 class ConversationFragment : Fragment() {
 
-    private var leftSwipeAction: String? = null
-    private var rightSwipeAction: String? = null
+    private var leftSwipeAction: Int? = null
+    private var rightSwipeAction: Int? = null
     private var blockConversationIds: List<Long> = emptyList()
     private var archivedConversationIds: List<Long> = emptyList()
     private var pinnedThreadIds: List<Long> = emptyList()
@@ -289,8 +286,8 @@ class ConversationFragment : Fragment() {
             val leftAction = ViewUtils.getSwipeAction(context, isRightSwipe = false)
             val rightAction = ViewUtils.getSwipeAction(context, isRightSwipe = true)
 
-            val leftEnabled = leftAction != "None"
-            val rightEnabled = rightAction != "None"
+            val leftEnabled = leftAction !=  CommanConstants.SWIPE_NONE
+            val rightEnabled = rightAction != CommanConstants.SWIPE_NONE
 
             return when {
                 leftEnabled && rightEnabled -> ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -375,31 +372,32 @@ class ConversationFragment : Fragment() {
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         }
 
-        private fun getSwipeIcon(action: String): Int? {
+        private fun getSwipeIcon(action: Int): Int? {
             return when (action) {
-                "Delete" -> R.drawable.ic_delete
-                "Archive" -> R.drawable.ic_archive
-                "Call" -> R.drawable.ic_call
-                "Mark as read" -> R.drawable.ic_mark_read2
-                "Mark as Unread" -> R.drawable.ic_mark_read
+                CommanConstants.SWIPE_DELETE  -> R.drawable.ic_delete
+                CommanConstants.SWIPE_ARCHIVE -> R.drawable.ic_archive
+                CommanConstants.SWIPE_CALL -> R.drawable.ic_call
+                CommanConstants.SWIPE_MARK_READ -> R.drawable.ic_mark_read2
+                CommanConstants.SWIPE_MARK_UNREAD -> R.drawable.ic_mark_read
                 else -> null
             }
         }
 
-        private fun handleSwipeAction(action: String, position: Int, message: MessageItem) {
+
+        private fun handleSwipeAction(action: Int, position: Int, message: MessageItem) {
             when (action) {
-                "Delete" -> {
+                CommanConstants.SWIPE_DELETE  -> {
                     adapter.selectedMessages.add(message)
                     deleteSelectedMessages()
                 }
 
-                "Archive" -> {
+                CommanConstants.SWIPE_ARCHIVE -> {
                     adapter.selectedMessages.clear()
                     adapter.selectedMessages.add(message)
                     archiveMessages()
                 }
 
-                "Call" -> {
+                CommanConstants.SWIPE_CALL -> {
                     val intent = Intent(Intent.ACTION_DIAL).apply {
                         data = Uri.parse("tel:${message.sender}")
                     }
@@ -408,12 +406,12 @@ class ConversationFragment : Fragment() {
                     adapter.notifyItemChanged(position)
                 }
 
-                "Mark as read" -> {
+                CommanConstants.SWIPE_MARK_READ -> {
                     adapter.selectedMessages.clear()
                     markThreadAsread(message.threadId)
                 }
 
-                "Mark as Unread" -> {
+                CommanConstants.SWIPE_MARK_UNREAD -> {
                     adapter.selectedMessages.clear()
                     markThreadAsUnread(message.threadId)
                 }

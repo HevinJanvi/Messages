@@ -5,19 +5,17 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.test.messages.demo.data.ContactItem
-import com.test.messages.demo.data.MessageItem
+import com.test.messages.demo.data.Model.ContactItem
+import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.ActivitySearchBinding
 import com.test.messages.demo.ui.Adapter.SearchContactAdapter
 import com.test.messages.demo.ui.Adapter.SearchMessageAdapter
-import com.test.messages.demo.ui.Utils.SmsPermissionUtils
-import com.test.messages.demo.viewmodel.MessageViewModel
+import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

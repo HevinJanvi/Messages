@@ -1,8 +1,6 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.content.res.ColorStateList
-import android.graphics.Typeface
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,11 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.MessageDiffCallback
-import com.test.messages.demo.data.MessageItem
-import com.test.messages.demo.ui.Utils.TimeUtils.formatTimestamp
-import com.test.messages.demo.ui.Utils.TimeUtils.getInitials
-import com.test.messages.demo.ui.Utils.TimeUtils.getRandomColor
+import com.test.messages.demo.data.Model.MessageDiffCallback
+import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.Util.TimeUtils.formatTimestamp
+import com.test.messages.demo.Util.TimeUtils.getInitials
+import com.test.messages.demo.Util.TimeUtils.getRandomColor
 
 
 class StarredMessagesAdapter :

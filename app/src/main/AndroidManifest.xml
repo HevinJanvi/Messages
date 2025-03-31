@@ -98,7 +98,7 @@
             android:theme="@style/Theme.MyApplication" />
 
         <receiver
-            android:name=".ui.reciever.SmsReceiver"
+            android:name=".data.reciever.SmsReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
@@ -120,7 +120,7 @@
         </receiver>
 
         <service
-            android:name=".ui.reciever.HeadlessSmsSendService"
+            android:name=".data.reciever.HeadlessSmsSendService"
             android:exported="true"
             android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
             <intent-filter>
@@ -168,14 +168,14 @@
 
         <receiver android:name=".ui.send.SmsStatusSentReceiver" />
         <receiver
-            android:name=".ui.reciever.NotificationReceiver"
+            android:name=".data.reciever.NotificationReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".ui.reciever.MessageSenderReceiver"
+            android:name=".data.reciever.MessageSenderReceiver"
             android:exported="false" />
     </application>
 

@@ -1,23 +1,18 @@
 package com.test.messages.demo.ui.Adapter
 
-import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.MessageDiffCallback
-import com.test.messages.demo.data.MessageItem
-import com.test.messages.demo.databinding.ItemMessageBinding
-import com.test.messages.demo.ui.Utils.TimeUtils
+import com.test.messages.demo.data.Model.MessageDiffCallback
+import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.Util.TimeUtils
 
 class BlockedMessagesAdapter(
     private val onSelectionChanged: (Int) -> Unit

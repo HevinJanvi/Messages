@@ -21,13 +21,13 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.data.ContactItem
+import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityNewConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationContactAdapter
 import com.test.messages.demo.ui.send.MessageUtils
-import com.test.messages.demo.ui.Utils.SmsPermissionUtils
-import com.test.messages.demo.ui.Utils.SmsSender
-import com.test.messages.demo.viewmodel.MessageViewModel
+import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.SmsSender
+import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

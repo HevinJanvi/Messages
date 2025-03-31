@@ -3,20 +3,15 @@ package com.test.messages.demo.ui.Activity
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.content.Intent
-import android.content.res.ColorStateList
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.animation.AnimationUtils
-import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityIntroBinding
 import com.test.messages.demo.ui.Adapter.IntroPagerAdapter
-import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.Util.ViewUtils
 
 class IntroActivity : BaseActivity() {
 

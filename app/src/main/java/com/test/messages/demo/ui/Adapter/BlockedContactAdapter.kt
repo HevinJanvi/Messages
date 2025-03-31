@@ -8,9 +8,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.MessageDiffCallback
-import com.test.messages.demo.data.MessageItem
-import com.test.messages.demo.databinding.ItemMessageBinding
+import com.test.messages.demo.data.Model.MessageDiffCallback
+import com.test.messages.demo.data.Model.MessageItem
 
 class BlockedContactAdapter(
     private val onItemClick: (MessageItem) -> Unit,

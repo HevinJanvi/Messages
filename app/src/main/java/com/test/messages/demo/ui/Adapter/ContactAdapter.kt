@@ -7,14 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.SectionIndexer
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.test.messages.demo.AlphabticScroll.RecyclerViewFastScroller
+import com.test.messages.demo.ui.AlphabticScroll.RecyclerViewFastScroller
 import com.test.messages.demo.R
-import com.test.messages.demo.data.ContactItem
-import com.test.messages.demo.ui.Utils.TimeUtils
+import com.test.messages.demo.data.Model.ContactItem
+import com.test.messages.demo.Util.TimeUtils
 import kotlin.text.isLetter
 
 class ContactAdapter(

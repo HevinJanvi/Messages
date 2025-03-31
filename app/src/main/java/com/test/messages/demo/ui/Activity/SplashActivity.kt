@@ -2,11 +2,8 @@ package com.test.messages.demo.ui.Activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Telephony
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import com.test.messages.demo.ui.Utils.SmsPermissionUtils
-import com.test.messages.demo.ui.Utils.ViewUtils
+import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.ViewUtils
 
 class SplashActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

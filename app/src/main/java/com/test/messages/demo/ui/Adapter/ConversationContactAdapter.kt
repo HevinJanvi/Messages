@@ -10,8 +10,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
-import com.test.messages.demo.data.ContactItem
-import com.test.messages.demo.ui.Utils.TimeUtils
+import com.test.messages.demo.data.Model.ContactItem
+import com.test.messages.demo.Util.TimeUtils
 
 class ConversationContactAdapter(
     private var contacts: List<ContactItem>,

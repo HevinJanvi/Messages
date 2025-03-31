@@ -13,8 +13,8 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
-import com.test.messages.demo.ui.Utils.ViewUtils.saveNotificationOption
-import com.test.messages.demo.viewmodel.MessageViewModel
+import com.test.messages.demo.Util.ViewUtils.saveNotificationOption
+import com.test.messages.demo.data.viewmodel.MessageViewModel
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
 
