@@ -7,6 +7,9 @@ object CommanConstants {
     const val KEY_LANGUAGE_SELECTED = "language_selected"
     const val KEY_SELECTED_LANGUAGE = "selected_language"
     const val KEY_INTRO_SHOWN = "intro_shown"
+
+    const val GROUP_NAME_KEY= "group_name_"
+    const val GROUP_NAME_DEFAULT= "Unnamed Group"
 //    const val PREFS_NAME = "SwipePreferences"
 
     const val KEY_LEFT_SWIPE_ACTION = "left_swipe_action"

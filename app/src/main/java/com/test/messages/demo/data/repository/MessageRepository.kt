@@ -13,6 +13,8 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Block.BlockConversation
 import com.test.messages.demo.data.Database.Notification.NotificationSetting
@@ -42,7 +44,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getMessages(): List<MessageItem> {
         val startTime = System.currentTimeMillis()
-        val sharedPreferences = context.getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
+        val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
 
         return runBlocking(Dispatchers.IO) {
             val conversationsDeferred = async { getConversations() }
@@ -76,7 +78,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 //                    Log.d("DEBUG", "Mapped phone numbers: $rawPhoneNumbers")
 
                     val savedGroupName =
-                        sharedPreferences.getString("group_name_${messageItem.threadId}", null)
+                        sharedPreferences.getString("${GROUP_NAME_KEY}${messageItem.threadId}", null)
 //                    Log.d("DEBUG", "Saved group name for thread ${messageItem.threadId}: $savedGroupName")
 
                     val groupName = savedGroupName ?: rawPhoneNumbers.map { number ->
@@ -694,7 +696,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val selection = if (threadId != null) "${Telephony.Sms.THREAD_ID}=?" else null
         val selectionArgs = if (threadId != null) arrayOf(threadId) else null
 
-        val sharedPreferences = context.getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
+        val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
 
         val cursor: Cursor? =
             context.contentResolver.query(uri, projection, selection, selectionArgs, null)
@@ -711,7 +713,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val sender = it.getString(senderIndex) ?: "Unknown"
                 val timestamp = it.getLong(timestampIndex)
                 val isRead = it.getInt(isReadIndex) == 1
-                val savedGroupName = sharedPreferences.getString("group_name_$tId", null)
+                val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}$tId", null)
 
                 messages.add(
                     MessageItem(

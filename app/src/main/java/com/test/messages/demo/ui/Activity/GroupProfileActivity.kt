@@ -11,6 +11,9 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_DEFAULT
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
 import com.test.messages.demo.databinding.ActivityGroupProfileBinding
 import com.test.messages.demo.ui.Adapter.GroupMemberAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -135,15 +138,15 @@ class GroupProfileActivity : BaseActivity() {
 
 
     private fun updateGroupName(threadId: Long, newName: String) {
-        val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString("group_name_$threadId", newName).apply()
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("${GROUP_NAME_KEY}$threadId", newName).apply()
         binding.textGroupName.text = newName
         EventBus.getDefault().post(UpdateGroupNameEvent(threadId, newName))
     }
 
     private fun loadGroupName(threadId: Long) {
-        val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
-        val groupName = sharedPreferences.getString("group_name_$threadId", "Unnamed Group")
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val groupName = sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", GROUP_NAME_DEFAULT)
         binding.textGroupName.text = groupName
     }
     override fun onResume() {

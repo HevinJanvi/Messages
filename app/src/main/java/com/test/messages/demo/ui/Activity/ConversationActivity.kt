@@ -38,6 +38,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
@@ -277,8 +279,8 @@ class ConversationActivity : BaseActivity() {
             if (groupedList.isNotEmpty()) {
                 binding.emptyText.visibility = View.GONE
                 CoroutineScope(Dispatchers.IO).launch {
-                    val sharedPreferences = getSharedPreferences("GroupPrefs", Context.MODE_PRIVATE)
-                    val savedGroupName = sharedPreferences.getString("group_name_$threadId", null)
+                    val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+                    val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
                     Log.d("TAG", "conversation observeViewModel: "+savedGroupName)
                     val contactName =
                         savedGroupName ?: name

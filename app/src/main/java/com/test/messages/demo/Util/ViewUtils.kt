@@ -15,7 +15,6 @@ import org.json.JSONArray
 
 object ViewUtils {
 
-//    val PREF_NAME = "notification_prefs"
 
     fun isOfferSender(sender: String): Boolean {
         return sender.matches(Regex("^[A-Z-]+$"))
