@@ -153,7 +153,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             Telephony.Threads.DATE,
             Telephony.Threads.MESSAGE_COUNT,
             Telephony.Threads.RECIPIENT_IDS,
-            Telephony.Sms.READ
+            Telephony.Sms.READ,
+            Telephony.Sms.TYPE
 
         )
 
@@ -176,12 +177,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val reciptids =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val isRead = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
+                val type= cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
 
-//                Log.d("MessageRepository", "Message from: isRead: $isRead")
                 val senderName = ""
                 val profileImageUrl = ""
 
-//                Log.d("TAG", "getConversations:reciptid " + threadId)
+//                Log.d("TAG", "getConversations:threadid " + threadId)
                 if (lastMessage != null) {
                     conversations.add(
                         MessageItem(
@@ -361,7 +362,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
                 val subscriptionId =
                     it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
-                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
+//                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
 
                 conversationList.add(
                     ConversationItem(
@@ -586,7 +587,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                     if (messages.isNotEmpty()) {
                         val latestMessage = messages.last()
-
                         blockedMessagesList.add(
                             MessageItem(
                                 threadId = latestMessage.threadId,
@@ -714,7 +714,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val timestamp = it.getLong(timestampIndex)
                 val isRead = it.getInt(isReadIndex) == 1
                 val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}$tId", null)
-
+                Log.d("TAG", "getAllMessages:timestamp-- "+timestamp)
                 messages.add(
                     MessageItem(
                         threadId = tId,

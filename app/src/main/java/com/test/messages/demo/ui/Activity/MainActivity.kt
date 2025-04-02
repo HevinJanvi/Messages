@@ -163,6 +163,11 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
+        binding.include.lyBakup.setOnClickListener {
+            val intent = Intent(this, BakupRestoreActivity::class.java)
+            startActivity(intent)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
 //        binding.icRecyclerbin.setOnClickListener {
 //            val intent = Intent(this, RecycleBinActivity::class.java)
 //            startActivity(intent)

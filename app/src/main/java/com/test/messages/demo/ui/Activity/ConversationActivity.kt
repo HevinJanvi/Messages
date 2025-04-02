@@ -281,7 +281,7 @@ class ConversationActivity : BaseActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
                     val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
-                    Log.d("TAG", "conversation observeViewModel: "+savedGroupName)
+
                     val contactName =
                         savedGroupName ?: name
                     withContext(Dispatchers.Main) {
@@ -471,8 +471,16 @@ class ConversationActivity : BaseActivity() {
         val selectedMessageItems = adapter.getSelectedItems().toList()
 
         for (messageItem in selectedMessageItems) {
-            val uri = Uri.parse("content://sms/${messageItem.id}")
-            contentResolver.delete(uri, null, null)
+            Log.d("TAG", "deleteSelectedMessages: "+messageItem.id)
+
+
+            val selection = "${Telephony.Sms._ID} = ${messageItem.id}"
+            try {
+                contentResolver.delete(Telephony.Sms.CONTENT_URI, selection, null)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
             val position = adapter.getPositionOfMessage(messageItem)
             if (position != RecyclerView.NO_POSITION) {
                 adapter.removeMessageWithAnimation(position)
@@ -480,11 +488,6 @@ class ConversationActivity : BaseActivity() {
         }
 
         adapter.clearSelection()
-
-//        val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
-//        val lastMessageText = lastConversationItem?.body
-//
-//        EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText))
         viewModel.loadConversation(threadId)
     }
 

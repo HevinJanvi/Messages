@@ -221,6 +221,17 @@
     <string name="call">Call</string>
     <string name="mark_as_unread">Mark as Unread</string>
     <string name="right_swipe">Right swipe</string>
+    <string name="backup_and_restore_messages">Backup and restore messages</string>
+    <string name="messages_can_be_backed">Messages can be backed up to your device and can be recovered any time</string>
+    <string name="backup">Backup</string>
+    <string name="restore_now">Restore Now</string>
+    <string name="backup_saved_successfully">Backup saved successfully!</string>
+    <string name="failed_to_save_backup">Failed to save backup</string>
+    <string name="restore_success">Restore Successful</string>
+    <string name="last_backup">Last Backup: %1$s</string>
+    <string name="no_new_messages_restored">No new messages restored.</string>
+    <string name="permission_required">Storage permission is required for backup.</string>
+    <string name="backing_up">Backing up...</string>
 
 
 </resources>

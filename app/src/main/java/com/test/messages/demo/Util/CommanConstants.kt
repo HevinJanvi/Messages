@@ -8,10 +8,15 @@ object CommanConstants {
     const val KEY_SELECTED_LANGUAGE = "selected_language"
     const val KEY_INTRO_SHOWN = "intro_shown"
 
-    const val GROUP_NAME_KEY= "group_name_"
-    const val GROUP_NAME_DEFAULT= "Unnamed Group"
+    const val GROUP_NAME_KEY = "group_name_"
+    const val GROUP_NAME_DEFAULT = "Unnamed Group"
 //    const val PREFS_NAME = "SwipePreferences"
 
+    //BACKUP file
+    const val BACKUP_FILE = "messages_backup.json"
+
+    //prefs keys
+    const val KEY_LAST_BACKUP = "last_backup_time"
     const val KEY_LEFT_SWIPE_ACTION = "left_swipe_action"
     const val KEY_RIGHT_SWIPE_ACTION = "right_swipe_action"
     const val SWIPE_NONE = 0
@@ -20,4 +25,6 @@ object CommanConstants {
     const val SWIPE_CALL = 3
     const val SWIPE_MARK_READ = 4
     const val SWIPE_MARK_UNREAD = 5
+
+
 }

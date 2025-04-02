@@ -44,6 +44,7 @@ import com.test.messages.demo.Util.CategoryUpdateEvent
 import com.test.messages.demo.Util.CategoryVisibilityEvent
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.MessageDeletedEvent
+import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.Util.SwipeActionEvent
 import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.DraftViewModel
@@ -378,7 +379,7 @@ class ConversationFragment : Fragment() {
                 CommanConstants.SWIPE_ARCHIVE -> R.drawable.ic_archive
                 CommanConstants.SWIPE_CALL -> R.drawable.ic_call
                 CommanConstants.SWIPE_MARK_READ -> R.drawable.ic_mark_read2
-                CommanConstants.SWIPE_MARK_UNREAD -> R.drawable.ic_mark_read
+                CommanConstants.SWIPE_MARK_UNREAD -> R.drawable.ic_mark_read1
                 else -> null
             }
         }
@@ -479,6 +480,14 @@ class ConversationFragment : Fragment() {
         categories.addAll(event.updatedCategories)
         categoryAdapter.updateCategories(categories)
         ViewUtils.saveCategoriesToPrefs(requireContext(), categories)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessagesRestored(event: MessagesRestoredEvent) {
+        if (event.success) {
+            adapter.notifyDataSetChanged()
+            viewModel.loadMessages()
+        }
     }
 
     fun getLastMessageForThread(threadId: Long): String? {

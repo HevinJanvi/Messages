@@ -13,3 +13,6 @@ data class CategoryVisibilityEvent(val isEnabled: Boolean)
 data class CategoryUpdateEvent(val updatedCategories: List<String>)
 
 data class SwipeActionEvent(val action: Int, val isRightSwipe: Boolean)
+
+data class MessagesRestoredEvent(val success: Boolean)
+

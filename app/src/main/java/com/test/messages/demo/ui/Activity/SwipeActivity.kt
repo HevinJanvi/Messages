@@ -45,7 +45,6 @@ class SwipeActivity : BaseActivity() {
 
     }
 
-
     private fun updateSwipeUI(leftAction: Int, rightAction: Int) {
         binding.tvLeftSwipeAction.text = leftAction.toString()
         val leftIconResId = getSwipeIcon(leftAction, false)

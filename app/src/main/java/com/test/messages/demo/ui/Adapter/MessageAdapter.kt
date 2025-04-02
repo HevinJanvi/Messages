@@ -9,6 +9,7 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,6 +65,10 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(message.timestamp)
+
+//        Log.d("TAG", "onBindViewHolder:time stamp "+ message.timestamp)
+//        Log.d("TAG", "onBindViewHolder:timr "+ holder.date.text)
+
         val firstChar = message.sender.trim().firstOrNull()
         val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
         if (startsWithSpecialChar || message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
