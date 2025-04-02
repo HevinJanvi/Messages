@@ -26,18 +26,10 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
     fun restoreMessages(uri: Uri, onComplete: (List<ConversationItem>) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.restoreMessages(uri, { progress ->
-                _restoreProgress.postValue(progress) // Update LiveData on UI thread
+                _restoreProgress.postValue(progress)
             }, onComplete)
         }
     }
-
-
-
-    /*fun restoreMessages(uri: Uri, onComplete: (List<ConversationItem>) -> Unit) {
-        GlobalScope.launch(Dispatchers.IO) {
-            repository.restoreMessages(uri, onComplete)
-        }
-    }*/
 
 
 }
