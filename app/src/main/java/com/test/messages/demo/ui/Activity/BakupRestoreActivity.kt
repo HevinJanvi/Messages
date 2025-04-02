@@ -42,9 +42,11 @@ class BakupRestoreActivity : AppCompatActivity() {
             onBackPressed()
         }
         binding.btnBackup.setOnClickListener {
+            animateButton(it)
             Backup()
         }
         binding.btnRestore.setOnClickListener {
+            animateButton(it)
             Restore()
         }
         backupViewModel.restoreProgress.observe(this) { progress ->
@@ -56,6 +58,21 @@ class BakupRestoreActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun animateButton(view: View) {
+        view.animate()
+            .scaleX(0.9f)
+            .scaleY(0.9f)
+            .setDuration(100)
+            .withEndAction {
+                view.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(100)
+                    .start()
+            }
+            .start()
     }
 
     private fun Restore() {

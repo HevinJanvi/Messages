@@ -79,6 +79,7 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
             holder.blueDot.visibility = View.GONE
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.subtext_color))
         }
+
         if (message.isPinned) {
             holder.icPin.visibility = View.VISIBLE
         } else {
@@ -150,6 +151,8 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         updatedList.removeAll { it.threadId in threadIds }
         submitList(updatedList)
     }
+
+
     fun submitList(newMessages: List<MessageItem>) {
         val diffCallback = MessageDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)

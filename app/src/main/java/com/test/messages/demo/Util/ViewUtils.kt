@@ -3,6 +3,7 @@ package com.test.messages.demo.Util
 import android.content.Context
 import android.preference.PreferenceManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.FONT_SIZE_KEY
 import com.test.messages.demo.Util.CommanConstants.KEY_INTRO_SHOWN
 import com.test.messages.demo.Util.CommanConstants.KEY_LANGUAGE_SELECTED
 import com.test.messages.demo.Util.CommanConstants.KEY_LEFT_SWIPE_ACTION
@@ -140,6 +141,16 @@ object ViewUtils {
             .apply()
     }
 
+
+    fun saveFontSize(context: Context, fontSize: Int) {
+        val sharedPref = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPref.edit().putInt(FONT_SIZE_KEY, fontSize).apply()
+    }
+
+    fun getFontSize(context: Context): Int {
+        val sharedPref = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return sharedPref.getInt(FONT_SIZE_KEY, CommanConstants.ACTION_NORMAL)
+    }
 
 }
 

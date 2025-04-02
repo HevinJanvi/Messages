@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="17dp"
+        android:background="@drawable/popup_bg"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tvDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:fontFamily="@font/product_sans_medium"
+            android:text="@string/font_size"
+            android:textColor="@color/textcolor"
+            android:textFontWeight="500"
+            android:textSize="20sp" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupSwipeActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="15dp">
+
+
+            <RadioButton
+                android:id="@+id/rbSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:paddingStart="15dp"
+                android:text="@string/small"
+                android:textColor="@color/textcolor"
+                android:textSize="16sp" />
+
+            <RadioButton
+                android:id="@+id/rbNormal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:paddingStart="15dp"
+                android:text="@string/normal"
+                android:textColor="@color/textcolor"
+                android:textSize="16sp" />
+
+            <RadioButton
+                android:id="@+id/rbLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:paddingStart="15dp"
+                android:text="@string/large"
+                android:textColor="@color/textcolor"
+                android:textSize="16sp" />
+
+            <RadioButton
+                android:id="@+id/rbExtraLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:paddingStart="15dp"
+                android:text="@string/extra_large"
+                android:textColor="@color/textcolor"
+                android:textSize="16sp" />
+
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="20dp"
+            android:gravity="right"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/gray"
+                android:fontFamily="@font/product_sans_medium"
+                android:paddingHorizontal="20dp"
+                android:text="@string/cancel"
+                android:textColor="@color/colorPrimary"
+                android:textFontWeight="500"
+                android:textSize="17dp" />
+
+            <TextView
+                android:id="@+id/btnOk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/product_sans_medium"
+                android:paddingHorizontal="15dp"
+                android:text="@string/ok"
+                android:textColor="@color/colorPrimary"
+                android:textFontWeight="500"
+                android:textSize="17dp" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</FrameLayout>
+
+

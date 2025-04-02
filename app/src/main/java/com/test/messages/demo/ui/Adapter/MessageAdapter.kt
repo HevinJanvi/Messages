@@ -52,6 +52,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
         val icPin: ImageView = itemView.findViewById(R.id.icPin)
         val icMute: ImageView = itemView.findViewById(R.id.icMute)
+        val dividerView: View = itemView.findViewById(R.id.dividerView)
 
     }
 
@@ -65,9 +66,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(message.timestamp)
-
-//        Log.d("TAG", "onBindViewHolder:time stamp "+ message.timestamp)
-//        Log.d("TAG", "onBindViewHolder:timr "+ holder.date.text)
 
         val firstChar = message.sender.trim().firstOrNull()
         val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
@@ -102,13 +100,23 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
             val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
                 setSpan(
-                    ForegroundColorSpan(ContextCompat.getColor(holder.itemView.context, R.color.colorPrimary)),
+                    ForegroundColorSpan(
+                        ContextCompat.getColor(
+                            holder.itemView.context,
+                            R.color.colorPrimary
+                        )
+                    ),
                     0, draftLabel.length,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 append(draftText)
                 setSpan(
-                    ForegroundColorSpan(ContextCompat.getColor(holder.itemView.context, R.color.gray_txtcolor)),
+                    ForegroundColorSpan(
+                        ContextCompat.getColor(
+                            holder.itemView.context,
+                            R.color.gray_txtcolor
+                        )
+                    ),
                     draftLabel.length, draftLabel.length + draftText.length,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
@@ -117,7 +125,12 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
 
         } else {
             holder.messageBody.text = message.body
-            holder.messageBody.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.textcolor))
+            holder.messageBody.setTextColor(
+                ContextCompat.getColor(
+                    holder.itemView.context,
+                    R.color.textcolor
+                )
+            )
         }
 
 
@@ -142,6 +155,13 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             }
         } else {
             holder.otpTextView.visibility = View.GONE
+        }
+
+        val lastPinnedIndex = messages.lastIndexOf(messages.findLast { it.isPinned })
+        if (position == lastPinnedIndex) {
+            holder.dividerView.visibility = View.VISIBLE
+        } else {
+            holder.dividerView.visibility = View.GONE
         }
 
         if (message.isPinned) {

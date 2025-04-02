@@ -228,11 +228,12 @@ class NewConversationActivtiy : AppCompatActivity() {
         viewModel.loadMessages()
         viewModel.loadConversation(threadId)
 
-        val firstNumber = selectedNumbers.firstOrNull() ?: ""
+        val combinedNumbers = selectedNumbers.joinToString(",")
+
         val intent = Intent(this, ConversationActivity::class.java).apply {
             putExtra("EXTRA_THREAD_ID", threadId)
-            putExtra("NUMBER", firstNumber)
-            putExtra("NAME",selectedNames.joinToString(", "))
+            putExtra("NUMBER", combinedNumbers)
+            putExtra("NAME",selectedNames.joinToString(","))
         }
         startActivity(intent)
         finish()

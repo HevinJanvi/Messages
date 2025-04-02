@@ -29,6 +29,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
 import com.test.messages.demo.Util.ViewUtils.extractOtp
@@ -68,6 +70,9 @@ class ConversationAdapter(
         }
     }
 
+
+
+
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val messageBody: TextView = view.findViewById(R.id.messageBody)
         val messageDate: TextView = view.findViewById(R.id.messageDate)
@@ -75,6 +80,17 @@ class ConversationAdapter(
         val messageStatus: TextView = view.findViewById(R.id.messageStatus)
         val starIcon: ImageView = view.findViewById(R.id.starIcon)
         private val headerText: TextView? = view.findViewById(R.id.headerText)
+        private var fontSize: Float = getFontSizeFromPreferences()
+
+        private fun getFontSizeFromPreferences(): Float {
+            return when (ViewUtils.getFontSize(itemView.context)) {
+                CommanConstants.ACTION_SMALL -> 13f
+                CommanConstants.ACTION_NORMAL -> 15f
+                CommanConstants.ACTION_LARGE -> 17f
+                CommanConstants.ACTION_EXTRALARGE -> 20f
+                else -> 15f
+            }
+        }
 
         fun bind(message: ConversationItem, isLastMessage: Boolean) {
 
@@ -82,6 +98,11 @@ class ConversationAdapter(
                 headerText?.visibility = View.VISIBLE
                 headerText?.text = message.body
             } else {
+
+                messageBody.textSize = fontSize
+                otptext.textSize = fontSize
+
+
                 headerText?.visibility = View.GONE
                 messageBody.visibility = View.VISIBLE
 

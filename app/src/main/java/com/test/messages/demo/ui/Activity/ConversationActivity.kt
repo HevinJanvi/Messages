@@ -96,13 +96,13 @@ class ConversationActivity : BaseActivity() {
         if (threadId == -1L) return
         val contentValues = ContentValues().apply {
             put(Telephony.Sms.READ, 1)
-            put(Telephony.Sms.SEEN, 1)
+
         }
         val uri = Telephony.Sms.CONTENT_URI
         val selection = "${Telephony.Sms.THREAD_ID} = ?"
         val selectionArgs = arrayOf(threadId.toString())
         val updatedRows = contentResolver.update(uri, contentValues, selection, selectionArgs)
-//        Log.d("ConversationActivity", "Marked $updatedRows messages as read in thread $threadId")
+        Log.d("ConversationActivity", "Marked $updatedRows archive messages as read in thread $threadId")
         Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
     }
 
@@ -193,7 +193,11 @@ class ConversationActivity : BaseActivity() {
             makeCall(number)
         }
         binding.btnInfo.setOnClickListener {
-            val numbersList = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }
+
+            Log.d("INFO_CLICK", "Raw Number String: $number")
+
+            val numbersList = number.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            Log.d("INFO_CLICK", "Processed Numbers List: $numbersList")
 
             if (numbersList.size > 1) {
                 // It's a group chat

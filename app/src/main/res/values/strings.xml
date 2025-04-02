@@ -184,7 +184,7 @@
     <string name="recover_or_delete_messages_anytime">Recover or delete messages anytime</string>
     <string name="call_end_screen">Call End Screen</string>
     <string name="call_string"><![CDATA[The phone permission & display over other apps gives you instant access about who is calling you. it helps to avoid spam calls and give instant access of recently SMS conversations.]]></string>
-    <string name="font_size">Font Size</string>
+    <string name="font_size">Font size</string>
     <string name="normal">Normal</string>
     <string name="swipe_actions">Swipe actions</string>
     <string name="configure_swipe_actions_for_conversation">Configure swipe actions for conversation</string>
@@ -232,6 +232,12 @@
     <string name="no_new_messages_restored">No new messages restored.</string>
     <string name="permission_required">Storage permission is required for backup.</string>
     <string name="backing_up">Backing up...</string>
+    <string name="small">Small</string>
+    <string name="large">Large</string>
+    <string name="extra_large">Extra large</string>
+    <string name="archived_successfully">Archived successfully</string>
+    <string name="undo">Undo</string>
+    <string name="unarchived_successfully">Unarchived successfully</string>
 
 
 </resources>

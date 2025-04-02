@@ -1,5 +1,6 @@
 package com.test.messages.demo.ui.Activity
 
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -16,15 +17,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.SnackbarUtil
+import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
+@RequiresApi(Build.VERSION_CODES.Q)
 class ArchivedActivity : BaseActivity() {
     private lateinit var binding: ActivityArchivedBinding
     private lateinit var adapter: ArchiveMessageAdapter
@@ -43,6 +49,20 @@ class ArchivedActivity : BaseActivity() {
         super.onResume()
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
             return
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private val conversationResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            if (data != null) {
+
+                adapter.notifyDataSetChanged()
+                viewModel.loadMessages()
+            }
         }
     }
 
@@ -65,12 +85,14 @@ class ArchivedActivity : BaseActivity() {
         binding.archiveRecyclerView.adapter = adapter
 
         adapter.onArchiveItemClickListener = { message ->
-            val intent = Intent(this, ConversationActivity::class.java)
-            intent.putExtra("EXTRA_THREAD_ID", message.threadId)
-            intent.putExtra("NUMBER", message.number)
-            intent.putExtra("NAME", message.sender)
-            startActivity(intent)
+            val intent = Intent(this, ConversationActivity::class.java).apply {
+                putExtra("EXTRA_THREAD_ID", message.threadId)
+                putExtra("NUMBER", message.number)
+                putExtra("NAME", message.sender)
+            }
+            conversationResultLauncher.launch(intent)
         }
+
         viewModel.messages.observe(this) { messageList ->
             CoroutineScope(Dispatchers.IO).launch {
                 val archivedConversationIds =
@@ -100,6 +122,7 @@ class ArchivedActivity : BaseActivity() {
             }
         }
         viewModel.loadArchivedThreads()
+
         setupClickListeners()
     }
 
@@ -117,19 +140,34 @@ class ArchivedActivity : BaseActivity() {
                 viewModel.togglePin(selectedIds)
             }
             adapter.clearSelection()
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                adapter.notifyDataSetChanged()
+            }, 100)
         }
         binding.btnUnarchive.setOnClickListener {
             val selectedThreadIds = adapter.getSelectedThreadIds()
             if (selectedThreadIds.isNotEmpty()) {
-                viewModel.unarchiveConversations(selectedThreadIds)
-                val updatedList =
-                    viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds }
-                        ?: emptyList()
-                viewModel.updateMessages(updatedList)
-                adapter.clearSelection()
-                adapter.submitList(updatedList)
+                val removedMessages = adapter.selectedMessages.toList()
+                CoroutineScope(Dispatchers.IO).launch {
+                    viewModel.unarchiveConversations(selectedThreadIds)
+                    withContext(Dispatchers.Main) {
+                        adapter.removeItems(selectedThreadIds)
+                        adapter.clearSelection()
+
+                        val updatedList = viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds } ?: emptyList()
+                        viewModel.updateMessages(updatedList)
+
+                        SnackbarUtil.showSnackbar(binding.root,
+                            getString(R.string.unarchived_successfully), getString(R.string.undo)) {
+                            restoreArchivedMessages(removedMessages)
+                        }
+
+                    }
+                }
             }
         }
+
         binding.btnDelete.setOnClickListener {
             val deleteDialog = DeleteDialog(this) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
@@ -164,6 +202,23 @@ class ArchivedActivity : BaseActivity() {
             showPopup(it)
         }
     }
+
+    private fun restoreArchivedMessages(messages: List<MessageItem>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.archiveSelectedConversations(messages.map { it.threadId })
+            withContext(Dispatchers.Main) {
+                val currentList = viewModel.messages.value.orEmpty()
+                val restoredList = (currentList + messages)
+                    .distinctBy { it.threadId }
+                    .sortedByDescending { it.timestamp }
+
+                viewModel.updateMessages(restoredList)
+            }
+        }
+    }
+
+
+
 
     private fun updateSelectedItemsCount() {
         binding.txtSelectedCount.text =

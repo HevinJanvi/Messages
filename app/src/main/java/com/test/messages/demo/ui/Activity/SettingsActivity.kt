@@ -4,8 +4,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.databinding.ActivitySettingsBinding
 import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.ui.Dialogs.FontsizeDialog
 
 class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
@@ -43,6 +46,15 @@ class SettingsActivity : BaseActivity() {
             val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
+
+        binding.fontLy.setOnClickListener {
+            FontsizeDialog(this, ViewUtils.getFontSize(this)) { newFontSize ->
+                updateFontSizeText(newFontSize)
+            }.show()
+        }
+        val savedFontSize = ViewUtils.getFontSize(this)
+        updateFontSizeText(savedFontSize)
+
         binding.swipeLy.setOnClickListener {
             val intent = Intent(this, SwipeActivity::class.java)
             startActivity(intent)
@@ -62,6 +74,17 @@ class SettingsActivity : BaseActivity() {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun updateFontSizeText(fontSize: Int) {
+        val fontLabel = when (fontSize) {
+            CommanConstants.ACTION_SMALL -> getString(R.string.small)
+            CommanConstants.ACTION_NORMAL -> getString(R.string.normal)
+            CommanConstants.ACTION_LARGE -> getString(R.string.large)
+            CommanConstants.ACTION_EXTRALARGE -> getString(R.string.extra_large)
+            else -> getString(R.string.normal)
+        }
+        binding.fontSizeTextView.text = fontLabel
     }
 
     private fun shareApp() {

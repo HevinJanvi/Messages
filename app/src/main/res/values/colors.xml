@@ -32,6 +32,8 @@
     <color name="per_bg_clr">#F3F8FF</color>
     <color name="dot_clr">#D9D9D9</color>
     <color name="done_clr">#E5EEFC</color>
+    <color name="snackbar_bg">#18181A</color>
+    <color name="snackbar_text">#FCFCFE</color>
 
 
 </resources>

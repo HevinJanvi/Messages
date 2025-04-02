@@ -27,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.test.messages.demo.R
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
@@ -45,6 +46,7 @@ import com.test.messages.demo.Util.CategoryVisibilityEvent
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.MessageDeletedEvent
 import com.test.messages.demo.Util.MessagesRestoredEvent
+import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.Util.SwipeActionEvent
 import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.DraftViewModel
@@ -120,7 +122,6 @@ class ConversationFragment : Fragment() {
         EventBus.getDefault().register(this)
         selectedCategory = requireActivity().getString(R.string.inbox)
 
-
         binding.categoryRecyclerView.visibility =
             if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
 
@@ -138,7 +139,8 @@ class ConversationFragment : Fragment() {
 
         setupCategoryRecyclerView()
         setupRecyclerView()
-        checkPermissionsAndLoadMessages()
+//        checkPermissionsAndLoadMessages()
+        viewModel.loadMessages()
 
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             Log.d("ConversationFragment", "Total Messages Before Filtering: ${messageList.size}")
@@ -287,7 +289,7 @@ class ConversationFragment : Fragment() {
             val leftAction = ViewUtils.getSwipeAction(context, isRightSwipe = false)
             val rightAction = ViewUtils.getSwipeAction(context, isRightSwipe = true)
 
-            val leftEnabled = leftAction !=  CommanConstants.SWIPE_NONE
+            val leftEnabled = leftAction != CommanConstants.SWIPE_NONE
             val rightEnabled = rightAction != CommanConstants.SWIPE_NONE
 
             return when {
@@ -375,7 +377,7 @@ class ConversationFragment : Fragment() {
 
         private fun getSwipeIcon(action: Int): Int? {
             return when (action) {
-                CommanConstants.SWIPE_DELETE  -> R.drawable.ic_delete
+                CommanConstants.SWIPE_DELETE -> R.drawable.ic_delete
                 CommanConstants.SWIPE_ARCHIVE -> R.drawable.ic_archive
                 CommanConstants.SWIPE_CALL -> R.drawable.ic_call
                 CommanConstants.SWIPE_MARK_READ -> R.drawable.ic_mark_read2
@@ -387,7 +389,7 @@ class ConversationFragment : Fragment() {
 
         private fun handleSwipeAction(action: Int, position: Int, message: MessageItem) {
             when (action) {
-                CommanConstants.SWIPE_DELETE  -> {
+                CommanConstants.SWIPE_DELETE -> {
                     adapter.selectedMessages.add(message)
                     deleteSelectedMessages()
                 }
@@ -591,16 +593,40 @@ class ConversationFragment : Fragment() {
         }.start()
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun unarchiveMessages(messages: List<MessageItem>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.unarchiveConversations(messages.map { it.threadId })
+            withContext(Dispatchers.Main) {
+                val currentList = adapter.getAllMessages().toMutableList()
+                val restoredList = (messages + currentList).distinctBy { it.threadId }
+                adapter.submitList(restoredList)
+            }
+        }
+
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun archiveMessages() {
         val selectedIds = adapter.selectedMessages.map { it.threadId }
+        val removedMessages = adapter.selectedMessages.toList()
+
         viewModel.archiveSelectedConversations(selectedIds)
         val updatedList = adapter.getAllMessages().toMutableList()
         updatedList.removeAll { selectedIds.contains(it.threadId) }
         adapter.submitList(updatedList)
         adapter.clearSelection()
+
+        SnackbarUtil.showSnackbar(
+            binding.root,
+            getString(R.string.archived_successfully), getString(R.string.undo)
+        ) {
+            unarchiveMessages(removedMessages)
+        }
         updateMessageCount()
     }
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun pinMessages() {
@@ -680,6 +706,18 @@ class ConversationFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     fun BlockMessages() {
         val selectedIds = adapter.selectedMessages.map { it.threadId }
+
+        val blockedNumbers: MutableList<String> = mutableListOf() // Now mutable
+        val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
+        for (group in selectedGroups) {
+            val groupNumbers = group.reciptids.split(",") // Assuming numbers are comma-separated
+            blockedNumbers.addAll(groupNumbers) // ✅ Now this works!
+            Log.d("BlockMessages", "Blocking Group ${group.threadId}: $groupNumbers")
+        }
+
+        Log.d("BlockMessages", "Final Block List: Threads - $selectedIds, Numbers - $blockedNumbers")
+
+
         val blockDialog = BlockDialog(requireContext()) {
             CoroutineScope(Dispatchers.IO).launch {
                 viewModel.blockSelectedConversations(selectedIds)
@@ -748,7 +786,7 @@ class ConversationFragment : Fragment() {
         val selectionArgs = arrayOf(threadId.toString())
         val updatedRows =
             requireContext().contentResolver.update(uri, contentValues, selection, selectionArgs)
-            updateMessageList(threadId, false)
+        updateMessageList(threadId, false)
     }
 
     private fun markThreadAsread(threadId: Long) {
@@ -762,7 +800,7 @@ class ConversationFragment : Fragment() {
         val selectionArgs = arrayOf(threadId.toString())
         val updatedRows =
             requireContext().contentResolver.update(uri, contentValues, selection, selectionArgs)
-            updateMessageList(threadId, true)
+        updateMessageList(threadId, true)
     }
 
 
