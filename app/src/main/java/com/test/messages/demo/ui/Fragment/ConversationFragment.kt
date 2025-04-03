@@ -250,6 +250,10 @@ class ConversationFragment : Fragment() {
                 val unmutedCount = count - mutedCount
                 val shouldUnmute = mutedCount < unmutedCount
                 (activity as? MainActivity)?.updateMuteUnmuteUI(shouldUnmute)
+
+                val hasGroupSelected = adapter.selectedMessages.any { it.isGroupChat }
+                (activity as? MainActivity)?.updateBlockUI(!hasGroupSelected) // Disable block if group is selected
+
                 onSelectionChanged?.invoke(count, pinnedCount)
             }
         )
@@ -705,18 +709,12 @@ class ConversationFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun BlockMessages() {
-        val selectedIds = adapter.selectedMessages.map { it.threadId }
-
-        val blockedNumbers: MutableList<String> = mutableListOf() // Now mutable
         val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
-        for (group in selectedGroups) {
-            val groupNumbers = group.reciptids.split(",") // Assuming numbers are comma-separated
-            blockedNumbers.addAll(groupNumbers) // ✅ Now this works!
-            Log.d("BlockMessages", "Blocking Group ${group.threadId}: $groupNumbers")
+        if (selectedGroups.isNotEmpty()) {
+            Log.d("BlockMessages", "Blocking not allowed for groups.")
+            return
         }
-
-        Log.d("BlockMessages", "Final Block List: Threads - $selectedIds, Numbers - $blockedNumbers")
-
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
 
         val blockDialog = BlockDialog(requireContext()) {
             CoroutineScope(Dispatchers.IO).launch {
@@ -833,7 +831,7 @@ class ConversationFragment : Fragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+  /*  @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissionsAndLoadMessages() {
         val smsPermission = ContextCompat.checkSelfPermission(
             requireContext(),
@@ -887,7 +885,7 @@ class ConversationFragment : Fragment() {
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults)
             }
         }
-    }
+    }*/
 
 
 }

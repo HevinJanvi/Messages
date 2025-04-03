@@ -96,7 +96,7 @@ class ConversationActivity : BaseActivity() {
         if (threadId == -1L) return
         val contentValues = ContentValues().apply {
             put(Telephony.Sms.READ, 1)
-
+            put(Telephony.Sms.SEEN, 1)
         }
         val uri = Telephony.Sms.CONTENT_URI
         val selection = "${Telephony.Sms.THREAD_ID} = ?"

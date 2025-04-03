@@ -21,6 +21,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
 import com.test.messages.demo.data.Model.MessageDiffCallback
@@ -53,7 +57,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         val icPin: ImageView = itemView.findViewById(R.id.icPin)
         val icMute: ImageView = itemView.findViewById(R.id.icMute)
         val dividerView: View = itemView.findViewById(R.id.dividerView)
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -67,22 +70,34 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(message.timestamp)
 
-        val firstChar = message.sender.trim().firstOrNull()
-        val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
-        if (startsWithSpecialChar || message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+        if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
+
             Glide.with(holder.itemView.context)
-                .load(message.profileImageUrl)
-                .placeholder(R.drawable.ic_user)
+                .load(R.drawable.ic_group)
+                .apply(RequestOptions.bitmapTransform(MultiTransformation(CenterCrop(), RoundedCorners(50))))
                 .into(holder.icUser)
-        } else {
-            holder.icUser.visibility = View.GONE
-            holder.initialsTextView.visibility = View.VISIBLE
-            holder.initialsTextView.text = getInitials(message.sender)
-            holder.profileContainer.backgroundTintList =
-                ColorStateList.valueOf(getRandomColor(message.sender))
+        }else {
+            val firstChar = message.sender.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+
+            if (startsWithSpecialChar || message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+                holder.icUser.visibility = View.VISIBLE
+                holder.initialsTextView.visibility = View.GONE
+                Glide.with(holder.itemView.context)
+                    .load(message.profileImageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .into(holder.icUser)
+            } else {
+                holder.icUser.visibility = View.GONE
+                holder.initialsTextView.visibility = View.VISIBLE
+                holder.initialsTextView.text = getInitials(message.sender)
+                holder.profileContainer.backgroundTintList =
+                    ColorStateList.valueOf(getRandomColor(message.sender))
+            }
         }
+
         if (!message.isRead) {
             holder.senderName.setTypeface(null, Typeface.BOLD)
             holder.blueDot.visibility = View.VISIBLE
@@ -92,7 +107,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.blueDot.visibility = View.GONE
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
-
 
         if (draftMessages.containsKey(message.threadId)) {
             val (draftText, _) = draftMessages[message.threadId]!!
@@ -138,7 +152,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         if (!otp.isNullOrEmpty()) {
             holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_code)
             holder.otpTextView.visibility = View.VISIBLE
-
 
             holder.otpTextView.setOnClickListener {
                 copyToClipboard(holder.itemView.context, otp)
