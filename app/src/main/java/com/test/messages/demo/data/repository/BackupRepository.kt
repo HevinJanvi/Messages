@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.test.messages.demo.R
 import com.test.messages.demo.data.Model.ConversationItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -71,7 +72,8 @@ class BackupRepository(private val context: Context) {
         try {
             val messages = fetchMessagesFromCursor()
             if (messages.isEmpty()) {
-                Toast.makeText(context, "No messages found to backup", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context,
+                    context.getString(R.string.no_messages_found_to_backup), Toast.LENGTH_SHORT).show()
                 return
             }
             val json = Gson().toJson(messages)

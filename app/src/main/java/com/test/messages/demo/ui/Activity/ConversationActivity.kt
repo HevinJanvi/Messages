@@ -269,6 +269,12 @@ class ConversationActivity : BaseActivity() {
             updateUI(selectedCount)
             adapter.setSearchQuery(highlightQuery)
         }
+        adapter.setOnRetryListener(object : ConversationAdapter.OnMessageRetryListener {
+            override fun onRetry(message: ConversationItem) {
+                resendMessage(message)
+            }
+        })
+
         linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.stackFromEnd = true
         binding.recyclerViewConversation.layoutManager = linearLayoutManager
@@ -277,7 +283,6 @@ class ConversationActivity : BaseActivity() {
         binding.learnMoreLy.visibility = View.GONE
         binding.secureLy.visibility = View.GONE
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -382,6 +387,14 @@ class ConversationActivity : BaseActivity() {
         }
     }
 
+    @SuppressLint("NewApi")
+    fun Context.getThreadId(addresses: Set<String>): Long {
+        return try {
+            Telephony.Threads.getOrCreateThreadId(this, addresses)
+        } catch (e: Exception) {
+            0L
+        }
+    }
     private fun sendMessage() {
         highlightQuery = null
         val text = binding.editTextMessage.text.toString().trim()
@@ -425,13 +438,17 @@ class ConversationActivity : BaseActivity() {
         adapter.setSearchQuery(null)
     }
 
-    @SuppressLint("NewApi")
-    fun Context.getThreadId(addresses: Set<String>): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(this, addresses)
-        } catch (e: Exception) {
-            0L
-        }
+    fun resendMessage(message: ConversationItem) {
+        val addresses = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        val subId = SmsManager.getDefaultSmsSubscriptionId()
+
+        sendSmsMessage(
+            text = message.body ?: return,
+            addresses = addresses,
+            subId = subId,
+            requireDeliveryReport = false,
+            messageId = message.id
+        )
     }
 
     fun sendSmsMessage(

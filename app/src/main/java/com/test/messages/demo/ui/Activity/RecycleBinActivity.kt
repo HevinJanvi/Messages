@@ -130,65 +130,6 @@ class RecycleBinActivity : BaseActivity() {
         }
     }
 
- /*   @RequiresApi(Build.VERSION_CODES.Q)
-    private fun restoreSelectedMessages() {
-//        if (recycleBinAdapter.selectedMessages.isEmpty()) return
-
-        val contentResolver = contentResolver
-        val db = AppDatabase.getDatabase(this).recycleBinDao()
-
-        Thread {
-            try {
-                val restoredThreadMap = mutableMapOf<Long, Pair<String, Long>>()
-                val allMessagesToRestore = mutableListOf<DeletedMessage>()
-
-                for (selectedThread in recycleBinAdapter.selectedMessages) {
-                    val threadMessages = db.getAllMessagesByThread(selectedThread.threadId)
-                    allMessagesToRestore.addAll(threadMessages)
-                }
-
-                for (deletedMessage in allMessagesToRestore) {
-                    var threadId = deletedMessage.threadId
-
-                    if (!isThreadExists(threadId)) {
-                        threadId = getThreadId(deletedMessage.address)
-                    }
-
-                    val values = ContentValues().apply {
-                        put(Telephony.Sms.THREAD_ID, threadId)
-                        put(Telephony.Sms.DATE, deletedMessage.date)
-                        put(Telephony.Sms.BODY, deletedMessage.body)
-                        put(Telephony.Sms.ADDRESS, deletedMessage.address)
-                        put(Telephony.Sms.TYPE, deletedMessage.type)
-                        put(Telephony.Sms.READ, if (deletedMessage.read) 1 else 0)
-                        put(Telephony.Sms.SUBSCRIPTION_ID, deletedMessage.subscriptionId)
-                    }
-
-                    contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
-                    db.deleteMessage(deletedMessage)
-                    restoredThreadMap[threadId] = Pair(deletedMessage.body, deletedMessage.date)
-                }
-
-                Handler(Looper.getMainLooper()).post {
-                    for ((threadId, pair) in restoredThreadMap) {
-                        val (lastMessage, lastTime) = pair
-                        EventBus.getDefault()
-                            .post(MessageRestoredEvent(threadId, lastMessage, lastTime))
-                    }
-
-                    recycleBinAdapter.clearSelection()
-                    loadGroupedMessages()
-                    viewModel.loadMessages()
-                    Toast.makeText(this, getString(R.string.restore_success), Toast.LENGTH_SHORT)
-                        .show()
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }.start()
-    }*/
-
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun restoreSelectedMessages() {
         val contentResolver = contentResolver

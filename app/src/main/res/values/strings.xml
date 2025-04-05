@@ -243,6 +243,8 @@
     <string name="restoring_messages">Restoring messages...</string>
     <string name="new_message">%1$s New message</string>
     <string name="new_messages">%1$s new messages</string>
+    <string name="failed_to_send_tap">Failed to send.Tap to try again</string>
+    <string name="no_messages_found_to_backup">No messages found to backup</string>
 
 
 </resources>

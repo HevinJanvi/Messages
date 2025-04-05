@@ -20,6 +20,8 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -61,6 +63,15 @@ class ConversationAdapter(
     private var lastMessagePosition: Int? = null
     private var searchQuery: String? = null
 
+    interface OnMessageRetryListener {
+        fun onRetry(message: ConversationItem)
+    }
+
+    var retryListener: OnMessageRetryListener? = null
+
+    fun setOnRetryListener(listener: OnMessageRetryListener) {
+        this.retryListener = listener
+    }
 
     override fun getItemViewType(position: Int): Int {
         return when {
@@ -69,8 +80,6 @@ class ConversationAdapter(
             else -> VIEW_TYPE_OUTGOING
         }
     }
-
-
 
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -94,6 +103,8 @@ class ConversationAdapter(
 
         fun bind(message: ConversationItem, isLastMessage: Boolean) {
 
+
+
             if (message.isHeader) {
                 headerText?.visibility = View.VISIBLE
                 headerText?.text = message.body
@@ -101,6 +112,13 @@ class ConversationAdapter(
 
                 messageBody.textSize = fontSize
                 otptext.textSize = fontSize
+
+                val blinkAnimation = AlphaAnimation(0.3f, 1.0f).apply {
+                    duration = 500
+                    repeatMode = Animation.REVERSE
+                    repeatCount = Animation.INFINITE
+                }
+                messageStatus.clearAnimation()
 
 
                 headerText?.visibility = View.GONE
@@ -134,7 +152,7 @@ class ConversationAdapter(
                         }
 
                         Telephony.Sms.MESSAGE_TYPE_FAILED -> {
-                            messageStatus.text = itemView.context.getString(R.string.failed_to_send)
+                            messageStatus.text = itemView.context.getString(R.string.failed_to_send_tap)
                             messageStatus.visibility = View.VISIBLE
                             messageStatus.setTextColor(Color.RED)
                             messageStatus.setCompoundDrawablesWithIntrinsicBounds(
@@ -143,6 +161,18 @@ class ConversationAdapter(
                                 0,
                                 0
                             )
+
+
+
+                            messageStatus.setOnClickListener {
+                                // 🔄 Show sending UI with animation
+                                messageStatus.text = itemView.context.getString(R.string.sending)
+                                messageStatus.setTextColor(Color.GRAY)
+                                messageStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+                                messageStatus.startAnimation(blinkAnimation)
+
+                                retryListener?.onRetry(message)
+                            }
                         }
 
                         else -> {
