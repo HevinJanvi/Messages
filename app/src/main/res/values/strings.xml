@@ -238,6 +238,11 @@
     <string name="archived_successfully">Archived successfully</string>
     <string name="undo">Undo</string>
     <string name="unarchived_successfully">Unarchived successfully</string>
+    <string name="your_deleted_conversations">Your deleted conversations will appear here</string>
+    <string name="restore_failed">Restore failed!</string>
+    <string name="restoring_messages">Restoring messages...</string>
+    <string name="new_message">%1$s New message</string>
+    <string name="new_messages">%1$s new messages</string>
 
 
 </resources>

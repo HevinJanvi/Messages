@@ -17,6 +17,12 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.ISGROUP
+import com.test.messages.demo.Util.CommanConstants.ISSCHEDULED
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.PROFILEURL
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityAddScheduleBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
@@ -118,12 +124,12 @@ class AddScheduleActivity : BaseActivity() {
     private fun openConversation(contact: ContactItem) {
         val threadId = getThreadId(this, contact.phoneNumber)
         val intent = Intent(this, ConversationActivity::class.java)
-        intent.putExtra("EXTRA_THREAD_ID", threadId)
-        intent.putExtra("NUMBER", contact.phoneNumber)
-        intent.putExtra("NAME", contact.name)
-        intent.putExtra("isGroup", false)
-        intent.putExtra("ProfileUrl", contact.profileImageUrl)
-        intent.putExtra("isScheduled", true)
+        intent.putExtra(EXTRA_THREAD_ID, threadId)
+        intent.putExtra(NUMBER, contact.phoneNumber)
+        intent.putExtra(NAME, contact.name)
+        intent.putExtra(ISGROUP, false)
+        intent.putExtra(PROFILEURL, contact.profileImageUrl)
+        intent.putExtra(ISSCHEDULED, true)
         startActivity(intent)
     }
     private fun updateSelectedContactsHeader() {

@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -21,6 +22,10 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.PROFILEURL
 import com.test.messages.demo.databinding.ActivityProfileBinding
 import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -55,14 +60,17 @@ class ProfileActivity : BaseActivity() {
         addContactLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
-                    loadContactDetails()
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        loadContactDetails()
+                    }, 500)
+
                 }
             }
 
-        threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
-        number = intent.getStringExtra("NUMBER").toString()
-        name = intent.getStringExtra("NAME").toString()
-        profileUrl = intent.getStringExtra("PROFILE_URL").toString()
+        threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
+        number = intent.getStringExtra(NUMBER).toString()
+        name = intent.getStringExtra(NAME).toString()
+        profileUrl = intent.getStringExtra(PROFILEURL).toString()
         loadContactDetails()
         setupClickListeners()
         if (threadId != -1L) {
@@ -77,6 +85,8 @@ class ProfileActivity : BaseActivity() {
 
     private fun loadContactDetails() {
         viewModel.getContactNameOrNumberLive(number).observe(this) { contactName ->
+
+
             binding.adreesUser.text = contactName
             binding.number.text = number
 
@@ -104,6 +114,10 @@ class ProfileActivity : BaseActivity() {
                 binding.profileContact.setImageResource(R.drawable.profile_contact)
                 binding.profileCall.setImageResource(R.drawable.profile_call)
             }
+            viewModel.loadConversation(threadId)
+            val resultIntent = Intent()
+            resultIntent.putExtra("UPDATED_NAME", contactName)
+            setResult(Activity.RESULT_OK, resultIntent)
 
         }
     }
@@ -123,9 +137,9 @@ class ProfileActivity : BaseActivity() {
         }
         binding.profileMessage.setOnClickListener {
             val intent = Intent(this, ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", threadId)
-                putExtra("NUMBER", number)
-                putExtra("NAME", name)
+                putExtra(EXTRA_THREAD_ID, threadId)
+                putExtra(NUMBER, number)
+                putExtra(NAME, name)
                 putExtra("isGroup", false)
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             }
@@ -133,11 +147,12 @@ class ProfileActivity : BaseActivity() {
         }
 
         binding.profileContact.setOnClickListener {
-            val intent = Intent(Intent.ACTION_INSERT).apply {
+            checkIfContactExistsAndOpen()
+           /* val intent = Intent(Intent.ACTION_INSERT).apply {
                 type = ContactsContract.Contacts.CONTENT_TYPE
                 putExtra(ContactsContract.Intents.Insert.PHONE, number)
             }
-            addContactLauncher.launch(intent)
+            addContactLauncher.launch(intent)*/
         }
         binding.deleteLy.setOnClickListener {
             val deleteDialog = DeleteDialog(this) {
@@ -147,11 +162,43 @@ class ProfileActivity : BaseActivity() {
         }
         binding.notifyLy.setOnClickListener {
             val intent = Intent(this, NotificationActivity::class.java)
-            intent.putExtra("EXTRA_THREAD_ID", threadId)
-            intent.putExtra("NUMBER", number)
+            intent.putExtra(EXTRA_THREAD_ID, threadId)
+            intent.putExtra(NUMBER, number)
             startActivity(intent)
         }
     }
+    private fun checkIfContactExistsAndOpen() {
+        val contentResolver = contentResolver
+        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number))
+        val cursor = contentResolver.query(uri, arrayOf(ContactsContract.PhoneLookup._ID), null, null, null)
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                // Contact exists, get the ID and open Edit Contact
+                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
+                openEditContact(contactId)
+            } else {
+                // Contact does not exist, open Add Contact
+                openAddContact()
+            }
+        }
+    }
+
+    private fun openEditContact(contactId: String) {
+        val intent = Intent(Intent.ACTION_EDIT).apply {
+            data = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId)
+        }
+        addContactLauncher.launch(intent)
+    }
+
+    private fun openAddContact() {
+        val intent = Intent(Intent.ACTION_INSERT).apply {
+            type = ContactsContract.Contacts.CONTENT_TYPE
+            putExtra(ContactsContract.Intents.Insert.PHONE, number)
+        }
+        addContactLauncher.launch(intent)
+    }
+
 
     private fun makeCall(phoneNumber: String) {
         val intent = Intent(Intent.ACTION_DIAL).apply {

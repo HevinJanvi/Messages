@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
+@RequiresApi(Build.VERSION_CODES.Q)
 class MainActivity : BaseActivity(), UnreadMessageListener {
 
     private lateinit var binding: ActivityMainBinding
@@ -92,7 +93,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupClickListeners() {
         //toolbar
         binding.icMore.setOnClickListener {
@@ -132,6 +132,9 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             fragment?.BlockMessages()
         }
         //drawer
+        binding.include.lyInbox.setOnClickListener {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
         binding.include.lyArchived.setOnClickListener {
             val intent = Intent(this, ArchivedActivity::class.java)
             startActivity(intent)
@@ -168,10 +171,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
-//        binding.icRecyclerbin.setOnClickListener {
-//            val intent = Intent(this, RecycleBinActivity::class.java)
-//            startActivity(intent)
-//        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -277,6 +277,14 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.openEditCategory()
+            popupWindow.dismiss()
+        }
+
+        val recyclebin: TextView = dialog.findViewById(R.id.recyclebinLy)
+        recyclebin.setOnClickListener {
+            val intent = Intent(this, RecycleBinActivity::class.java)
+            startActivity(intent)
+
             popupWindow.dismiss()
         }
 

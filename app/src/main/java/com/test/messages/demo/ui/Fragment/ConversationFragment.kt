@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.test.messages.demo.R
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.FragmentConversationBinding
@@ -44,8 +45,15 @@ import com.test.messages.demo.Util.ViewUtils.isCategoryEnabled
 import com.test.messages.demo.Util.CategoryUpdateEvent
 import com.test.messages.demo.Util.CategoryVisibilityEvent
 import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.ISGROUP
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.PROFILEURL
 import com.test.messages.demo.Util.MessageDeletedEvent
+import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.MessagesRestoredEvent
+import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.Util.SwipeActionEvent
 import com.test.messages.demo.data.reciever.UnreadMessageListener
@@ -53,6 +61,7 @@ import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -88,8 +97,16 @@ class ConversationFragment : Fragment() {
         private const val REQUEST_EDIT_CATEGORY = 1001
     }
 
+    override fun onResume() {
+        super.onResume()
+
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(requireActivity())) {
+            return
+        }
         if (context is UnreadMessageListener) {
             unreadMessageListener = context
         }
@@ -119,6 +136,7 @@ class ConversationFragment : Fragment() {
         @Nullable savedInstanceState: Bundle?
     ): View? {
         binding = FragmentConversationBinding.inflate(inflater, container, false);
+
         EventBus.getDefault().register(this)
         selectedCategory = requireActivity().getString(R.string.inbox)
 
@@ -263,11 +281,11 @@ class ConversationFragment : Fragment() {
         setupSwipeGesture()
         adapter.onItemClickListener = { message ->
             val intent = Intent(requireContext(), ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", message.threadId)
-                putExtra("NUMBER", message.number)
-                putExtra("NAME", message.sender)
-                putExtra("isGroup", message.isGroupChat)
-                putExtra("ProfileUrl", message.profileImageUrl)
+                putExtra(EXTRA_THREAD_ID, message.threadId)
+                putExtra(NUMBER, message.number)
+                putExtra(NAME, message.sender)
+                putExtra(ISGROUP, message.isGroupChat)
+                putExtra(PROFILEURL, message.profileImageUrl)
             }
             conversationResultLauncher.launch(intent)
         }
@@ -496,10 +514,10 @@ class ConversationFragment : Fragment() {
         }
     }
 
-    fun getLastMessageForThread(threadId: Long): String? {
+    fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
         val cursor = requireActivity().contentResolver.query(
             Telephony.Sms.CONTENT_URI,
-            arrayOf(Telephony.Sms.BODY),
+            arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE),
             "${Telephony.Sms.THREAD_ID} = ?",
             arrayOf(threadId.toString()),
             "${Telephony.Sms.DATE} DESC LIMIT 1"
@@ -507,31 +525,85 @@ class ConversationFragment : Fragment() {
 
         cursor?.use {
             if (it.moveToFirst()) {
-                return it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                return Pair(body, date)
             }
         }
-        return null
+        return Pair(null, null)
     }
+
+
+    /* fun getLastMessageForThread(threadId: Long): String? {
+         val cursor = requireActivity().contentResolver.query(
+             Telephony.Sms.CONTENT_URI,
+             arrayOf(Telephony.Sms.BODY),
+             "${Telephony.Sms.THREAD_ID} = ?",
+             arrayOf(threadId.toString()),
+             "${Telephony.Sms.DATE} DESC LIMIT 1"
+         )
+
+         cursor?.use {
+             if (it.moveToFirst()) {
+                 return it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+             }
+         }
+         return null
+     }*/
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageDeleted(event: MessageDeletedEvent) {
         Log.d("TAG", "onMessageDeleted called: threadId=${event.threadId}")
-        val newLastMessage = getLastMessageForThread(event.threadId)
-        updateConversationSnippet(event.threadId, newLastMessage)
+//        val newLastMessage = getLastMessageForThread(event.threadId)
+//        updateConversationSnippet(event.threadId, newLastMessage)
+        val (newLastMessage, newLastMessageTime) = getLastMessageForThread(event.threadId)
+        updateConversationSnippet(event.threadId, newLastMessage, newLastMessageTime)
     }
 
-    private fun updateConversationSnippet(threadId: Long, newLastMessage: String?) {
-        val messages = adapter.getAllMessages().toMutableList()
-        for (index in messages.indices) {
-            if (messages[index].threadId == threadId) {
-                messages[index] = messages[index].copy(body = newLastMessage ?: "")
-                break
-            }
-        }
-        adapter.submitList(messages)
-        adapter.notifyDataSetChanged()
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessageRestored(event: MessageRestoredEvent) {
+        Log.d(
+            "SnippetUpdate",
+            "Event received: MessageRestoredEvent -> ThreadId: ${event.threadId}, LastMessage: ${event.lastMessage}, LastMessageTime: ${event.lastMessageTime}"
+        )
+
+        val (newLastMessage, newLastMessageTime) = getLastMessageForThread(event.threadId)
+        updateConversationSnippet(event.threadId, newLastMessage, newLastMessageTime)
+//        updateConversationSnippet(event.threadId, event.lastMessage,event.lastMessageTime)
     }
+
+
+    fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
+        adapter.notifyDataSetChanged()
+        return
+        val currentList = adapter.getAllMessages().toMutableList()
+//        Log.d("SnippetUpdate", "Current messages count: ${currentList.size}")
+
+        val index = currentList.indexOfFirst { it.threadId == threadId }
+        Log.d("SnippetUpdate", "Searching for threadId: $threadId -> Found at index: $index")
+
+        if (index != -1) {
+            val updatedItem = currentList[index].copy(
+                body = lastMessage ?: "",
+                timestamp = lastMessageTime ?: System.currentTimeMillis()
+            )
+            currentList[index] = updatedItem
+            Log.d(
+                "SnippetUpdate",
+                "Updating snippet -> New Body: ${updatedItem.body}, New Timestamp: ${updatedItem.timestamp}"
+            )
+
+            adapter.submitList(currentList)
+
+        } else {
+            Log.d(
+                "SnippetUpdate",
+                "ThreadId $threadId not found in adapter list. No update performed."
+            )
+        }
+    }
+
 
     private fun fetchAllThreadIds(): List<Long> {
         val threadIds = mutableListOf<Long>()
@@ -569,33 +641,221 @@ class ConversationFragment : Fragment() {
     fun deleteSelectedMessages() {
         if (adapter.selectedMessages.isEmpty()) return
 
-        val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
         val contentResolver = requireActivity().contentResolver
+        val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
 
         Thread {
             try {
-                for (threadId in threadIds) {
-                    val uri = Uri.parse("content://sms/conversations/$threadId")
-                    val deletedRows = contentResolver.delete(uri, null, null)
+                val deletedMessages = mutableListOf<DeletedMessage>()
+                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>() // to avoid duplicates
 
-                    if (deletedRows > 0) {
-                        updatedList.removeAll { it.threadId == threadId }
+                for (item in adapter.selectedMessages) {
+                    val threadId = item.threadId
+
+                    val cursor = contentResolver.query(
+                        Telephony.Sms.CONTENT_URI,
+                        null,
+                        "thread_id = ?",
+                        arrayOf(threadId.toString()),
+                        null
+                    )
+
+                    cursor?.use {
+                        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                        val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                        val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                        val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                        val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+
+                        while (it.moveToNext()) {
+                            val body = it.getString(bodyIndex) ?: ""
+                            val date = it.getLong(dateIndex)
+
+                            // Check for body + date duplicate
+                            val key = Pair(body, date)
+                            if (existingBodyDatePairs.contains(key)) {
+                                continue // skip this duplicate
+                            }
+                            existingBodyDatePairs.add(key)
+
+                            val deletedMessage = DeletedMessage(
+                                messageId = 0, // or dummy
+                                threadId = threadId,
+                                address = it.getString(addressIndex) ?: "",
+                                date = date,
+                                body = body,
+                                type = it.getInt(typeIndex),
+                                read = it.getInt(readIndex) == 1,
+                                subscriptionId = it.getInt(subIdIndex)
+                            )
+
+                            deletedMessages.add(deletedMessage)
+                        }
                     }
+
+                    val uri = Uri.parse("content://sms/conversations/$threadId")
+                    contentResolver.delete(uri, null, null)
+
+                    updatedList.removeAll { it.threadId == threadId }
                 }
+
+                db.insertMessages(deletedMessages)
+
                 Handler(Looper.getMainLooper()).post {
                     adapter.selectedMessages.clear()
                     adapter.submitList(updatedList)
-                    onSelectionChanged?.invoke(
-                        adapter.selectedMessages.size,
-                        adapter.selectedMessages.count { it.isPinned })
+                    onSelectionChanged?.invoke(0, 0)
                     updateMessageCount()
                 }
 
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }.start()
     }
+
+
+
+
+//working
+   /* @RequiresApi(Build.VERSION_CODES.Q)
+    fun deleteSelectedMessages() {
+        if (adapter.selectedMessages.isEmpty()) return
+
+        val contentResolver = requireActivity().contentResolver
+        val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
+        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+
+        Thread {
+            try {
+                val deletedMessages = mutableListOf<DeletedMessage>()
+
+                for (item in adapter.selectedMessages) {
+
+
+                    val threadId = item.threadId
+
+                    val cursor = contentResolver.query(
+                        Telephony.Sms.CONTENT_URI,
+                        null,
+                        "thread_id = ?",
+                        arrayOf(threadId.toString()),
+                        null
+                    )
+
+                    cursor?.use {
+                        val idIndex = it.getColumnIndex(Telephony.Sms._ID)
+                        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                        val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                        val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                        val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                        val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+
+                        while (it.moveToNext()) {
+                            val deletedMessage = DeletedMessage(
+                                messageId = idIndex.toLong(),
+                                threadId = threadId,
+                                address = it.getString(addressIndex) ?: "",
+                                date = it.getLong(dateIndex),
+                                body = it.getString(bodyIndex) ?: "",
+                                type = it.getInt(typeIndex),
+                                read = it.getInt(readIndex) == 1,
+                                subscriptionId = it.getInt(subIdIndex)
+                            )
+                            deletedMessages.add(deletedMessage)
+                        }
+                    }
+
+
+                    val uri = Uri.parse("content://sms/conversations/$threadId")
+                    contentResolver.delete(uri, null, null)
+
+                    updatedList.removeAll { it.threadId == threadId }
+                }
+
+                db.insertMessages(deletedMessages)
+                Handler(Looper.getMainLooper()).post {
+                    adapter.selectedMessages.clear()
+                    adapter.submitList(updatedList)
+                    onSelectionChanged?.invoke(0, 0)
+                    updateMessageCount()
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }*/
+
+
+    /*   @RequiresApi(Build.VERSION_CODES.Q)
+       fun deleteSelectedMessages() {
+           if (adapter.selectedMessages.isEmpty()) return
+
+           val contentResolver = requireActivity().contentResolver
+           val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
+           val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+
+           Thread {
+               try {
+                   val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
+
+                   val deletedMessagesList = mutableListOf<DeletedMessage>()
+                   for (threadId in threadIds) {
+                       val conversationMessages = viewModel.getConversation(threadId) // Get all messages
+
+                       if (conversationMessages.isNotEmpty()) {
+                           val messagesJson = Gson().toJson(conversationMessages) // Store full messages as JSON
+                           val latestDate = conversationMessages.maxByOrNull { it.date }?.date ?: System.currentTimeMillis()
+                           val latestMessage = conversationMessages.maxByOrNull { it.date }
+                           val deletedMessage = DeletedMessage(
+                               threadId = threadId,
+                               messages = messagesJson, // Store as JSON
+                               address = conversationMessages.first().address,
+                               date = latestDate // Store latest message's date
+                           )
+                           *//*val deletedMessage = DeletedMessage(
+                            threadId = threadId,
+                            messages = messagesJson,
+                            address = conversationMessages.first().address,
+                            date = latestMessage?.date ?: System.currentTimeMillis(),
+                            lastMessage = latestMessage?.body ?: "",
+                            lastMessageTime = latestMessage?.date ?: System.currentTimeMillis()
+                        )
+*//*
+
+                        deletedMessagesList.add(deletedMessage)
+                    }
+                }
+
+                // Insert deleted conversations as single entries per thread
+                db.insertMessages(deletedMessagesList)
+
+                // Delete conversations from the SMS content provider
+                for (threadId in threadIds) {
+                    val uri = Uri.parse("content://sms/conversations/$threadId")
+                    val deletedRows = contentResolver.delete(uri, null, null)
+                    if (deletedRows > 0) {
+                        updatedList.removeAll { it.threadId == threadId }
+                    }
+                }
+
+                // Update UI on the main thread
+                Handler(Looper.getMainLooper()).post {
+                    adapter.selectedMessages.clear()
+                    adapter.submitList(updatedList)
+                    onSelectionChanged?.invoke(adapter.selectedMessages.size, adapter.selectedMessages.count { it.isPinned })
+                    updateMessageCount()
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }*/
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -831,61 +1091,61 @@ class ConversationFragment : Fragment() {
         }
     }
 
-  /*  @RequiresApi(Build.VERSION_CODES.Q)
-    private fun checkPermissionsAndLoadMessages() {
-        val smsPermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.READ_SMS
-        )
-        val contactsPermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.READ_CONTACTS
-        )
+    /*  @RequiresApi(Build.VERSION_CODES.Q)
+      private fun checkPermissionsAndLoadMessages() {
+          val smsPermission = ContextCompat.checkSelfPermission(
+              requireContext(),
+              android.Manifest.permission.READ_SMS
+          )
+          val contactsPermission = ContextCompat.checkSelfPermission(
+              requireContext(),
+              android.Manifest.permission.READ_CONTACTS
+          )
 
-        if (smsPermission == PackageManager.PERMISSION_GRANTED && contactsPermission == PackageManager.PERMISSION_GRANTED) {
-            viewModel.loadMessages()
-        } else {
-            requestPermissions(
-                arrayOf(
-                    android.Manifest.permission.READ_SMS,
-                    android.Manifest.permission.READ_CONTACTS
-                ),
-                101
-            )
-        }
-    }
+          if (smsPermission == PackageManager.PERMISSION_GRANTED && contactsPermission == PackageManager.PERMISSION_GRANTED) {
+              viewModel.loadMessages()
+          } else {
+              requestPermissions(
+                  arrayOf(
+                      android.Manifest.permission.READ_SMS,
+                      android.Manifest.permission.READ_CONTACTS
+                  ),
+                  101
+              )
+          }
+      }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+      @RequiresApi(Build.VERSION_CODES.Q)
+      override fun onRequestPermissionsResult(
+          requestCode: Int,
+          permissions: Array<out String>,
+          grantResults: IntArray
+      ) {
+          super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        when (requestCode) {
-            101 -> {
-                val smsPermissionGranted =
-                    grantResults.getOrNull(0) == PackageManager.PERMISSION_GRANTED
-                val contactsPermissionGranted =
-                    grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
+          when (requestCode) {
+              101 -> {
+                  val smsPermissionGranted =
+                      grantResults.getOrNull(0) == PackageManager.PERMISSION_GRANTED
+                  val contactsPermissionGranted =
+                      grantResults.getOrNull(1) == PackageManager.PERMISSION_GRANTED
 
-                if (smsPermissionGranted && contactsPermissionGranted) {
-                    viewModel.loadMessages()
-                } else {
-                    Toast.makeText(
-                        requireActivity(),
-                        getString(R.string.permissions_denied), Toast.LENGTH_SHORT
-                    )
-                        .show()
-                }
-            }
+                  if (smsPermissionGranted && contactsPermissionGranted) {
+                      viewModel.loadMessages()
+                  } else {
+                      Toast.makeText(
+                          requireActivity(),
+                          getString(R.string.permissions_denied), Toast.LENGTH_SHORT
+                      )
+                          .show()
+                  }
+              }
 
-            else -> {
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-            }
-        }
-    }*/
+              else -> {
+                  super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+              }
+          }
+      }*/
 
 
 }

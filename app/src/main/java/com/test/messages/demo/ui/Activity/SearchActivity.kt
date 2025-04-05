@@ -1,14 +1,21 @@
 package com.test.messages.demo.ui.Activity
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.QUERY
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.ActivitySearchBinding
@@ -40,10 +47,10 @@ class SearchActivity : BaseActivity() {
         adapter = SearchMessageAdapter(messageList) { message, searchedText ->
 
             val intent = Intent(this, ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", message.threadId)
-                putExtra("NUMBER", message.number)
-                putExtra("NAME", message.sender)
-                putExtra("QUERY", searchedText)
+                putExtra(EXTRA_THREAD_ID, message.threadId)
+                putExtra(NUMBER, message.number)
+                putExtra(NAME, message.sender)
+                putExtra(QUERY, searchedText)
             }
             startActivity(intent)
         }
@@ -52,9 +59,9 @@ class SearchActivity : BaseActivity() {
         binding.recyclerViewContacts.layoutManager = LinearLayoutManager(this)
         contactAdapter = SearchContactAdapter(contactList) { contact ->
             val intent = Intent(this, ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", threadId)
-                putExtra("NUMBER", contact.phoneNumber)
-                putExtra("NAME", contact.name)
+                putExtra(EXTRA_THREAD_ID, threadId)
+                putExtra(NUMBER, contact.phoneNumber)
+                putExtra(NAME, contact.name)
 
             }
             startActivity(intent)
@@ -118,6 +125,20 @@ class SearchActivity : BaseActivity() {
         }
     }
 
+    private fun closeKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    private fun isKeyboardOpen(): Boolean {
+        val rootView = window.decorView.rootView
+        val rect = Rect()
+        rootView.getWindowVisibleDisplayFrame(rect)
+        val screenHeight = rootView.height
+        val keypadHeight = screenHeight - rect.bottom
+        return keypadHeight > screenHeight * 0.15  // Keyboard is open if height > 15% of screen
+    }
+
     override fun onBackPressed() {
         if (binding.searchInput.text.isNotEmpty()) {
             binding.searchInput.text.clear()
@@ -125,6 +146,8 @@ class SearchActivity : BaseActivity() {
             binding.messagesHeader.visibility = View.GONE
             binding.contactsHeader.visibility = View.GONE
             binding.emptyList.visibility = View.VISIBLE
+        } else if (isKeyboardOpen()) {
+            closeKeyboard()  // Close the keyboard first
         } else {
             super.onBackPressed()
         }

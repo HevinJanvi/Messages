@@ -7,17 +7,24 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.KEY_SMS_CHANNEL
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.ui.Activity.ConversationActivity
 import com.test.messages.demo.Util.ViewUtils.updateMessageCount
 
 @SuppressLint("NewApi")
 fun showNotification(context: Context, sender: String, message: String, threadId: Long) {
-    val channelId = "sms_channel_$sender"
+    val channelId = "${KEY_SMS_CHANNEL}$$sender"
     val notificationId = threadId.toInt()
 
-    val sharedPreferences = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+    val sharedPreferences =
+        context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
     val previewOption = sharedPreferences.getInt("preview_$sender", 0)
     val messageCount = updateMessageCount(context, threadId)
     val contentTitle: String
@@ -31,12 +38,13 @@ fun showNotification(context: Context, sender: String, message: String, threadId
 
         1 -> { // Show Only Sender
             contentTitle = sender
-            contentText = "$messageCount New message"
+            contentText = "$messageCount ${context.getString(R.string.new_message)}"
+
         }
 
         2 -> { // Hide Contents
             contentTitle = ""
-            contentText = "$messageCount new messages"
+            contentText = "$messageCount ${context.getString(R.string.new_messages)}"
         }
 
         else -> {
@@ -46,8 +54,9 @@ fun showNotification(context: Context, sender: String, message: String, threadId
     }
 
     val intent = Intent(context, ConversationActivity::class.java).apply {
-        putExtra("EXTRA_THREAD_ID", threadId)
-        putExtra("NUMBER", sender)
+        putExtra(EXTRA_THREAD_ID, threadId)
+        putExtra(NUMBER, sender)
+        putExtra(NAME, sender)
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
     }
 
@@ -75,7 +84,7 @@ fun showNotification(context: Context, sender: String, message: String, threadId
 
 fun createNotificationChannel(context: Context, contactNumber: String) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channelId = "sms_channel_$contactNumber"  // Unique channel ID per contact
+        val channelId = "${KEY_SMS_CHANNEL}$$contactNumber"
         val channelName = "$contactNumber"
         val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(channelId, channelName, importance)
@@ -85,9 +94,9 @@ fun createNotificationChannel(context: Context, contactNumber: String) {
     }
 }
 
-    fun createNotificationChannelGlobal(context: Context) {
-     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channelId = "sms_channel_"
+fun createNotificationChannelGlobal(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channelId = KEY_SMS_CHANNEL
         val channelName = "Default"
         val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(channelId, channelName, importance)

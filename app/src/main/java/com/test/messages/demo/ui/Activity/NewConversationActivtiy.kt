@@ -21,6 +21,9 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityNewConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationContactAdapter
@@ -231,9 +234,9 @@ class NewConversationActivtiy : AppCompatActivity() {
         val combinedNumbers = selectedNumbers.joinToString(",")
 
         val intent = Intent(this, ConversationActivity::class.java).apply {
-            putExtra("EXTRA_THREAD_ID", threadId)
-            putExtra("NUMBER", combinedNumbers)
-            putExtra("NAME",selectedNames.joinToString(","))
+            putExtra(EXTRA_THREAD_ID, threadId)
+            putExtra(NUMBER, combinedNumbers)
+            putExtra(NAME,selectedNames.joinToString(","))
         }
         startActivity(intent)
         finish()

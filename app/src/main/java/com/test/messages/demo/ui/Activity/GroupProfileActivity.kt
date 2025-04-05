@@ -11,6 +11,9 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.GROUP_MEMBERS
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_DEFAULT
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
 import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
@@ -43,9 +46,9 @@ class GroupProfileActivity : BaseActivity() {
         binding = ActivityGroupProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val numbersList = intent.getStringArrayListExtra("GROUP_MEMBERS") ?: arrayListOf()
-        groupName = intent.getStringExtra("GROUP_NAME") ?: getString(R.string.group_chat)
-        threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
+        val numbersList = intent.getStringArrayListExtra(GROUP_MEMBERS) ?: arrayListOf()
+        groupName = intent.getStringExtra(GROUP_NAME) ?: getString(R.string.group_chat)
+        threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
 
         if (threadId != -1L) {
             loadGroupName(threadId)

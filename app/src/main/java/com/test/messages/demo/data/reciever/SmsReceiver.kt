@@ -93,7 +93,7 @@ class SmsReceiver : BroadcastReceiver() {
                     )
                 }
 
-                /*val sharedPreferences = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+                /*val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
                 val isGlobalWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_GLOBAL", false)
                 val isThreadWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_$threadId", isGlobalWakeEnabled)
                 if (isThreadWakeEnabled) {
@@ -115,6 +115,7 @@ class SmsReceiver : BroadcastReceiver() {
                 }
 
 
+                val displayName = repository.getContactName(context, address)
 
                 val archivedThreads = repository.getArchivedThreadIds()
                 val blockedThreads = repository.getBlockThreadIds()
@@ -124,7 +125,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                 if (!isMuted && !isArchived && !isBlocked ) {
                     incrementMessageCount(threadId)
-                    showNotification(context, address, body, threadId)
+                    showNotification(context, displayName, body, threadId)
                 }
                 repository.getMessages()
                 repository.getConversation(threadId)

@@ -36,6 +36,7 @@
                     android:layout_marginStart="10dp"
                     android:adjustViewBounds="true"
                     android:padding="1dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_drawer"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -76,6 +77,7 @@
                     android:layout_marginEnd="14dp"
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_search"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/icMore"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -87,6 +89,7 @@
                     android:layout_marginEnd="15dp"
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_more"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

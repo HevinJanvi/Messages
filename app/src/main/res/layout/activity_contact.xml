@@ -38,6 +38,7 @@
                 android:layout_marginStart="10dp"
                 android:adjustViewBounds="true"
                 android:padding="1dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_back"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -66,6 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:adjustViewBounds="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_num_keypad"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -131,6 +133,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -142,12 +145,15 @@
 
         <TextView
             android:id="@+id/btnDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_marginVertical="20dp"
+            android:gravity="center"
+            android:paddingVertical="20dp"
             android:fontFamily="@font/product_sans_medium"
             android:text="@string/done"
+            android:clickable="true"
+            android:background="@drawable/ripple_effect"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
             android:textSize="18dp" />

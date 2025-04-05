@@ -1,5 +1,8 @@
 package com.test.messages.demo.ui.Adapter
 
+import android.content.Context
+import android.net.Uri
+import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +11,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.TimeUtils
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -40,12 +44,11 @@ class RecycleBinAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = messages[position]
-        holder.senderName.text = message.sender
+        val contactName = getContactName(holder.itemView.context, message.address)
+        holder.senderName.text = contactName ?: message.address
+//        holder.senderName.text = message.address
         holder.messageBody.text = message.body
-        holder.date.text = SimpleDateFormat(
-            "dd/MM/yyyy hh:mm a",
-            Locale.getDefault()
-        ).format(Date(message.timestamp))
+        holder.date.text = TimeUtils.formatTimestamp(message.date)
 
         val isSelected = selectedMessages.contains(message)
         holder.icSelect.visibility = if (isSelected) View.VISIBLE else View.GONE
@@ -57,7 +60,7 @@ class RecycleBinAdapter(
             if (isMultiSelectionMode) {
                 toggleSelection(message, holder)
             } else {
-//                onItemClick(message) // Open ConversationActivity
+                onBinItemClick?.invoke(message)
             }
         }
 
@@ -125,4 +128,18 @@ class RecycleBinAdapter(
     }
 
     override fun getItemCount(): Int = messages.size
+
+    private fun getContactName(context: Context, phoneNumber: String): String? {
+        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+        val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
+
+        context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
+            }
+        }
+        return null
+    }
+
+
 }

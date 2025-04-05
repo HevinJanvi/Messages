@@ -34,6 +34,7 @@ object ViewUtils {
         }
     }
 
+
     fun isLikelyOtp(message: String, otp: String): Boolean {
         val nonOtpKeywords = listOf("offer", "best", "balance", "validity", "tariff", "recharge")
         val otpKeywords = listOf("OTP", "code", "login", "verify", "confirmation", "password")
@@ -45,14 +46,14 @@ object ViewUtils {
     }
 
     fun updateMessageCount(context: Context, threadId: Long): Int {
-        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
         val count = prefs.getInt("msg_count_$threadId", 0) + 1
         prefs.edit().putInt("msg_count_$threadId", count).apply()
         return count
     }
 
     fun resetMessageCount(context: Context, threadId: Long) {
-        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putInt("msg_count_$threadId", 0).apply()
     }
 

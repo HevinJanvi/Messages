@@ -32,7 +32,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/add_star"
-            android:visibility="visible"
+            android:visibility="gone"
             android:layout_gravity="bottom|end"
             android:layout_marginTop="-11dp"
             android:layout_alignParentEnd="true"

@@ -11,6 +11,8 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import com.test.messages.demo.data.Database.Notification.NotificationDao
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.databinding.ActivityNotificationBinding
 import com.test.messages.demo.ui.Dialogs.NotificationViewDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
@@ -39,8 +41,8 @@ class NotificationActivity : BaseActivity(){
         super.onCreate(savedInstanceState)
         binding = ActivityNotificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
-        number = intent.getStringExtra("NUMBER").toString()
+        threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
+        number = intent.getStringExtra(NUMBER).toString()
         notificationDao = AppDatabase.getDatabase(this).notificationDao()
 
         binding.icBack.setOnClickListener {
@@ -103,7 +105,7 @@ class NotificationActivity : BaseActivity(){
             dialog.show()
         }
 
-        /* val sharedPreferences = getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        /* val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
          val isGlobalWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_GLOBAL", false)
          val isWakeEnabled = if (threadId == -1L) {
              isGlobalWakeEnabled
@@ -113,7 +115,7 @@ class NotificationActivity : BaseActivity(){
          binding.switchWakeNoti.isChecked = isWakeEnabled
 
          binding.switchWakeNoti.setOnCheckedChangeListener { _, isChecked ->
-             val sharedPreferences = getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+             val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
              val editor = sharedPreferences.edit()
 
              if (threadId == -1L) {

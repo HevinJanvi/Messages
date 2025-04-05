@@ -7,6 +7,10 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.ISGROUP
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.data.Database.Starred.StarredMessageDao
 import com.test.messages.demo.databinding.ActivityStarredMessagesBinding
 import com.test.messages.demo.ui.Adapter.StarredMessagesAdapter
@@ -58,10 +62,10 @@ class StarredMessagesActivity : BaseActivity() {
         viewModel.loadLastStarredMessages()
         adapter.onItemClickListener = { message ->
             val intent = Intent(this, ConversationActivity::class.java)
-            intent.putExtra("EXTRA_THREAD_ID", message.threadId)
-            intent.putExtra("NUMBER", message.number)
-            intent.putExtra("NAME", message.sender)
-            intent.putExtra("isGroup", message.isGroupChat)
+            intent.putExtra(EXTRA_THREAD_ID, message.threadId)
+            intent.putExtra(NUMBER, message.number)
+            intent.putExtra(NAME, message.sender)
+            intent.putExtra(ISGROUP, message.isGroupChat)
             startActivity(intent)
         }
 

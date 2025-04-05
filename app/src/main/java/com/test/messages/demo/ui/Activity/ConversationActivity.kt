@@ -29,17 +29,29 @@ import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
+import com.test.messages.demo.Util.CommanConstants.GROUP_MEMBERS
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.CommanConstants.ISSCHEDULED
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.PROFILEURL
+import com.test.messages.demo.Util.CommanConstants.QUERY
+import com.test.messages.demo.Util.MessageDeletedEvent
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
@@ -58,6 +70,7 @@ import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -91,6 +104,7 @@ class ConversationActivity : BaseActivity() {
     private val starredMessageIds = mutableSetOf<Long>()
     private var highlightQuery: String? = null
     private var selectedTimeInMillis: Long = 0L
+    private lateinit var profileLauncher: ActivityResultLauncher<Intent>
 
     private fun markThreadAsRead(threadId: Long) {
         if (threadId == -1L) return
@@ -121,13 +135,13 @@ class ConversationActivity : BaseActivity() {
         messagingUtils = MessageUtils(this)
         EventBus.getDefault().register(this)
 
-        threadId = intent.getLongExtra("EXTRA_THREAD_ID", -1)
-        number = intent.getStringExtra("NUMBER").toString()
-        name = intent.getStringExtra("NAME").toString()
-        profileUrl = intent.getStringExtra("ProfileUrl").toString()
-        isfromBlock = intent.getBooleanExtra("fromBlock", false)
-        highlightQuery = intent.getStringExtra("QUERY")
-        isScheduled = intent.getBooleanExtra("isScheduled", false)
+        threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
+        number = intent.getStringExtra(NUMBER).toString()
+        name = intent.getStringExtra(NAME).toString()
+        profileUrl = intent.getStringExtra(PROFILEURL).toString()
+        isfromBlock = intent.getBooleanExtra(FROMBLOCK, false)
+        highlightQuery = intent.getStringExtra(QUERY)
+        isScheduled = intent.getBooleanExtra(ISSCHEDULED, false)
 
         if (isScheduled) {
             showDateTimePickerDialog()
@@ -182,6 +196,18 @@ class ConversationActivity : BaseActivity() {
         })
 
         setupClickListeners()
+
+        profileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val updatedName = result.data?.getStringExtra("UPDATED_NAME") ?: return@registerForActivityResult
+                Log.d("TAG", "onCreate:conversation profile name "+updatedName)
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    binding.address.text = updatedName
+                }, 100)
+            }
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -202,18 +228,19 @@ class ConversationActivity : BaseActivity() {
             if (numbersList.size > 1) {
                 // It's a group chat
                 val intent = Intent(this, GroupProfileActivity::class.java)
-                intent.putExtra("EXTRA_THREAD_ID", threadId)
-                intent.putExtra("GROUP_NAME", groupName)
-                intent.putStringArrayListExtra("GROUP_MEMBERS", ArrayList(numbersList))
+                intent.putExtra(EXTRA_THREAD_ID, threadId)
+                intent.putExtra(GROUP_NAME, groupName)
+                intent.putStringArrayListExtra(GROUP_MEMBERS, ArrayList(numbersList))
                 startActivity(intent)
             } else {
                 // It's a one-on-one chat
                 val intent = Intent(this, ProfileActivity::class.java)
-                intent.putExtra("EXTRA_THREAD_ID", threadId)
-                intent.putExtra("NUMBER", number)
-                intent.putExtra("NAME", name)
-                intent.putExtra("PROFILE_URL", profileUrl)
-                startActivity(intent)
+                intent.putExtra(EXTRA_THREAD_ID, threadId)
+                intent.putExtra(NUMBER, number)
+                intent.putExtra(NAME, name)
+                intent.putExtra(PROFILEURL, profileUrl)
+                profileLauncher.launch(intent)
+
             }
 
             if (isfromBlock) {
@@ -470,13 +497,12 @@ class ConversationActivity : BaseActivity() {
     }
 
 
-    fun deleteSelectedMessages() {
+    /*fun deleteSelectedMessages() {
         val contentResolver = contentResolver
         val selectedMessageItems = adapter.getSelectedItems().toList()
 
         for (messageItem in selectedMessageItems) {
             Log.d("TAG", "deleteSelectedMessages: "+messageItem.id)
-
 
             val selection = "${Telephony.Sms._ID} = ${messageItem.id}"
             try {
@@ -493,10 +519,46 @@ class ConversationActivity : BaseActivity() {
 
         adapter.clearSelection()
         viewModel.loadConversation(threadId)
+    }*/
+
+
+    private fun deleteSelectedMessages() {
+        val selectedMessages = adapter.getSelectedItems().toList()
+
+        Thread {
+            val db = AppDatabase.getDatabase(this).recycleBinDao()
+
+            for (message in selectedMessages) {
+                val deletedMessage = DeletedMessage(
+                    messageId = message.id,
+                    threadId = message.threadId,
+                    address = name,
+                    date = message.date,
+                    body = message.body,
+                    type = message.type,
+                    read = message.read,
+                    subscriptionId = message.subscriptionId
+                )
+
+                db.insertMessage(deletedMessage)
+
+                val uri = Uri.parse("content://sms/${message.id}")
+                contentResolver.delete(uri, null, null)
+            }
+
+            runOnUiThread {
+                adapter.clearSelection()
+                viewModel.loadConversation(threadId)
+            }
+        }.start()
     }
 
 
-    /* fun deleteSelectedMessages() {
+
+
+
+    //working delete code proper
+     /*fun deleteSelectedMessages() {
          val contentResolver = contentResolver
          val selectedMessageItems = adapter.getSelectedItems().toList()
 
@@ -511,10 +573,12 @@ class ConversationActivity : BaseActivity() {
 
          adapter.clearSelection()
 
-         val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
-         val lastMessageText = lastConversationItem?.body // Get last message text
 
-         EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText))
+         val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
+         val lastMessageText = lastConversationItem?.body
+         val lastMessageTime = lastConversationItem?.date
+
+         EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText, lastMessageTime))
          viewModel.loadConversation(threadId)
      }*/
 

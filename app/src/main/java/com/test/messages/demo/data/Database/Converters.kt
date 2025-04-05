@@ -5,6 +5,20 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class Converters {
+
+    class Converters {
+        @TypeConverter
+        fun fromMessageList(messages: List<String>): String {
+            return Gson().toJson(messages)
+        }
+
+        @TypeConverter
+        fun toMessageList(messagesJson: String): List<String> {
+            return Gson().fromJson(messagesJson, object : TypeToken<List<String>>() {}.type)
+        }
+    }
+
+
     @TypeConverter
     fun fromDeletedMessagesList(value: List<String>): String {
         // Serialize the list to JSON

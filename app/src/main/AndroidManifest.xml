@@ -28,6 +28,9 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".ui.Activity.RecycleConversationactivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.Activity.BakupRestoreActivity"
             android:exported="false" />
         <activity

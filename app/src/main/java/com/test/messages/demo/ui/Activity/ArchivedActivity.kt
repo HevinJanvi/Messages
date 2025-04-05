@@ -23,6 +23,9 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
@@ -86,9 +89,9 @@ class ArchivedActivity : BaseActivity() {
 
         adapter.onArchiveItemClickListener = { message ->
             val intent = Intent(this, ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", message.threadId)
-                putExtra("NUMBER", message.number)
-                putExtra("NAME", message.sender)
+                putExtra(EXTRA_THREAD_ID, message.threadId)
+                putExtra(NUMBER, message.number)
+                putExtra(NAME, message.sender)
             }
             conversationResultLauncher.launch(intent)
         }
@@ -130,6 +133,10 @@ class ArchivedActivity : BaseActivity() {
     private fun setupClickListeners() {
         binding.icBack.setOnClickListener {
             onBackPressed()
+        }
+        binding.icSetting.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
         }
         binding.btnSelectAll.setOnCheckedChangeListener { _, isChecked ->
             adapter.selectAll(isChecked)

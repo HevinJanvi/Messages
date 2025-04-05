@@ -10,7 +10,7 @@ object CommanConstants {
 
     const val GROUP_NAME_KEY = "group_name_"
     const val GROUP_NAME_DEFAULT = "Unnamed Group"
-//    const val PREFS_NAME = "SwipePreferences"
+    const val KEY_SMS_CHANNEL = "sms_channel_"
 
     //BACKUP file
     const val BACKUP_FILE = "messages_backup.json"
@@ -31,6 +31,21 @@ object CommanConstants {
     const val ACTION_NORMAL = 1
     const val ACTION_LARGE = 2
     const val ACTION_EXTRALARGE = 3
+
+    //intent keys
+
+    const val EXTRA_THREAD_ID = "EXTRA_THREAD_ID"
+    const val NUMBER = "NUMBER"
+    const val NAME = "NAME"
+    const val PROFILEURL = "ProfileUrl"
+    const val FROMBLOCK = "fromBlock"
+    const val QUERY = "QUERY"
+    const val ISSCHEDULED = "isScheduled"
+    const val ISGROUP = "isGroup"
+    const val ISDELETED = "isDeletedThread"
+    const val GROUP_NAME = "GROUP_NAME"
+    const val GROUP_MEMBERS = "GROUP_MEMBERS"
+
 
 
 }

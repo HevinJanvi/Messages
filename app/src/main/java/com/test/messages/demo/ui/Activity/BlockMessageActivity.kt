@@ -12,6 +12,10 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.databinding.ActivityBlockBinding
 import com.test.messages.demo.ui.Adapter.BlockedMessagesAdapter
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
@@ -51,10 +55,10 @@ class BlockMessageActivity : BaseActivity() {
         binding.blockRecyclerView.adapter = adapter
         adapter.onBlockItemClickListener = { message ->
             val intent = Intent(this, ConversationActivity::class.java)
-            intent.putExtra("EXTRA_THREAD_ID", message.threadId)
-            intent.putExtra("NUMBER", message.number)
-            intent.putExtra("NAME", message.sender)
-            intent.putExtra("fromBlock",true)
+            intent.putExtra(EXTRA_THREAD_ID, message.threadId)
+            intent.putExtra(NUMBER, message.number)
+            intent.putExtra(NAME, message.sender)
+            intent.putExtra(FROMBLOCK,true)
             startActivity(intent)
         }
         viewModel.loadBlockThreads()

@@ -14,6 +14,9 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.ActivityBlockContactBinding
 import com.test.messages.demo.ui.Adapter.BlockedContactAdapter
@@ -200,9 +203,9 @@ class BlockedContactActivity : BaseActivity() {
 
         if (conversationExists) {
             val intent = Intent(this, ConversationActivity::class.java).apply {
-                putExtra("EXTRA_THREAD_ID", blockedMessage.threadId)
-                putExtra("NUMBER", blockedMessage.number)
-                .putExtra("NAME", blockedMessage.sender)
+                putExtra(EXTRA_THREAD_ID, blockedMessage.threadId)
+                putExtra(NUMBER, blockedMessage.number)
+                .putExtra(NAME, blockedMessage.sender)
             }
             startActivity(intent)
         } else {

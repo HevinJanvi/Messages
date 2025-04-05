@@ -68,6 +68,15 @@ class MessageViewModel @Inject constructor(
         }
     }
 
+    private val _conversation = MutableLiveData<List<ConversationItem>>()
+    val conversation_new: LiveData<List<ConversationItem>> get() = _conversation
+
+    fun getConversation(threadId: Long): List<ConversationItem> {
+        val updatedConversation = repository.getConversationDetails(threadId)
+        _conversation.postValue(updatedConversation) // Update LiveData for observers
+        return updatedConversation // Return the list if needed
+    }
+
     fun getContactNameOrNumber(phoneNumber: String): String {
         return repository.getContactNameOrNumber(phoneNumber)
     }
@@ -324,6 +333,17 @@ class MessageViewModel @Inject constructor(
 
     fun getMutedThreadIds(): List<Long> {
         return runBlocking { repository.getMutedThreadIds() }
+    }
+
+
+    private val _conversations22 = MutableLiveData<List<MessageItem>>()
+    val conversations22: LiveData<List<MessageItem>> get() = _conversations22
+
+    fun getConversations() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val fetchedConversations = repository.getConversations()
+            _conversations22.postValue(fetchedConversations)
+        }
     }
 
 }
