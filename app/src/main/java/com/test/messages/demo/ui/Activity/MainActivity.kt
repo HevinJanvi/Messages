@@ -11,6 +11,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -260,6 +262,20 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         binding.include.unreadCount.text = "$count"
     }
 
+    fun View.blinkThen(action: () -> Unit) {
+        val anim = AnimationUtils.loadAnimation(context, R.anim.blink)
+        anim.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {}
+
+            override fun onAnimationEnd(animation: Animation?) {
+                action()
+            }
+
+            override fun onAnimationRepeat(animation: Animation?) {}
+        })
+        this.startAnimation(anim)
+    }
+
 
     fun showPopupHome(view: View) {
         val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -274,32 +290,40 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
         val editCat: TextView = dialog.findViewById(R.id.editCategory)
         editCat.setOnClickListener {
-            val fragment =
-                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
-            fragment?.openEditCategory()
-            popupWindow.dismiss()
+            it.blinkThen {
+                val fragment =
+                    supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+                fragment?.openEditCategory()
+                popupWindow.dismiss()
+            }
         }
 
         val recyclebin: TextView = dialog.findViewById(R.id.recyclebinLy)
         recyclebin.setOnClickListener {
-            val intent = Intent(this, RecycleBinActivity::class.java)
-            startActivity(intent)
+            it.blinkThen {
+                val intent = Intent(this, RecycleBinActivity::class.java)
+                startActivity(intent)
 
-            popupWindow.dismiss()
+                popupWindow.dismiss()
+            }
         }
 
         val settings: TextView = dialog.findViewById(R.id.settingsTxt)
         settings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
-            popupWindow.dismiss()
+            it.blinkThen {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+                popupWindow.dismiss()
+            }
         }
         val policy: TextView = dialog.findViewById(R.id.policyTxt)
         policy.setOnClickListener {
-            val url = "https://yourprivacypolicy.com"
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(intent)
-            popupWindow.dismiss()
+            it.blinkThen {
+                val url = "https://yourprivacypolicy.com"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+                popupWindow.dismiss()
+            }
         }
 
         popupWindow.showAsDropDown(view, 0, 0)
@@ -308,14 +332,11 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
     override fun onBackPressed() {
         if (selectedMessagesCount > 0) {
-            Log.d("TAG", "onBackPressed: " + selectedMessagesCount)
             updateSelectedItemsCount(0)
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.clearSelection()
         } else {
-            Log.d("TAG", "onBackPressed:else " + selectedMessagesCount)
-
             super.onBackPressed()
         }
     }

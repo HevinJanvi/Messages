@@ -22,7 +22,6 @@
             android:layout_gravity="center_vertical"
             android:gravity="start"
             android:orientation="vertical"
-            android:clickable="true"
             android:paddingHorizontal="15dp"
             android:paddingVertical="10dp"
             android:paddingTop="10dp">
@@ -34,10 +33,10 @@
                 android:layout_gravity="start"
                 android:fontFamily="@font/product_sans_regular"
                 android:gravity="start"
-                android:background="@drawable/ripple_effect"
+                android:clickable="true"
                 android:textFontWeight="400"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="10dp"
+                android:paddingVertical="12dp"
                 android:text="@string/edit_categories"
                 android:textColor="@color/textcolor"
                 android:textSize="16sp" />
@@ -51,7 +50,7 @@
                 android:gravity="start"
                 android:textFontWeight="400"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="10dp"
+                android:paddingVertical="12dp"
                 android:text="@string/recycle_bin"
                 android:textColor="@color/textcolor"
                 android:textSize="16sp" />
@@ -65,7 +64,7 @@
                 android:gravity="start"
                 android:textFontWeight="400"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="10dp"
+                android:paddingVertical="12dp"
                 android:text="@string/settings"
                 android:textColor="@color/textcolor"
                 android:textSize="16sp" />
@@ -79,7 +78,7 @@
                 android:gravity="start"
                 android:textFontWeight="400"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="10dp"
+                android:paddingVertical="12dp"
                 android:text="@string/privacy_policy"
                 android:textColor="@color/textcolor"
                 android:textSize="16sp" />

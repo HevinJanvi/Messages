@@ -514,13 +514,13 @@ class ConversationFragment : Fragment() {
         }
     }
 
-    fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
+   /* fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
         val cursor = requireActivity().contentResolver.query(
             Telephony.Sms.CONTENT_URI,
             arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE),
             "${Telephony.Sms.THREAD_ID} = ?",
             arrayOf(threadId.toString()),
-            "${Telephony.Sms.DATE} DESC LIMIT 1"
+            "${Telephony.Sms.DATE} DESC"
         )
 
         cursor?.use {
@@ -531,25 +531,38 @@ class ConversationFragment : Fragment() {
             }
         }
         return Pair(null, null)
+    }*/
+
+    fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
+//        val uri = Telephony.Sms.CONTENT_URI
+        val uri = Uri.parse("content://sms/conversations?simple=true")
+        val projection = arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE)
+        val selection = "${Telephony.Sms.THREAD_ID} = ?"
+        val selectionArgs = arrayOf(threadId.toString())
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
+
+        val cursor = requireContext().contentResolver.query(
+            uri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                Log.d("SnippetUpdate", "Fetched LAST message: $body at $date")
+                return Pair(body, date)
+            } else {
+                Log.d("SnippetUpdate", "No message found for threadId $threadId")
+            }
+        }
+
+        return Pair(null, null)
     }
 
-
-    /* fun getLastMessageForThread(threadId: Long): String? {
-         val cursor = requireActivity().contentResolver.query(
-             Telephony.Sms.CONTENT_URI,
-             arrayOf(Telephony.Sms.BODY),
-             "${Telephony.Sms.THREAD_ID} = ?",
-             arrayOf(threadId.toString()),
-             "${Telephony.Sms.DATE} DESC LIMIT 1"
-         )
-
-         cursor?.use {
-             if (it.moveToFirst()) {
-                 return it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-             }
-         }
-         return null
-     }*/
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -575,8 +588,8 @@ class ConversationFragment : Fragment() {
 
 
     fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
+
         adapter.notifyDataSetChanged()
-        return
         val currentList = adapter.getAllMessages().toMutableList()
 //        Log.d("SnippetUpdate", "Current messages count: ${currentList.size}")
 

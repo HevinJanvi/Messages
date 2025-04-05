@@ -202,7 +202,6 @@ class RecycleBinActivity : BaseActivity() {
                     loadGroupedMessages()
                     viewModel.loadMessages()
 
-//                    Toast.makeText(this, getString(R.string.restore_success), Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {

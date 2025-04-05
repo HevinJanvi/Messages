@@ -181,13 +181,10 @@
     <string name="system_mode">System mode</string>
     <string name="app_languages">App Languages</string>
     <string name="conversation_categories">Conversation Categories</string>
-    <string name="recover_or_delete_messages_anytime">Recover or delete messages anytime</string>
     <string name="call_end_screen">Call End Screen</string>
-    <string name="call_string"><![CDATA[The phone permission & display over other apps gives you instant access about who is calling you. it helps to avoid spam calls and give instant access of recently SMS conversations.]]></string>
     <string name="font_size">Font size</string>
     <string name="normal">Normal</string>
     <string name="swipe_actions">Swipe actions</string>
-    <string name="configure_swipe_actions_for_conversation">Configure swipe actions for conversation</string>
     <string name="general">General</string>
     <string name="notification">Notification</string>
     <string name="privacy_plicy">Privacy Plicy</string>
@@ -199,7 +196,6 @@
     <string name="system">System</string>
     <string name="unmute">Unmute</string>
     <string name="mute">Mute</string>
-    <string name="your_messages_will_appear_here">Your messages will appear here</string>
     <string name="copy_code">Copy code</string>
     <string name="draft">📝 Draft :</string>
     <string name="personal">Personal</string>
@@ -208,11 +204,9 @@
     <string name="offers">Offers</string>
     <string name="categories">Categories</string>
     <string name="categories_show">Categories Show</string>
-    <string name="organize_your_conversations">Organize your conversations into categories so you can find them easily.</string>
     <string name="tabbed_categories">Tabbed categories</string>
     <string name="text_messages">Text Messages</string>
     <string name="current_version">Current Version:</string>
-    <string name="simple_smart_and_secure">Simple, smart, and secure texting with scheduling, spam protection, and more!</string>
     <string name="terms_and_conditions">Terms and Conditions</string>
     <string name="left_swipe">Left swipe</string>
     <string name="change">Change</string>
@@ -221,16 +215,10 @@
     <string name="call">Call</string>
     <string name="mark_as_unread">Mark as Unread</string>
     <string name="right_swipe">Right swipe</string>
-    <string name="backup_and_restore_messages">Backup and restore messages</string>
-    <string name="messages_can_be_backed">Messages can be backed up to your device and can be recovered any time</string>
     <string name="backup">Backup</string>
     <string name="restore_now">Restore Now</string>
-    <string name="backup_saved_successfully">Backup saved successfully!</string>
-    <string name="failed_to_save_backup">Failed to save backup</string>
     <string name="restore_success">Restore Successful</string>
     <string name="last_backup">Last Backup: %1$s</string>
-    <string name="no_new_messages_restored">No new messages restored.</string>
-    <string name="permission_required">Storage permission is required for backup.</string>
     <string name="backing_up">Backing up...</string>
     <string name="small">Small</string>
     <string name="large">Large</string>
@@ -238,13 +226,28 @@
     <string name="archived_successfully">Archived successfully</string>
     <string name="undo">Undo</string>
     <string name="unarchived_successfully">Unarchived successfully</string>
-    <string name="your_deleted_conversations">Your deleted conversations will appear here</string>
     <string name="restore_failed">Restore failed!</string>
     <string name="restoring_messages">Restoring messages...</string>
     <string name="new_message">%1$s New message</string>
     <string name="new_messages">%1$s new messages</string>
+
+
+    <string name="no_new_messages_restored">No new messages restored.</string>
+    <string name="backup_saved_successfully">Backup saved successfully!</string>
+    <string name="failed_to_save_backup">Failed to save backup</string>
+    <string name="configure_swipe_actions_for_conversation">Configure swipe actions for conversation</string>
+    <string name="recover_or_delete_messages_anytime">Recover or delete messages anytime</string>
+    <string name="your_messages_will_appear_here">Your messages will appear here</string>
+    <string name="backup_and_restore_messages">Backup and restore messages</string>
     <string name="failed_to_send_tap">Failed to send.Tap to try again</string>
     <string name="no_messages_found_to_backup">No messages found to backup</string>
+    <string name="permission_required">Storage permission is required for backup.</string>
+    <string name="your_deleted_conversations">Your deleted conversations will appear here</string>
+    <string name="simple_smart_and_secure">Simple, smart, and secure texting with scheduling, spam protection, and more!</string>
+    <string name="organize_your_conversations">Organize your conversations into categories so you can find them easily.</string>
+    <string name="messages_can_be_backed">Messages can be backed up to your device and can be recovered any time</string>
+    <string name="call_string"><![CDATA[The phone permission & display over other apps gives you instant access about who is calling you. it helps to avoid spam calls and give instant access of recently SMS conversations.]]></string>
 
+    <string name="this_step_may_contains_ads">This step may contains ads</string>
 
 </resources>
