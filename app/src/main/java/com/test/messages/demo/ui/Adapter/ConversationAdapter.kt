@@ -384,7 +384,7 @@ class ConversationAdapter(
             if (start >= 0) {
                 val end = start + searchText.length
                 val highlightColor = ContextCompat.getColor(context, R.color.yellow)
-                val textColor = ContextCompat.getColor(context, R.color.textcolor)
+                val textColor = ContextCompat.getColor(context, R.color.serach_highlight_color)
                 spannable.setSpan(BackgroundColorSpan(highlightColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 spannable.setSpan(ForegroundColorSpan(textColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -1,9 +1,17 @@
 package com.test.messages.demo.ui.Activity
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.view.View
+import android.view.Window
+import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ViewUtils
 import java.util.Locale
@@ -19,12 +27,13 @@ open class BaseActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.statusBarColor = resources.getColor(R.color.bg, theme)
         }
+        updateSystemBarsColor()
+
         setLanguage(this)
     }
 
     open fun setLanguage(context: Context): Context? {
         val languageCode = ViewUtils.getSelectedLanguage(context)
-//        Log.d("TAG", "setLanguage: "+languageCode)
         val locale = Locale(languageCode)
         Locale.setDefault(locale)
         val configuration = context.resources.configuration
@@ -32,6 +41,107 @@ open class BaseActivity : AppCompatActivity() {
         configuration.setLayoutDirection(locale)
         return context.createConfigurationContext(configuration)
     }
+
+    fun handleDrawerState(drawerLayout: DrawerLayout,drawerWasOpen :Boolean=false) {
+
+        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                val scaledSlideOffset = slideOffset * 0.6f
+
+                if (scaledSlideOffset >= 0.6f) {
+                    val blendedColor =
+                        blendColors(getColor(R.color.popup_bg), getColor(R.color.popup_bg), 0.6f)
+                    setSystemBarsColor(blendedColor)
+                } else {
+                    val blendedColor = blendColors(
+                        getColor(R.color.popup_bg),
+                        getColor(R.color.popup_bg),
+                        scaledSlideOffset
+                    )
+                    setSystemBarsColor(blendedColor)
+                }
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                val shadowColor =
+                    blendColors(getColor(R.color.popup_bg), getColor(R.color.popup_bg), 0.6f)
+                setSystemBarsColor(shadowColor)
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                resetSystemBarsColorWithDelay()
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
+        if (drawerWasOpen) {
+            val blendedColor =
+                blendColors(getColor(R.color.popup_bg), getColor(R.color.popup_bg), 0.6f)
+            setSystemBarsColor(blendedColor)
+        }
+    }
+
+    private fun resetSystemBarsColorWithDelay() {
+        Handler(Looper.getMainLooper()).postDelayed({
+            updateSystemBarsColor()
+        }, 1)
+    }
+
+    private fun updateSystemBarsColor() {
+        val primaryColor = getColor(R.color.bg)
+        setSystemBarsColor(primaryColor)
+    }
+
+    private fun setSystemBarsColor(backgroundColor: Int) {
+        val window: Window = window
+
+        window.statusBarColor = backgroundColor
+        window.navigationBarColor = backgroundColor
+
+        window.decorView.post {
+            val isDarkBackground = isColorDark(backgroundColor)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val insetsController: WindowInsetsController? = window.insetsController
+                insetsController?.apply {
+                    setSystemBarsAppearance(
+                        if (isDarkBackground) 0 else WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    )
+                    setSystemBarsAppearance(
+                        if (isDarkBackground) 0 else WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                        WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                    )
+                }
+            } else {
+                val decorView: View = window.decorView
+                var flags = decorView.systemUiVisibility
+                if (!isDarkBackground) {
+                    flags =
+                        flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                } else {
+                    flags =
+                        flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                }
+                decorView.systemUiVisibility = flags
+            }
+        }
+    }
+
+    private fun isColorDark(color: Int): Boolean {
+        val darkness =
+            1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255
+        return darkness >= 0.5
+    }
+
+    private fun blendColors(color1: Int, color2: Int, ratio: Float): Int {
+        val inverseRatio = 1 - ratio
+        val r = (Color.red(color1) * inverseRatio + Color.red(color2) * ratio).toInt()
+        val g = (Color.green(color1) * inverseRatio + Color.green(color2) * ratio).toInt()
+        val b = (Color.blue(color1) * inverseRatio + Color.blue(color2) * ratio).toInt()
+        return Color.rgb(r, g, b)
+    }
+
 
     override fun onResume() {
         super.onResume()

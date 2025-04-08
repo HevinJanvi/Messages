@@ -89,7 +89,7 @@ class RecycleBinActivity : BaseActivity() {
         }
 
         binding.btnSelectAll.setOnClickListener {
-            if (recycleBinAdapter.selectedMessages.size == recycleBinAdapter.itemCount) {
+            if (recycleBinAdapter.isAllSelected()) {
                 recycleBinAdapter.unselectAll()
             } else {
                 recycleBinAdapter.selectAll()
@@ -234,8 +234,10 @@ class RecycleBinActivity : BaseActivity() {
         }
     }
 
-
     private fun updateActionLayout(selectedCount: Int) {
+
+
+        binding.btnSelectAll.isChecked = recycleBinAdapter.isAllSelected()
 
         val isSelectionActive = selectedMessages.isNotEmpty()
         binding.selectMenuBin.visibility = if (selectedCount > 0) View.VISIBLE else View.GONE

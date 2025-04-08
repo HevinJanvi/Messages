@@ -70,7 +70,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:clickable="true"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
@@ -136,7 +136,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/ripple_effect"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view2">
 
@@ -191,7 +191,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view3">
@@ -248,7 +248,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view4">
@@ -259,6 +259,7 @@
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_block"
+            app:tint="@color/ic_color"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -305,7 +306,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view5">
@@ -362,7 +363,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view6">
@@ -420,7 +421,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view7">
@@ -477,7 +478,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="10dp"
-        android:paddingVertical="15dp"
+        android:paddingVertical="19dp"
         android:background="@drawable/ripple_effect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view8">

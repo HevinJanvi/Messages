@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class BakupRestoreActivity : AppCompatActivity() {
+class BakupRestoreActivity : BaseActivity() {
     private lateinit var binding: ActivityBakupRestoreBinding
     private val backupViewModel: BackupViewModel by viewModels()
     private val EXPORT_JSON_REQUEST_CODE = 1001

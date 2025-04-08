@@ -45,8 +45,8 @@
 
     <ImageView
         android:id="@+id/icSelect"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
         android:layout_centerVertical="true"
         android:layout_marginHorizontal="5dp"
         android:padding="3dp"

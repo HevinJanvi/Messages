@@ -21,6 +21,7 @@
             android:paddingVertical="12dp"
             android:paddingHorizontal="17dp"
             android:text="uuuuuuuuuuuuuu"
+            android:textDirection="locale"
             android:textSize="15sp"
             android:lineSpacingExtra="3dp"
             android:textFontWeight="400"

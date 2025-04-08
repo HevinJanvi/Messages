@@ -60,6 +60,7 @@
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
             android:textSize="17dp"
+            android:textDirection="locale"
             app:layout_constraintEnd_toStartOf="@+id/time"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toTopOf="parent" />
@@ -74,6 +75,7 @@
             android:fontFamily="@font/product_sans_regular"
             android:maxLines="2"
             android:text="message"
+            android:textDirection="locale"
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
             android:textSize="13dp"
@@ -90,6 +92,7 @@
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
             android:textSize="13dp"
+            android:layout_marginTop="2dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

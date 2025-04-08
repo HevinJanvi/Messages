@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/otp_bg_clr"/>
+    <solid android:color="@color/bg"/>
     <corners android:radius="12dp"/>
-    <stroke android:width="0.5dp" android:color="@color/gray_txtcolor"/>
+    <stroke android:width="0.8dp" android:color="@color/send_bg_color"/>
 
 </shape>

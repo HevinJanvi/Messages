@@ -9,7 +9,7 @@
 
     <TextView
         android:id="@+id/txtDialogTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/block_messages"
         android:textSize="18sp"
@@ -17,7 +17,7 @@
         android:layout_gravity="left|center"
         android:textFontWeight="500"
         android:fontFamily="@font/product_sans_medium"
-        android:gravity="center"/>
+        android:textDirection="locale"/>
 
     <TextView
         android:id="@+id/txtDialogMessage"
@@ -46,6 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="17dp"
+            android:paddingVertical="10dp"
             android:layout_marginEnd="15dp"
             android:paddingHorizontal="20dp"
             android:text="@string/cancel"
@@ -60,7 +61,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="17dp"
-            android:paddingHorizontal="15dp"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="10dp"
             android:text="@string/block"
             android:textFontWeight="500"
             android:fontFamily="@font/product_sans_medium"

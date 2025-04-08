@@ -20,7 +20,8 @@
             android:text="@string/change_action"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textDirection="locale"/>
 
         <RadioGroup
             android:id="@+id/radioGroupSwipeActions"

@@ -46,6 +46,7 @@
                 android:fontFamily="@font/product_sans_medium"
                 android:maxLines="1"
                 android:text=""
+                android:textDirection="locale"
                 android:textColor="@color/textcolor"
                 android:textFontWeight="500"
                 android:textSize="20dp"

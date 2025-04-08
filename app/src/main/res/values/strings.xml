@@ -247,7 +247,11 @@
     <string name="organize_your_conversations">Organize your conversations into categories so you can find them easily.</string>
     <string name="messages_can_be_backed">Messages can be backed up to your device and can be recovered any time</string>
     <string name="call_string"><![CDATA[The phone permission & display over other apps gives you instant access about who is calling you. it helps to avoid spam calls and give instant access of recently SMS conversations.]]></string>
-
     <string name="this_step_may_contains_ads">This step may contains ads</string>
+
+    <string name="language">Language</string>
+    <string name="copy_otp">Copy OTP</string>
+    <string name="move_to_recycle_bin">Move to recycle bin</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Move this conversation to the Rrecycle bin?</string>
 
 </resources>

@@ -12,8 +12,9 @@
         android:text="A"
         android:fontFamily="@font/product_sans_medium"
         android:textColor="@color/gray_txtcolor"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="12dp"
         android:padding="5dp"
+        android:textDirection="locale"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

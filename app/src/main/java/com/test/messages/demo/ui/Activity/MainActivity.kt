@@ -2,12 +2,17 @@ package com.test.messages.demo.ui.Activity
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.provider.Telephony
 import android.util.Log
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,12 +22,14 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.GravityCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +52,12 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val isDrawerOpen = binding.drawerLayout.isOpen
+        outState.putBoolean("drawer_open_state", isDrawerOpen)
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,10 +67,10 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         if (Telephony.Sms.getDefaultSmsPackage(this) != packageName) {
             startActivity(Intent(this, SmsPermissionActivity::class.java))
         }
-        if (savedInstanceState == null) {
-            loadConversationFragment()
-        }
 
+        val drawerWasOpen = savedInstanceState?.getBoolean("drawer_open_state", false) ?: false
+        handleDrawerState(binding.drawerLayout,drawerWasOpen)
+        loadConversationFragment()
 
         updateSelectedItemsCount(0)
         binding.icSelecteAll.setOnCheckedChangeListener { _, isChecked ->
@@ -179,15 +192,18 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun loadConversationFragment() {
         val fragment = ConversationFragment()
-        fragment.onSelectionChanged = { count, ispinned ->
-            updatePinLayout(count, ispinned)
-            updateSelectedItemsCount(count)
-        }
+
         supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment).commit()
 
         supportFragmentManager.executePendingTransactions()
         val loadedFragment =
             supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+
+        fragment.onSelectionChanged = { count, ispinned ->
+            updatePinLayout(count, ispinned)
+
+            updateSelectedItemsCount(count)
+        }
 
         loadedFragment?.let {
             val totalMessages = it.viewModel.messages.value?.size ?: 0
@@ -262,31 +278,43 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         binding.include.unreadCount.text = "$count"
     }
 
-    fun View.blinkThen(action: () -> Unit) {
-        val anim = AnimationUtils.loadAnimation(context, R.anim.blink)
-        anim.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation?) {}
-
-            override fun onAnimationEnd(animation: Animation?) {
-                action()
-            }
-
-            override fun onAnimationRepeat(animation: Animation?) {}
-        })
-        this.startAnimation(anim)
-    }
-
 
     fun showPopupHome(view: View) {
         val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val dialog = layoutInflater.inflate(R.layout.popup_home_menu, null)
 
         val popupWindow = PopupWindow(
-            dialog, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+            dialog,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
 
-        popupWindow.setBackgroundDrawable(BitmapDrawable())
-        popupWindow.isOutsideTouchable = true
+        val marginDp = 16
+        val marginPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            marginDp.toFloat(),
+            view.resources.displayMetrics
+        ).toInt()
+
+
+        dialog.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val popupWidth = dialog.measuredWidth
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        val anchorX = location[0]
+        val anchorY = location[1] + view.height
+        val isRTL = view.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val x = if (isRTL) {
+            anchorX + marginPx
+        } else {
+            anchorX + view.width - popupWidth - marginPx
+        }
+
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, x, anchorY)
 
         val editCat: TextView = dialog.findViewById(R.id.editCategory)
         editCat.setOnClickListener {
@@ -326,7 +354,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             }
         }
 
-        popupWindow.showAsDropDown(view, 0, 0)
     }
 
 

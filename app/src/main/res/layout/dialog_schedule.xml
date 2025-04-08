@@ -10,14 +10,13 @@
 
     <TextView
         android:id="@+id/txtDialogTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|center"
         android:fontFamily="@font/product_sans_medium"
-        android:gravity="center"
         android:layout_marginTop="5dp"
         android:paddingTop="10dp"
         android:paddingBottom="5dp"
+        android:textDirection="locale"
         android:paddingHorizontal="20dp"
         android:text="@string/scheduled_messages"
         android:textColor="@color/textcolor"

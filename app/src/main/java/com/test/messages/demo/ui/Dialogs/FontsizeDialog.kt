@@ -12,6 +12,7 @@ import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.SWIPE_NONE
 import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.databinding.DialogFontSizeBinding
 import com.test.messages.demo.databinding.DialogSwipeActionBinding
 
@@ -53,15 +54,20 @@ class FontsizeDialog(
             }
         }
         binding.btnOk.setOnClickListener {
-            val selectedAction =
-                radioButtons.entries.find { it.key.isChecked }?.value ?: CommanConstants.ACTION_NORMAL
-            ViewUtils.saveFontSize(context, selectedAction)
-            onActionSelected(selectedAction)
-            dismiss()
+            it.blinkThen {
+                val selectedAction =
+                    radioButtons.entries.find { it.key.isChecked }?.value
+                        ?: CommanConstants.ACTION_NORMAL
+                ViewUtils.saveFontSize(context, selectedAction)
+                onActionSelected(selectedAction)
+                dismiss()
+            }
         }
 
         binding.btnCancel.setOnClickListener {
-            dismiss()
+            it.blinkThen {
+                dismiss()
+            }
         }
 
     }

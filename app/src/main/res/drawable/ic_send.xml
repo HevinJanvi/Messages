@@ -2,7 +2,8 @@
     android:width="48dp"
     android:height="48dp"
     android:viewportWidth="130"
-    android:viewportHeight="130">
+    android:viewportHeight="130"
+    android:autoMirrored="true">
     <path
         android:fillColor="@color/send_color"
         android:pathData="M65,0L65,0A65,65 0,0 1,130 65L130,65A65,65 0,0 1,65 130L65,130A65,65 0,0 1,0 65L0,65A65,65 0,0 1,65 0z" />

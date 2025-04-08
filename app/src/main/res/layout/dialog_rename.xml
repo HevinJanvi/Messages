@@ -29,7 +29,7 @@
         android:layout_marginTop="10dp"
         android:layout_gravity="start"
         android:textColorHint="@color/gray_txtcolor"
-        android:textColor="@color/gray_txtcolor"
+        android:textColor="@color/textcolor"
         android:fontFamily="@font/product_sans_regular"
         android:gravity="start"/>
 

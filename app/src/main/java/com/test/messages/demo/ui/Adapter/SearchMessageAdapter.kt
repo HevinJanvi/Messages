@@ -79,7 +79,7 @@ class SearchMessageAdapter(
             if (start >= 0) {
                 val end = start + searchText.length
                 val highlightColor = ContextCompat.getColor(context, R.color.yellow)
-                val textColor = ContextCompat.getColor(context, R.color.textcolor)
+                val textColor = ContextCompat.getColor(context, R.color.serach_highlight_color)
                 spannable.setSpan(
                     BackgroundColorSpan(highlightColor),
                     start,

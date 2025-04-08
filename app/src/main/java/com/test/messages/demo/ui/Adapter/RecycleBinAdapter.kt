@@ -115,6 +115,10 @@ class RecycleBinAdapter(
         }
     }
 
+    fun isAllSelected(): Boolean {
+        return selectedMessages.size == messages.size && messages.isNotEmpty()
+    }
+
     fun unselectAll() {
         selectedMessages.clear()
         isMultiSelectionMode = false

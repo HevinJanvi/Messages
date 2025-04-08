@@ -9,6 +9,7 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 
 
 class UnblockDialog(
@@ -28,10 +29,14 @@ class UnblockDialog(
         val btnCancel = findViewById<TextView>(R.id.btnCancel)
         val btnConfirmDelete = findViewById<TextView>(R.id.btnConfirmDelete)
 
-        btnCancel.setOnClickListener { dismiss() }
+        btnCancel.setOnClickListener {
+            it.blinkThen { dismiss() }
+        }
         btnConfirmDelete.setOnClickListener {
-            onDeleteConfirmed.invoke()
-            dismiss()
+            it.blinkThen {
+                onDeleteConfirmed.invoke()
+                dismiss()
+            }
         }
     }
 }

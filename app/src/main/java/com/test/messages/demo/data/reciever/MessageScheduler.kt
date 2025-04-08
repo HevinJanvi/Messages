@@ -13,8 +13,10 @@ object MessageScheduler {
     @RequiresApi(Build.VERSION_CODES.S)
     fun scheduleMessage(context: Context, message: ScheduledMessage) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        if (!alarmManager.canScheduleExactAlarms()) {
-            return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                return
+            }
         }
 
         val intent = Intent(context, MessageSenderReceiver::class.java).apply {

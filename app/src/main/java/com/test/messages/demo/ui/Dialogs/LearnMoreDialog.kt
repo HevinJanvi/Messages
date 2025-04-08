@@ -9,6 +9,7 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 
 
 class LearnMoreDialog(
@@ -33,7 +34,8 @@ class LearnMoreDialog(
         window?.setGravity(Gravity.BOTTOM)
 
         val btnOk = findViewById<TextView>(R.id.btnOk)
-        btnOk.setOnClickListener { dismiss() }
+        btnOk.setOnClickListener {
+            it.blinkThen {dismiss() }}
 
     }
 }

@@ -15,6 +15,7 @@
         android:textColor="@color/textcolor"
         android:textFontWeight="500"
         android:textSize="17sp"
+        android:textDirection="locale"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

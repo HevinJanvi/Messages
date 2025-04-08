@@ -227,7 +227,14 @@ class RecycleConversationactivity : BaseActivity() {
 
 
         override fun getItemViewType(position: Int): Int {
-            return if (messages[position].type == 2) VIEW_TYPE_SENT else VIEW_TYPE_RECEIVED
+            return if (isSentMessage(messages[position].type)) VIEW_TYPE_SENT else VIEW_TYPE_RECEIVED
+        }
+
+        private fun isSentMessage(type: Int): Boolean {
+            return type == Telephony.Sms.MESSAGE_TYPE_SENT ||    // 2
+                    type == Telephony.Sms.MESSAGE_TYPE_OUTBOX ||  // 4
+                    type == Telephony.Sms.MESSAGE_TYPE_FAILED ||  // 5
+                    type == Telephony.Sms.MESSAGE_TYPE_QUEUED     // 6
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

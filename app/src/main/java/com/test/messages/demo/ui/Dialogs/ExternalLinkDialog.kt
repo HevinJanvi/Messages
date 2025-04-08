@@ -12,6 +12,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 
 
 class ExternalLinkDialog(
@@ -53,11 +54,14 @@ class ExternalLinkDialog(
             }
         }
 
-        btnCancel.setOnClickListener { dismiss() }
+        btnCancel.setOnClickListener {
+            it.blinkThen {dismiss() }}
         btnContinue.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
-            context.startActivity(intent)
-            dismiss()
+            it.blinkThen {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                context.startActivity(intent)
+                dismiss()
+            }
         }
     }
 }

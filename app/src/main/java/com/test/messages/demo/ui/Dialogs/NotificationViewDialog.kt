@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.Util.ViewUtils.saveNotificationOption
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
@@ -99,6 +100,7 @@ class NotificationViewDialog(
         }
 
         btnOk.setOnClickListener {
+            it.blinkThen {
             val selectedOption = when {
                 check1.isChecked -> 0
                 check2.isChecked -> 1
@@ -109,6 +111,8 @@ class NotificationViewDialog(
             saveNotificationOption(context, selectedOption)
             onOptionSelected(selectedOption)
             dismiss()
+
+        }
         }
     }
 }

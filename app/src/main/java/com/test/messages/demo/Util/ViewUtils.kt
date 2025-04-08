@@ -2,6 +2,9 @@ package com.test.messages.demo.Util
 
 import android.content.Context
 import android.preference.PreferenceManager
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants.FONT_SIZE_KEY
 import com.test.messages.demo.Util.CommanConstants.KEY_INTRO_SHOWN
@@ -34,6 +37,19 @@ object ViewUtils {
         }
     }
 
+    fun View.blinkThen(action: () -> Unit) {
+        val anim = AnimationUtils.loadAnimation(context, R.anim.blink)
+        anim.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {}
+
+            override fun onAnimationEnd(animation: Animation?) {
+                action()
+            }
+
+            override fun onAnimationRepeat(animation: Animation?) {}
+        })
+        this.startAnimation(anim)
+    }
 
     fun isLikelyOtp(message: String, otp: String): Boolean {
         val nonOtpKeywords = listOf("offer", "best", "balance", "validity", "tariff", "recharge")

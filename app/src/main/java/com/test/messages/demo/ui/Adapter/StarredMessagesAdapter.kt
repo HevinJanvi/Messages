@@ -43,13 +43,11 @@ class StarredMessagesAdapter :
         val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
-        val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
-        val icPin: ImageView = itemView.findViewById(R.id.icPin)
 
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message_starred, parent, false)
         return ViewHolder(view)
     }
 

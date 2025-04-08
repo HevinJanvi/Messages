@@ -144,6 +144,9 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         onArchiveSelectionChanged(selectedMessages.size)
     }
 
+    fun isAllSelected(): Boolean {
+        return messages.isNotEmpty() && selectedMessages.size == messages.size
+    }
     override fun getItemCount(): Int = messages.size
 
     fun removeItems(threadIds: List<Long>) {

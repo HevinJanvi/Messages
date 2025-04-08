@@ -6,6 +6,7 @@
     android:layout_margin="15dp"
     app:cardCornerRadius="18dp"
     app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/popup_bg"
     app:cardUseCompatPadding="true">
 
     <LinearLayout

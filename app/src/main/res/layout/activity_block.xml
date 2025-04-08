@@ -103,7 +103,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:paddingVertical="15dp"
-        android:paddingStart="40dp"
+        android:paddingStart="50dp"
         android:paddingEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

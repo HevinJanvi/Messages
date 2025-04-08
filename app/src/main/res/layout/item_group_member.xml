@@ -27,8 +27,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingStart="15dp"
-            android:text=""
-            android:layout_marginEnd="5dp"
+            android:text="group"
+            android:textDirection="locale"
+            android:layout_marginEnd="10dp"
             android:textFontWeight="400"
             android:fontFamily="@font/product_sans_medium"
             android:textSize="17sp" />

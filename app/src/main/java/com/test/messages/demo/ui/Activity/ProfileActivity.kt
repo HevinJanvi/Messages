@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
@@ -90,10 +91,13 @@ class ProfileActivity : BaseActivity() {
             binding.adreesUser.text = contactName
             binding.number.text = number
 
-            if (profileUrl.isNotEmpty() && profileUrl != null) {
+            val firstChar = contactName.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+
+            if (startsWithSpecialChar || profileUrl.isNotEmpty() && profileUrl != null  ) {
                 Glide.with(this)
                     .load(profileUrl)
-                    .placeholder(R.drawable.ic_user)
+                    .placeholder(R.drawable.user_icon)
                     .into(binding.imgProfile)
                 binding.imgProfile.visibility = View.VISIBLE
                 binding.profileContainer.visibility = View.GONE
@@ -101,7 +105,7 @@ class ProfileActivity : BaseActivity() {
                 binding.imgProfile.visibility = View.GONE
                 binding.profileContainer.visibility = View.VISIBLE
                 binding.initialsTextView.text = TimeUtils.getInitials(contactName)
-            }
+                          }
 
             if (isServiceNumber(number)) {
                 binding.profileCall.isEnabled = false

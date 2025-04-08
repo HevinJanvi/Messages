@@ -10,7 +10,8 @@
         android:layout_margin="5dp"
         android:elevation="5dp"
         app:cardCornerRadius="8dp"
-        app:cardElevation="5dp">
+        app:cardElevation="5dp"
+        app:cardBackgroundColor="@color/popup_bg">
 
         <LinearLayout
             android:id="@+id/txtMarkAsRead"

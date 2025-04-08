@@ -67,8 +67,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = messages[position]
 
-        Log.d("SnippetUpdate", "Binding message at position: $position, ThreadId: ${message.threadId}, Body: ${message.body}, Timestamp: ${message.timestamp}")
-
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(message.timestamp)

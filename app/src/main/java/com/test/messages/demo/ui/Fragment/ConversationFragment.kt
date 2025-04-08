@@ -514,24 +514,24 @@ class ConversationFragment : Fragment() {
         }
     }
 
-   /* fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
-        val cursor = requireActivity().contentResolver.query(
-            Telephony.Sms.CONTENT_URI,
-            arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE),
-            "${Telephony.Sms.THREAD_ID} = ?",
-            arrayOf(threadId.toString()),
-            "${Telephony.Sms.DATE} DESC"
-        )
+    /* fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
+         val cursor = requireActivity().contentResolver.query(
+             Telephony.Sms.CONTENT_URI,
+             arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE),
+             "${Telephony.Sms.THREAD_ID} = ?",
+             arrayOf(threadId.toString()),
+             "${Telephony.Sms.DATE} DESC"
+         )
 
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
-                return Pair(body, date)
-            }
-        }
-        return Pair(null, null)
-    }*/
+         cursor?.use {
+             if (it.moveToFirst()) {
+                 val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                 val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
+                 return Pair(body, date)
+             }
+         }
+         return Pair(null, null)
+     }*/
 
     fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
 //        val uri = Telephony.Sms.CONTENT_URI
@@ -661,7 +661,8 @@ class ConversationFragment : Fragment() {
         Thread {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
-                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>() // to avoid duplicates
+                val existingBodyDatePairs =
+                    mutableSetOf<Pair<String, Long>>() // to avoid duplicates
 
                 for (item in adapter.selectedMessages) {
                     val threadId = item.threadId
@@ -694,7 +695,7 @@ class ConversationFragment : Fragment() {
                             existingBodyDatePairs.add(key)
 
                             val deletedMessage = DeletedMessage(
-                                messageId = 0, // or dummy
+                                messageId = 0,
                                 threadId = threadId,
                                 address = it.getString(addressIndex) ?: "",
                                 date = date,
@@ -730,145 +731,77 @@ class ConversationFragment : Fragment() {
     }
 
 
-
-
 //working
-   /* @RequiresApi(Build.VERSION_CODES.Q)
-    fun deleteSelectedMessages() {
-        if (adapter.selectedMessages.isEmpty()) return
+    /* @RequiresApi(Build.VERSION_CODES.Q)
+     fun deleteSelectedMessages() {
+         if (adapter.selectedMessages.isEmpty()) return
 
-        val contentResolver = requireActivity().contentResolver
-        val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
-        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+         val contentResolver = requireActivity().contentResolver
+         val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
+         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
 
-        Thread {
-            try {
-                val deletedMessages = mutableListOf<DeletedMessage>()
+         Thread {
+             try {
+                 val deletedMessages = mutableListOf<DeletedMessage>()
 
-                for (item in adapter.selectedMessages) {
-
-
-                    val threadId = item.threadId
-
-                    val cursor = contentResolver.query(
-                        Telephony.Sms.CONTENT_URI,
-                        null,
-                        "thread_id = ?",
-                        arrayOf(threadId.toString()),
-                        null
-                    )
-
-                    cursor?.use {
-                        val idIndex = it.getColumnIndex(Telephony.Sms._ID)
-                        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-                        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-                        val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
-                        val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
-                        val readIndex = it.getColumnIndex(Telephony.Sms.READ)
-                        val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
-
-                        while (it.moveToNext()) {
-                            val deletedMessage = DeletedMessage(
-                                messageId = idIndex.toLong(),
-                                threadId = threadId,
-                                address = it.getString(addressIndex) ?: "",
-                                date = it.getLong(dateIndex),
-                                body = it.getString(bodyIndex) ?: "",
-                                type = it.getInt(typeIndex),
-                                read = it.getInt(readIndex) == 1,
-                                subscriptionId = it.getInt(subIdIndex)
-                            )
-                            deletedMessages.add(deletedMessage)
-                        }
-                    }
+                 for (item in adapter.selectedMessages) {
 
 
-                    val uri = Uri.parse("content://sms/conversations/$threadId")
-                    contentResolver.delete(uri, null, null)
+                     val threadId = item.threadId
 
-                    updatedList.removeAll { it.threadId == threadId }
-                }
+                     val cursor = contentResolver.query(
+                         Telephony.Sms.CONTENT_URI,
+                         null,
+                         "thread_id = ?",
+                         arrayOf(threadId.toString()),
+                         null
+                     )
 
-                db.insertMessages(deletedMessages)
-                Handler(Looper.getMainLooper()).post {
-                    adapter.selectedMessages.clear()
-                    adapter.submitList(updatedList)
-                    onSelectionChanged?.invoke(0, 0)
-                    updateMessageCount()
-                }
+                     cursor?.use {
+                         val idIndex = it.getColumnIndex(Telephony.Sms._ID)
+                         val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                         val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                         val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                         val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                         val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                         val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
 
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }.start()
-    }*/
+                         while (it.moveToNext()) {
+                             val deletedMessage = DeletedMessage(
+                                 messageId = idIndex.toLong(),
+                                 threadId = threadId,
+                                 address = it.getString(addressIndex) ?: "",
+                                 date = it.getLong(dateIndex),
+                                 body = it.getString(bodyIndex) ?: "",
+                                 type = it.getInt(typeIndex),
+                                 read = it.getInt(readIndex) == 1,
+                                 subscriptionId = it.getInt(subIdIndex)
+                             )
+                             deletedMessages.add(deletedMessage)
+                         }
+                     }
 
 
-    /*   @RequiresApi(Build.VERSION_CODES.Q)
-       fun deleteSelectedMessages() {
-           if (adapter.selectedMessages.isEmpty()) return
+                     val uri = Uri.parse("content://sms/conversations/$threadId")
+                     contentResolver.delete(uri, null, null)
 
-           val contentResolver = requireActivity().contentResolver
-           val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
-           val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+                     updatedList.removeAll { it.threadId == threadId }
+                 }
 
-           Thread {
-               try {
-                   val threadIds = adapter.selectedMessages.map { it.threadId }.toSet()
+                 db.insertMessages(deletedMessages)
+                 Handler(Looper.getMainLooper()).post {
+                     adapter.selectedMessages.clear()
+                     adapter.submitList(updatedList)
+                     onSelectionChanged?.invoke(0, 0)
+                     updateMessageCount()
+                 }
 
-                   val deletedMessagesList = mutableListOf<DeletedMessage>()
-                   for (threadId in threadIds) {
-                       val conversationMessages = viewModel.getConversation(threadId) // Get all messages
+             } catch (e: Exception) {
+                 e.printStackTrace()
+             }
+         }.start()
+     }*/
 
-                       if (conversationMessages.isNotEmpty()) {
-                           val messagesJson = Gson().toJson(conversationMessages) // Store full messages as JSON
-                           val latestDate = conversationMessages.maxByOrNull { it.date }?.date ?: System.currentTimeMillis()
-                           val latestMessage = conversationMessages.maxByOrNull { it.date }
-                           val deletedMessage = DeletedMessage(
-                               threadId = threadId,
-                               messages = messagesJson, // Store as JSON
-                               address = conversationMessages.first().address,
-                               date = latestDate // Store latest message's date
-                           )
-                           *//*val deletedMessage = DeletedMessage(
-                            threadId = threadId,
-                            messages = messagesJson,
-                            address = conversationMessages.first().address,
-                            date = latestMessage?.date ?: System.currentTimeMillis(),
-                            lastMessage = latestMessage?.body ?: "",
-                            lastMessageTime = latestMessage?.date ?: System.currentTimeMillis()
-                        )
-*//*
-
-                        deletedMessagesList.add(deletedMessage)
-                    }
-                }
-
-                // Insert deleted conversations as single entries per thread
-                db.insertMessages(deletedMessagesList)
-
-                // Delete conversations from the SMS content provider
-                for (threadId in threadIds) {
-                    val uri = Uri.parse("content://sms/conversations/$threadId")
-                    val deletedRows = contentResolver.delete(uri, null, null)
-                    if (deletedRows > 0) {
-                        updatedList.removeAll { it.threadId == threadId }
-                    }
-                }
-
-                // Update UI on the main thread
-                Handler(Looper.getMainLooper()).post {
-                    adapter.selectedMessages.clear()
-                    adapter.submitList(updatedList)
-                    onSelectionChanged?.invoke(adapter.selectedMessages.size, adapter.selectedMessages.count { it.isPinned })
-                    updateMessageCount()
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }.start()
-    }*/
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -933,10 +866,15 @@ class ConversationFragment : Fragment() {
 
             withContext(Dispatchers.Main) {
                 adapter.clearSelection()
-                Handler(Looper.getMainLooper()).postDelayed({
-                    adapter.notifyDataSetChanged()
-                }, 200)
-
+                try {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        adapter.notifyDataSetChanged()
+                    }, 300)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        adapter.notifyDataSetChanged()
+                    }, 1300)
+                } catch (e: Exception) {
+                }
             }
         }
     }

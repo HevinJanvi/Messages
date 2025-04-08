@@ -2,21 +2,18 @@ package com.test.messages.demo.ui.Activity
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityLanguageBinding
 import com.test.messages.demo.Util.DebouncedOnClickListener
@@ -29,6 +26,7 @@ class LanguageActivity : BaseActivity() {
     private var languageAdapter: LanguageAdapter? = null
     private var selectedLanguage: String? = ""
     private var isFirstVisit: Boolean = false
+    private var pos: Int = -1
 
     private val langArray = arrayOf(
         Locale.ENGLISH.toString(),
@@ -86,22 +84,32 @@ class LanguageActivity : BaseActivity() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLanguageBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
 
+
         isFirstVisit = !ViewUtils.isLanguageSelected(this)
         if (isFirstVisit) {
+            binding.title.text = getString(R.string.select_language)
+            binding.icBack.visibility = View.GONE
             binding.animatedIndicator.visibility = View.VISIBLE
             setupAnimatedIndicator()
         } else {
+            selectedLanguage = ViewUtils.getSelectedLanguage(this)
+            pos = langArray.indexOf(selectedLanguage)
+            binding.title.text = getString(R.string.language)
+            binding.icBack.visibility = View.VISIBLE
             binding.animatedIndicator.visibility = View.INVISIBLE
         }
 
-        selectedLanguage = ViewUtils.getSelectedLanguage(this)
-        val pos = langArray.indexOf(selectedLanguage)
+        binding.icBack.setOnClickListener {
+            onBackPressed()
+        }
+
 
         binding.langRecyclerView!!.layoutManager =
             LinearLayoutManager(this, RecyclerView.VERTICAL, false)
@@ -114,10 +122,10 @@ class LanguageActivity : BaseActivity() {
             ViewUtils.setLanguageSelected(this)
 
             if (!ViewUtils.isIntroShown(this)) {
-                startActivity(Intent(this,IntroActivity::class.java))
+                startActivity(Intent(this, IntroActivity::class.java))
                 finish()
             } else {
-                startActivity(Intent(this,MainActivity::class.java))
+                startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
         }
@@ -136,7 +144,6 @@ class LanguageActivity : BaseActivity() {
         }
 
         override fun onBindViewHolder(holder: LanguageViewHolder, position: Int) {
-            holder.languageTextView.isSelected = true
             holder.bind(languageOptions[position], languageFlag[position])
             holder.itemView.setOnClickListener(object :
                 DebouncedOnClickListener(500L) {
@@ -147,7 +154,7 @@ class LanguageActivity : BaseActivity() {
                 }
             })
             if (selectedPosition == position) {
-                holder.imgCheck.setImageResource(R.drawable.ic_selected);
+                holder.imgCheck.setImageResource(R.drawable.ic_selected2);
                 holder.lang_ly.setBackgroundResource(R.drawable.lang_item_select_bg);
             } else {
                 holder.imgCheck.setImageResource(R.drawable.ic_unselected);
@@ -159,7 +166,14 @@ class LanguageActivity : BaseActivity() {
             return languageOptions.size
         }
 
-        fun getSelectedLanguage(): String = languageOptions[selectedPosition]
+        fun getSelectedLanguage(): String {
+            return if (selectedPosition in languageOptions.indices) {
+                languageOptions[selectedPosition]
+            } else {
+                languageOptions.firstOrNull() ?: ""
+            }
+        }
+
 
 
         internal inner class LanguageViewHolder(itemView: View) :
@@ -178,131 +192,100 @@ class LanguageActivity : BaseActivity() {
 
             fun bind(language: String?, flag: Int) {
                 val mainText: String
-                val subText: String
-
                 when (language) {
                     "en" -> {
                         mainText = resources.getString(R.string.english)
-                        subText = getString(R.string.subtext_english)
                     }
 
                     "af" -> {
                         mainText = resources.getString(R.string.afrikaans)
-                        subText = getString(R.string.subtext_afrikaans)
                     }
 
                     "ar" -> {
                         mainText = resources.getString(R.string.arabic)
-                        subText = getString(R.string.subtext_arabic)
                     }
 
                     "bn" -> {
                         mainText = resources.getString(R.string.bangla)
-                        subText = getString(R.string.subtext_bangla)
                     }
 
                     "fil" -> {
                         mainText = resources.getString(R.string.filipino)
-                        subText = getString(R.string.subtext_fillipino)
                     }
 
                     "fr" -> {
                         mainText = resources.getString(R.string.french)
-                        subText = getString(R.string.subtext_French)
                     }
 
                     "de" -> {
                         mainText = resources.getString(R.string.german)
-                        subText = getString(R.string.subtext_German)
                     }
 
                     "hi" -> {
                         mainText = resources.getString(R.string.hindi)
-                        subText = getString(R.string.subtext_Indian)
                     }
 
                     "in" -> {
                         mainText = resources.getString(R.string.indonesian)
-                        subText = getString(R.string.subtext_Indonesia)
                     }
 
                     "it" -> {
                         mainText = resources.getString(R.string.italian)
-                        subText = getString(R.string.subtext_italian)
                     }
 
                     "ja" -> {
                         mainText = resources.getString(R.string.japanese)
-                        subText = getString(R.string.subtext_Japanese)
                     }
 
                     "ko" -> {
                         mainText = resources.getString(R.string.korean)
-                        subText = getString(R.string.subtext_Korean)
                     }
 
                     "pl" -> {
                         mainText = resources.getString(R.string.polish)
-                        subText = getString(R.string.subtext_polish)
                     }
 
                     "pt" -> {
                         mainText = resources.getString(R.string.portuguese)
-                        subText = getString(R.string.subtext_portugal)
                     }
 
                     "ru" -> {
                         mainText = resources.getString(R.string.russian)
-                        subText = getString(R.string.subtext_Russian)
                     }
 
                     "es" -> {
                         mainText = resources.getString(R.string.spanish)
-                        subText = getString(R.string.subtext_Spanish)
                     }
 
                     "th" -> {
                         mainText = resources.getString(R.string.thai)
-                        subText = getString(R.string.subtext_thai)
                     }
 
                     "tr" -> {
                         mainText = resources.getString(R.string.turkish)
-                        subText = getString(R.string.subtext_turkish)
                     }
 
                     "uk" -> {
                         mainText = resources.getString(R.string.ukrainian)
-                        subText = getString(R.string.subtext_ukrainian)
                     }
 
                     "vi" -> {
                         mainText = resources.getString(R.string.vietnamese)
-                        subText = getString(R.string.subtext_Vietnamese)
                     }
 
                     "zh" -> {
                         mainText = resources.getString(R.string.chinese)
-                        subText = getString(R.string.subtext_chinese)
                     }
 
                     else -> {
                         mainText = language ?: ""
-                        subText = ""
                     }
                 }
 
-                val spannable = SpannableString("$mainText $subText")
-                spannable.setSpan(
-                    ForegroundColorSpan(ContextCompat.getColor(context, R.color.subtext_color)),
-                    mainText.length, spannable.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
 
-                languageTextView.text = spannable
-                Glide.with(context).load(flag)
-                    .placeholder(R.mipmap.ic_launcher)
-                    .into(imgFlag)
+                languageTextView.text = mainText
+                imgFlag.setImageResource(flag)
+
             }
 
         }

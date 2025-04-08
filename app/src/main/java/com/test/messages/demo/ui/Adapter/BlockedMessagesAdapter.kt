@@ -80,6 +80,9 @@ class BlockedMessagesAdapter(
         return selectedMessages.map { it.threadId }
     }
 
+    fun isAllSelected(): Boolean {
+        return messages.isNotEmpty() && selectedMessages.size == messages.size
+    }
     fun removeItems(threadIds: List<Long>) {
         val updatedList = messages.toMutableList()
         updatedList.removeAll { it.threadId in threadIds }

@@ -55,7 +55,7 @@
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolBarStarred"
-        tools:listitem="@layout/item_starred_message" />
+        tools:listitem="@layout/item_message" />
 
     <TextView
         android:id="@+id/emptyList"

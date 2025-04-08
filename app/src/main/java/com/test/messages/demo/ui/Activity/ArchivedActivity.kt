@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,6 +36,8 @@ import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -82,6 +85,12 @@ class ArchivedActivity : BaseActivity() {
                 val pinnedCount = adapter.selectedMessages.count { it.isPinned }
                 updatePinLayout(selectedCount, pinnedCount)
                 updateSelectedItemsCount()
+
+                binding.btnSelectAll.setOnCheckedChangeListener(null)
+                binding.btnSelectAll.isChecked = adapter.isAllSelected()
+                binding.btnSelectAll.setOnCheckedChangeListener { _, isChecked ->
+                    adapter.selectAll(isChecked)
+                }
             }
         )
 
@@ -162,11 +171,15 @@ class ArchivedActivity : BaseActivity() {
                         adapter.removeItems(selectedThreadIds)
                         adapter.clearSelection()
 
-                        val updatedList = viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds } ?: emptyList()
+                        val updatedList =
+                            viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds }
+                                ?: emptyList()
                         viewModel.updateMessages(updatedList)
 
-                        SnackbarUtil.showSnackbar(binding.root,
-                            getString(R.string.unarchived_successfully), getString(R.string.undo)) {
+                        SnackbarUtil.showSnackbar(
+                            binding.root,
+                            getString(R.string.unarchived_successfully), getString(R.string.undo)
+                        ) {
                             restoreArchivedMessages(removedMessages)
                         }
 
@@ -186,6 +199,7 @@ class ArchivedActivity : BaseActivity() {
             }
             deleteDialog.show()
         }
+
         binding.btnBlock.setOnClickListener {
             val selectedThreadIds = adapter.getSelectedThreadIds()
 
@@ -225,8 +239,6 @@ class ArchivedActivity : BaseActivity() {
     }
 
 
-
-
     private fun updateSelectedItemsCount() {
         binding.txtSelectedCount.text =
             "${adapter.selectedMessages.size}" + " " + getString(R.string.selected)
@@ -244,22 +256,71 @@ class ArchivedActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     fun deleteMessages(threadIds: List<Long>) {
         if (adapter.selectedMessages.isEmpty()) return
+
         val contentResolver = contentResolver
-        val deletedThreads = mutableListOf<Long>()
+        val db = AppDatabase.getDatabase(this).recycleBinDao()
+        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
 
         Thread {
             try {
-                for (threadId in threadIds) {
-                    val uri = Uri.parse("content://sms/conversations/$threadId")
-                    val deletedRows = contentResolver.delete(uri, null, null)
-                    if (deletedRows > 0) {
-                        deletedThreads.add(threadId)
-                    } else {
-                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
+                val deletedMessages = mutableListOf<DeletedMessage>()
+                val existingBodyDatePairs =
+                    mutableSetOf<Pair<String, Long>>() // to avoid duplicates
+
+                for (item in adapter.selectedMessages) {
+                    val threadId = item.threadId
+
+                    val cursor = contentResolver.query(
+                        Telephony.Sms.CONTENT_URI,
+                        null,
+                        "thread_id = ?",
+                        arrayOf(threadId.toString()),
+                        null
+                    )
+
+                    cursor?.use {
+                        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                        val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                        val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                        val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                        val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+
+                        while (it.moveToNext()) {
+                            val body = it.getString(bodyIndex) ?: ""
+                            val date = it.getLong(dateIndex)
+
+                            // Check for body + date duplicate
+                            val key = Pair(body, date)
+                            if (existingBodyDatePairs.contains(key)) {
+                                continue // skip this duplicate
+                            }
+                            existingBodyDatePairs.add(key)
+
+                            val deletedMessage = DeletedMessage(
+                                messageId = 0,
+                                threadId = threadId,
+                                address = it.getString(addressIndex) ?: "",
+                                date = date,
+                                body = body,
+                                type = it.getInt(typeIndex),
+                                read = it.getInt(readIndex) == 1,
+                                subscriptionId = it.getInt(subIdIndex)
+                            )
+
+                            deletedMessages.add(deletedMessage)
+                        }
                     }
+
+                    val uri = Uri.parse("content://sms/conversations/$threadId")
+                    contentResolver.delete(uri, null, null)
+
+                    updatedList.removeAll { it.threadId == threadId }
                 }
 
-                if (deletedThreads.isNotEmpty()) {
+                db.insertMessages(deletedMessages)
+
+                /*if (deletedThreads.isNotEmpty()) {
                     Handler(Looper.getMainLooper()).post {
                         val updatedList =
                             viewModel.messages.value?.filterNot { it.threadId in deletedThreads }
@@ -268,9 +329,18 @@ class ArchivedActivity : BaseActivity() {
                         adapter.removeItems(deletedThreads)
                         adapter.clearSelection()
                     }
+                }*/
+
+                Handler(Looper.getMainLooper()).post {
+                    adapter.removeItems(threadIds)
+                    adapter.selectedMessages.clear()
+                    viewModel.updateMessages(updatedList)
+                    adapter.submitList(updatedList)
+                    adapter.clearSelection()
                 }
+
             } catch (e: Exception) {
-                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
+                e.printStackTrace()
             }
         }.start()
     }
@@ -293,7 +363,7 @@ class ArchivedActivity : BaseActivity() {
             markThreadsAsRead()
             adapter.clearSelection()
         }
-        popupWindow.showAsDropDown(view, 0, 0)
+        popupWindow.showAsDropDown(view, 0, 0, Gravity.CENTER_VERTICAL or Gravity.END)
     }
 
     private fun markThreadsAsRead() {

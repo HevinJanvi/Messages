@@ -3,8 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="10dp"
-    android:layout_marginHorizontal="10dp">
+    android:clickable="true"
+    android:background="@drawable/ripple_effect"
+    android:padding="10dp"
+    >
 
     <FrameLayout
         android:id="@+id/imageContainer"
@@ -71,10 +73,10 @@
         android:textSize="15dp"
         android:textFontWeight="500"
         android:singleLine="true"
+        android:textDirection="locale"
         android:layout_marginStart="15dp"
         android:textColor="@color/textcolor"
         android:fontFamily="@font/product_sans_medium"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageContainer"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -86,6 +88,7 @@
         android:elegantTextHeight="true"
         android:text="11344679"
         android:textSize="12dp"
+        android:textDirection="locale"
         android:layout_marginStart="15dp"
         android:textColor="@color/gray_txtcolor"
         android:fontFamily="@font/product_sans_regular"
