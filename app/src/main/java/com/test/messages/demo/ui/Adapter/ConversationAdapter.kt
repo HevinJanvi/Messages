@@ -3,8 +3,10 @@ package com.test.messages.demo.ui.Adapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.Uri
 import android.provider.Telephony
 import android.text.Spannable
 import android.text.SpannableString
@@ -16,6 +18,8 @@ import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
+import android.text.util.Linkify
+import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -31,7 +35,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.BetterLinkMovementMethod
 import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CustomLinkMovementMethod
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
@@ -39,8 +45,9 @@ import com.test.messages.demo.Util.ViewUtils.extractOtp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.regex.Pattern
 
-class ConversationAdapter(
+class ConversationAdapter(private val context: Context,
     private val onSelectionChanged: (Int) -> Unit
 ) : ListAdapter<ConversationItem, ConversationAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<ConversationItem>() {
@@ -68,6 +75,7 @@ class ConversationAdapter(
     }
 
     var retryListener: OnMessageRetryListener? = null
+    var starredMessageIds: Set<Long> = emptySet()
 
     fun setOnRetryListener(listener: OnMessageRetryListener) {
         this.retryListener = listener
@@ -102,8 +110,6 @@ class ConversationAdapter(
         }
 
         fun bind(message: ConversationItem, isLastMessage: Boolean) {
-
-
 
             if (message.isHeader) {
                 headerText?.visibility = View.VISIBLE
@@ -214,20 +220,40 @@ class ConversationAdapter(
                     starIcon.visibility = View.GONE
                 }
 
-                itemView.setOnClickListener {
+//                itemView.setOnClickListener {
+//                    if (isMultiSelectionEnabled) {
+//                        toggleSelection(message,1)
+//                    } else {
+//                        toggleTimeVisibility(message)
+//                    }
+//                }
+//                itemView.setOnLongClickListener {
+//                    enableMultiSelection(message)
+//                    true
+//                }
+                messageBody.setOnClickListener {
                     if (isMultiSelectionEnabled) {
-                        toggleSelection(message)
+                        toggleSelection(message,1)
                     } else {
                         toggleTimeVisibility(message)
                     }
                 }
-
-                itemView.setOnLongClickListener {
+                messageBody.setOnLongClickListener {
                     enableMultiSelection(message)
                     true
                 }
 
-                val link = message.extractLink()
+                formatMessageWithLinks(
+                    messageBody,
+                    type = message.type,
+                    message,
+                    message = message.body,
+                    query = searchQuery ?: "",
+                    isOpenPopup = false
+                )
+
+//                formatMessageWithLinks(messageBody,message.type,message,message.body,messageBody.text.toString(),false)
+              /*  val link = message.extractLink()
                 if (link != null) {
                     val spannable = SpannableString(message.body)
                     val matcher = Patterns.WEB_URL.matcher(message.body)
@@ -266,9 +292,171 @@ class ConversationAdapter(
                         )
                     }
                     messageBody.text = spannable
-                    messageBody.movementMethod = LinkMovementMethod.getInstance()
+//                    messageBody.movementMethod = LinkMovementMethod.getInstance()
+                    messageBody.movementMethod = CustomLinkMovementMethod()
+                    messageBody.setLongClickable(false)
+                    messageBody.isClickable = true
+
+                }*/
+
+            }
+        }
+
+
+        private fun formatMessageWithLinks(
+            textView: TextView,
+            type: Int,
+            messages: ConversationItem,
+            message: String,
+            query: String,
+            isOpenPopup: Boolean,
+        ) {
+            val spannableString = SpannableString(message)
+
+            val emailPattern = Pattern.compile(
+                "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+            )
+
+            val mapPattern = Pattern.compile(
+                "(https?:\\/\\/)?(www\\.)?(google\\.com\\/maps\\/place\\/[^\\s]+|goo\\.gl\\/maps\\/[^\\s]+)"
+            )
+
+            val urlPattern = Pattern.compile(
+                "(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=]+\\.[a-zA-Z]{2,}(/[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=]*)?(\\?[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=%]*)?(\\&[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=%]*)*(#[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=]*)?"
+            )
+
+            val phonePattern = Pattern.compile(
+                "\\+?[0-9]{1,4}?[-.\\s]?\\(?[0-9]{2,4}?\\)?[-.\\s]?[0-9]{2,4}[-.\\s]?[0-9]{3,10}"
+            )
+
+            val otpPattern = Pattern.compile(
+                "(?i)((otp|code|verification|password).*?\\b(\\d{4,8})\\b|\\b(\\d{4,8})\\b.*?(otp|code|verification|password))"
+            )
+
+
+            fun applySpan(
+                pattern: Pattern,
+                msgType: String,
+                msg: String,
+                onClick: (String) -> Unit,
+            ) {
+                val matcher = pattern.matcher(message)
+                while (matcher.find()) {
+                    val matchedText = matcher.group()
+                    spannableString.setSpan(object : ClickableSpan() {
+                        override fun onClick(widget: View) {
+                            /*if (actionMode == null) {
+                                if (isOpenPopup) {
+                                    baseActivity.openInfoMessageDialog {
+                                        onClick(matchedText)
+                                    }
+                                } else {
+                                    baseActivity.openMessageDialog(msgType, msg, matchedText) {
+                                        when (it) {
+                                            1 -> baseActivity.copyToClipboard(matchedText)
+                                            2 -> onClick(matchedText)
+                                        }
+                                    }
+                                }
+                            }*/
+
+                            ExternalLinkDialog(textView.context, matchedText).show()
+                        }
+
+                        /*override fun updateDrawState(ds: TextPaint) {
+                            super.updateDrawState(ds)
+//                            if (messages.isValid) {
+                                ds.color =
+                                    if (isSelected()) sentSelectedTextColor else if (type == 1)
+                                        receiveTextColor else sentTextColor
+                                ds.isUnderlineText = true
+//                            }
+
+                        }*/
+                    }, matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
             }
+
+          /*  applySpan(
+                emailPattern,
+                "Email",
+                getString(R.string.email_type),
+            ) { email ->
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+                baseActivity.startActivity(intent)
+            }
+
+            applySpan(
+                mapPattern,
+                "Map",
+                baseActivity.getString(R.string.map_type),
+            ) { address ->
+                val uri = Uri.parse("geo:0,0?q=${Uri.encode(address)}")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                intent.setPackage("com.google.android.apps.maps")
+                baseActivity.startActivity(intent)
+            }*/
+
+           /* applySpan(
+                urlPattern,
+                "Website",
+                context.getString(R.string.web_type),
+            ) { url ->
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(if (url.startsWith("http")) url else "http://$url")
+                )
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            }
+
+            applySpan(
+                phonePattern,
+                "Phone Number", context.getString(R.string.phone_type),
+            ) { phone ->
+                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            }
+
+            val otpMatcher = otpPattern.matcher(message)
+            while (otpMatcher.find()) {
+                val otpCode = otpMatcher.group(3) ?: otpMatcher.group(4)
+                val startIndex =
+                    if (otpMatcher.group(3) != null) otpMatcher.start(3) else otpMatcher.start(4)
+                val endIndex = if (otpMatcher.group(3) != null) otpMatcher.end(3) else otpMatcher.end(4)
+
+                spannableString.setSpan(object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        *//*if (actionMode == null) {
+                            otpCode?.let {
+
+                                context.baseActivity.openMessageDialog(
+                                    "OTP",
+                                    baseActivity.getString(R.string.OTP_type),
+                                    it
+                                ) { copy ->
+                                    when (copy) {
+                                        1 -> baseActivity.copyToClipboard(it, 1)
+                                    }
+                                }
+                            }
+                        }*//*
+                    }
+
+//                    override fun updateDrawState(ds: TextPaint) {
+//                        super.updateDrawState(ds)
+//                        if (messages.isValid) {
+//                            ds.color =
+//                                if (isSelected(messages.id)) sentSelectedTextColor else if (type == 1) receiveTextColor else sentTextColor
+//                            ds.isUnderlineText = true
+//                        }
+//                    }
+                }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+*/
+            textView.text = spannableString
+            textView.movementMethod = CustomLinkMovementMethod()
         }
 
         private fun copyToClipboard(otp: String) {
@@ -281,6 +469,7 @@ class ConversationAdapter(
                 itemView.context.getString(R.string.otp_copied), Toast.LENGTH_SHORT
             ).show()
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -313,20 +502,13 @@ class ConversationAdapter(
 
     private fun enableMultiSelection(message: ConversationItem) {
         isMultiSelectionEnabled = true
-        toggleSelection(message)
+        toggleSelection(message,2)
     }
 
     fun getPositionOfMessage(messageItem: ConversationItem): Int {
         return currentList.indexOf(messageItem)
     }
 
-    fun removeMessageWithAnimation(position: Int) {
-        val updatedList = currentList.toMutableList()
-        updatedList.removeAt(position)
-        submitList(updatedList) {
-            notifyItemRemoved(position)
-        }
-    }
 
     private fun toggleTimeVisibility(message: ConversationItem) {
         val position = currentList.indexOf(message)
@@ -339,14 +521,14 @@ class ConversationAdapter(
         notifyItemChanged(position)
     }
 
-         var starredMessageIds: Set<Long> = emptySet()
 
     fun setStarredMessages(starredIds: Set<Long>) {
         starredMessageIds = starredIds
         notifyDataSetChanged()
     }
 
-    private fun toggleSelection(message: ConversationItem) {
+    private fun toggleSelection(message: ConversationItem,i:Int) {
+        Log.d("TAG", "toggleSelection: $i")
         if (selectedItems.contains(message)) {
             selectedItems.remove(message)
         } else {
@@ -392,5 +574,9 @@ class ConversationAdapter(
         }
         return spannable
     }
+
+
+
+
 
 }

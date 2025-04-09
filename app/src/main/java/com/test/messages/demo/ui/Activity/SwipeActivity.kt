@@ -28,7 +28,7 @@ class SwipeActivity : BaseActivity() {
         }
 
         binding.btnLeftChangeSwipe.setOnClickListener {
-            SwipeActionDialog(this, savedLeftAction) { selectedAction ->
+            SwipeActionDialog(this, savedLeftAction,false) { selectedAction ->
                 ViewUtils.saveSwipeAction(this, selectedAction, false)
                 updateSwipeUI(selectedAction, savedRightAction)
                 EventBus.getDefault().post(SwipeActionEvent(selectedAction, isRightSwipe = false))
@@ -36,7 +36,7 @@ class SwipeActivity : BaseActivity() {
         }
 
         binding.btnRightChangeSwipe.setOnClickListener {
-            SwipeActionDialog(this, savedRightAction) { selectedAction ->
+            SwipeActionDialog(this, savedRightAction,true) { selectedAction ->
                 ViewUtils.saveSwipeAction(this, selectedAction, true)
                 updateSwipeUI(savedLeftAction, selectedAction)
                 EventBus.getDefault().post(SwipeActionEvent(selectedAction, isRightSwipe = true))
@@ -45,12 +45,26 @@ class SwipeActivity : BaseActivity() {
 
     }
 
+    private fun getSwipeActionName(action: Int): String {
+        return when (action) {
+            CommanConstants.SWIPE_NONE -> getString(R.string.none)
+            CommanConstants.SWIPE_ARCHIVE -> getString(R.string.archive)
+            CommanConstants.SWIPE_DELETE -> getString(R.string.delete)
+            CommanConstants.SWIPE_CALL -> getString(R.string.call)
+            CommanConstants.SWIPE_MARK_READ -> getString(R.string.mark_as_read)
+            CommanConstants.SWIPE_MARK_UNREAD -> getString(R.string.mark_as_unread)
+            else -> getString(R.string.none)
+        }
+    }
+
+
+
     private fun updateSwipeUI(leftAction: Int, rightAction: Int) {
-        binding.tvLeftSwipeAction.text = leftAction.toString()
+        binding.tvLeftSwipeAction.text = getSwipeActionName(leftAction)
         val leftIconResId = getSwipeIcon(leftAction, false)
         binding.ivSwipeActionImg.setImageResource(leftIconResId)
 
-        binding.tvRightSwipeAction.text = rightAction.toString()
+        binding.tvRightSwipeAction.text = getSwipeActionName(rightAction)
         val rightIconResId = getSwipeIcon(rightAction, true)
         binding.ivSwipeActionImgRight.setImageResource(rightIconResId)
     }

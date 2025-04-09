@@ -141,7 +141,18 @@
         android:orientation="horizontal"
         android:padding="8dp"
         android:gravity="center_vertical"
+        android:layout_marginHorizontal="5dp"
         app:layout_constraintBottom_toBottomOf="parent">
+
+
+        <ImageView
+            android:id="@+id/buttonAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:alpha="0.5"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_add_disable" />
 
         <EditText
             android:id="@+id/editTextMessage"
@@ -165,8 +176,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:padding="3dp"
-            android:src="@drawable/ic_send"/>
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_send_disable"/>
 
     </LinearLayout>
 

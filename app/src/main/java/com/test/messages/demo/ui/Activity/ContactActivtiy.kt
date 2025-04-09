@@ -1,10 +1,13 @@
 package com.test.messages.demo.ui.Activity
 
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.Telephony
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -18,6 +21,16 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.FORWARD
+import com.test.messages.demo.Util.CommanConstants.FORWARDMSGS
+import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.SHARECONTACT
+import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNAME
+import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNUMBER
+import com.test.messages.demo.Util.CommanConstants.SOURCE
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityContactBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
@@ -61,6 +74,51 @@ class ContactActivtiy : BaseActivity() {
                 setNumberKeyboard()
             }
         }
+        val source = intent.getStringExtra(SOURCE)
+        if (source.equals(FORWARD)) {
+            binding.btmly.visibility = View.GONE
+        } else if (source.equals(SHARECONTACT)) {
+            binding.btmly.visibility = View.GONE
+        } else {
+            binding.btmly.visibility = View.VISIBLE
+        }
+        val forwardedMessage = intent.getStringExtra(FORWARDMSGS)
+        val contactAdapter = ContactAdapter(allContacts) { contact ->
+            when (source) {
+                FORWARD -> {
+
+                    if (source == FORWARD && !forwardedMessage.isNullOrEmpty()) {
+                        val selectedNumber = contact.phoneNumber
+                        val contactName = viewModel.getContactNameOrNumber(selectedNumber)
+                        val threadId = getThreadId(setOf(selectedNumber))
+
+                        val intent = Intent(this, ConversationActivity::class.java).apply {
+                            putExtra(EXTRA_THREAD_ID, threadId)
+                            putExtra(NUMBER, selectedNumber)
+                            putExtra(NAME, contactName)
+                            putExtra(FORWARDMSGS, forwardedMessage)
+                        }
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+
+                SHARECONTACT -> {
+                    val resultIntent = Intent().apply {
+                        putExtra(SHARECONTACTNUMBER, contact.phoneNumber)
+                        putExtra(SHARECONTACTNAME, contact.name)
+                    }
+                    setResult(Activity.RESULT_OK, resultIntent)
+                    finish()
+                }
+
+                else -> {
+                    addToSelectedContacts(contact)
+                }
+            }
+        }
+
+
         binding.contactRecyclerView.layoutManager =
             object : LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) {
                 override fun onLayoutCompleted(state: RecyclerView.State?) {
@@ -72,11 +130,12 @@ class ContactActivtiy : BaseActivity() {
                 }
             }
 
-        contactAdapter = ContactAdapter(allContacts) { contact ->
-            if (!selectedContacts.contains(contact)) {
-                addToSelectedContacts(contact)
-            }
-        }
+        /* contactAdapter = ContactAdapter(allContacts) { contact ->
+             if (!selectedContacts.contains(contact)) {
+                 addToSelectedContacts(contact)
+             }
+         }*/
+
         binding.fastscroller.setRecyclerView(binding.contactRecyclerView)
         binding.fastscroller.setViewsToUse(
             R.layout.recycler_view_fast_scroller__fast_scroller,
@@ -139,6 +198,15 @@ class ContactActivtiy : BaseActivity() {
         }
     }
 
+    @SuppressLint("NewApi")
+    fun Context.getThreadId(addresses: Set<String>): Long {
+        return try {
+            Telephony.Threads.getOrCreateThreadId(this, addresses)
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
     private fun updateSelectedContactsHeader() {
         binding.selectedContactsLayout.removeAllViews()
         binding.selectedContactsScroll.visibility = View.GONE
@@ -180,7 +248,8 @@ class ContactActivtiy : BaseActivity() {
             selectedContactViews.remove(contact.phoneNumber) // Remove from map
         }
         if (selectedContacts.isEmpty()) {
-            binding.selectedContactsScroll.visibility = View.GONE        }
+            binding.selectedContactsScroll.visibility = View.GONE
+        }
     }
 
     private fun setNumberKeyboard() {

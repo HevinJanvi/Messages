@@ -11,7 +11,9 @@ import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,8 +28,14 @@ import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.PopupWindow
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,6 +50,8 @@ import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.FORWARD
+import com.test.messages.demo.Util.CommanConstants.FORWARDMSGS
 import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
 import com.test.messages.demo.Util.CommanConstants.GROUP_MEMBERS
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME
@@ -51,7 +61,10 @@ import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.Util.CommanConstants.PROFILEURL
 import com.test.messages.demo.Util.CommanConstants.QUERY
-import com.test.messages.demo.Util.MessageDeletedEvent
+import com.test.messages.demo.Util.CommanConstants.SHARECONTACT
+import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNAME
+import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNUMBER
+import com.test.messages.demo.Util.CommanConstants.SOURCE
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
@@ -66,8 +79,11 @@ import com.test.messages.demo.data.reciever.MessageScheduler
 import com.test.messages.demo.Util.MessageUnstarredEvent
 import com.test.messages.demo.Util.RefreshMessagesEvent
 import com.test.messages.demo.Util.UpdateGroupNameEvent
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.Dialogs.MessageDetailsDialog
+import com.test.messages.demo.ui.Fragment.ConversationFragment
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -116,7 +132,10 @@ class ConversationActivity : BaseActivity() {
         val selection = "${Telephony.Sms.THREAD_ID} = ?"
         val selectionArgs = arrayOf(threadId.toString())
         val updatedRows = contentResolver.update(uri, contentValues, selection, selectionArgs)
-        Log.d("ConversationActivity", "Marked $updatedRows archive messages as read in thread $threadId")
+        Log.d(
+            "ConversationActivity",
+            "Marked $updatedRows archive messages as read in thread $threadId"
+        )
         Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
     }
 
@@ -142,6 +161,13 @@ class ConversationActivity : BaseActivity() {
         isfromBlock = intent.getBooleanExtra(FROMBLOCK, false)
         highlightQuery = intent.getStringExtra(QUERY)
         isScheduled = intent.getBooleanExtra(ISSCHEDULED, false)
+
+        val forwardedMessage = intent.getStringExtra("forwardedMessage")
+        if (!forwardedMessage.isNullOrEmpty()) {
+            binding.editTextMessage.setText(forwardedMessage)
+            binding.editTextMessage.setSelection(forwardedMessage.length)
+        }
+
 
         if (isScheduled) {
             showDateTimePickerDialog()
@@ -189,25 +215,36 @@ class ConversationActivity : BaseActivity() {
 
         binding.editTextMessage.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                draftViewModel.saveDraft(threadId, s.toString()) // Save draft when typing
+                if(!isScheduled){
+                    draftViewModel.saveDraft(threadId, s.toString())
+                }
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val trimmedText = s?.toString()?.trim()
+                if (trimmedText.isNullOrEmpty()) {
+                    binding.buttonSend.isEnabled = false
+                    binding.buttonSend.setImageResource(R.drawable.ic_send_disable)
+                } else {
+                    binding.buttonSend.isEnabled = true
+                    binding.buttonSend.setImageResource(R.drawable.ic_send_enable)
+                }
+            }
         })
 
         setupClickListeners()
 
-        profileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val updatedName = result.data?.getStringExtra("UPDATED_NAME") ?: return@registerForActivityResult
-                Log.d("TAG", "onCreate:conversation profile name "+updatedName)
-
-                Handler(Looper.getMainLooper()).postDelayed({
-                    binding.address.text = updatedName
-                }, 100)
+        profileLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val updatedName = result.data?.getStringExtra("UPDATED_NAME")
+                        ?: return@registerForActivityResult
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        binding.address.text = updatedName
+                    }, 100)
+                }
             }
-        }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -221,9 +258,7 @@ class ConversationActivity : BaseActivity() {
         binding.btnInfo.setOnClickListener {
 
             Log.d("INFO_CLICK", "Raw Number String: $number")
-
             val numbersList = number.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-            Log.d("INFO_CLICK", "Processed Numbers List: $numbersList")
 
             if (numbersList.size > 1) {
                 // It's a group chat
@@ -254,6 +289,35 @@ class ConversationActivity : BaseActivity() {
                 proceedWithMessageSending()
             }
         }
+
+
+        binding.buttonAdd.setOnClickListener {
+            if (binding.addLyouts.visibility == View.VISIBLE) {
+                binding.addLyouts.visibility = View.GONE
+                binding.buttonAdd.setImageResource(R.drawable.ic_add_disable)
+            } else {
+                binding.addLyouts.visibility = View.VISIBLE
+                binding.buttonAdd.setImageResource(R.drawable.ic_add)
+            }
+        }
+
+        binding.lySchedule.setOnClickListener {
+            isScheduled=true
+            showDateTimePickerDialog()
+            binding.close.setOnClickListener {
+                binding.schedulLy.visibility = View.GONE
+                isScheduled = false
+            }
+        }
+
+        binding.lyShareContact.setOnClickListener {
+            val intent = Intent(this, ContactActivtiy::class.java)
+            intent.putExtra(SOURCE, SHARECONTACT)
+            startActivityForResult(intent, 401)
+            binding.addLyouts.visibility = View.GONE
+            binding.buttonAdd.setImageResource(R.drawable.ic_add_disable)
+        }
+
         binding.icClose.setOnClickListener { adapter.clearSelection() }
         binding.btnDelete.setOnClickListener { deleteSelectedMessages() }
         binding.btnCopy.setOnClickListener { copySelectedMessages() }
@@ -262,10 +326,115 @@ class ConversationActivity : BaseActivity() {
             val dialog = LearnMoreDialog(this)
             dialog.show()
         }
+        binding.btnMore.setOnClickListener {
+            showPopupMore(it)
+        }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 401 && resultCode == Activity.RESULT_OK) {
+            val selectedNumber = data?.getStringExtra(SHARECONTACTNUMBER) ?: return
+            val contactName = data.getStringExtra(SHARECONTACTNAME) ?: getString(R.string.unknown)
+
+            val contactText = "$contactName\n$selectedNumber"
+            binding.editTextMessage.setText(contactText)
+            binding.editTextMessage.setSelection(contactText.length)
+        }
+    }
+
+
+
+    fun showPopupMore(view: View) {
+        val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val dialog = layoutInflater.inflate(R.layout.popup_more, null)
+
+        val popupWindow = PopupWindow(
+            dialog,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+
+        val marginDp = 16
+        val marginPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            marginDp.toFloat(),
+            view.resources.displayMetrics
+        ).toInt()
+
+
+        dialog.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val popupWidth = dialog.measuredWidth
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        val anchorX = location[0]
+        val anchorY = location[1] + view.height
+        val isRTL = view.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val x = if (isRTL) {
+            anchorX + marginPx
+        } else {
+            anchorX + view.width - popupWidth - marginPx
+        }
+
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, x, anchorY)
+
+        val txtShare: TextView = dialog.findViewById(R.id.txtShare)
+        txtShare.setOnClickListener {
+            shareMessages()
+            popupWindow.dismiss()
+        }
+
+        val txtForward: TextView = dialog.findViewById(R.id.txtForward)
+        txtForward.setOnClickListener {
+            it.blinkThen {
+
+                val selectedBodies = adapter.selectedItems.map { it.body }
+                val joinedMessage = selectedBodies.joinToString("\n\n")
+
+                val intent = Intent(this, ContactActivtiy::class.java)
+                intent.putExtra(SOURCE, FORWARD)
+                intent.putExtra(FORWARDMSGS, joinedMessage)
+                startActivity(intent)
+                finish()
+                popupWindow.dismiss()
+            }
+        }
+
+        val txtDetails: TextView = dialog.findViewById(R.id.txtDetails)
+
+        val selectedMessages = adapter.selectedItems
+
+        if (selectedMessages.size == 1) {
+            txtDetails.visibility = View.VISIBLE
+            txtDetails.setOnClickListener {
+                it.blinkThen {
+                    val message = selectedMessages.first()
+                    val dialog = MessageDetailsDialog(this, message)
+                    dialog.show()
+                    popupWindow.dismiss()
+                }
+            }
+        } else {
+            txtDetails.visibility = View.GONE
+        }
+
+        /*txtDetails.setOnClickListener {
+            it.blinkThen {
+                val dialog = MessageDetailsDialog(this)
+                dialog.show()
+                popupWindow.dismiss()
+            }
+        }*/
+    }
+
+
     private fun setupRecyclerView() {
-        adapter = ConversationAdapter { selectedCount ->
+        adapter = ConversationAdapter(this) { selectedCount ->
             updateUI(selectedCount)
             adapter.setSearchQuery(highlightQuery)
         }
@@ -315,8 +484,10 @@ class ConversationActivity : BaseActivity() {
             if (groupedList.isNotEmpty()) {
                 binding.emptyText.visibility = View.GONE
                 CoroutineScope(Dispatchers.IO).launch {
-                    val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
-                    val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
+                    val sharedPreferences =
+                        getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+                    val savedGroupName =
+                        sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
 
                     val contactName =
                         savedGroupName ?: name
@@ -329,7 +500,15 @@ class ConversationActivity : BaseActivity() {
                 updateLyouts(ViewUtils.isOfferSender(name))
                 markThreadAsRead(threadId)
             } else {
-                binding.emptyText.visibility = View.VISIBLE
+                val hasForwardedText =
+                    intent.getStringArrayListExtra("forwardedMessages")?.isNotEmpty() == true
+                if (hasForwardedText) {
+                    binding.emptyText.visibility = View.GONE
+                } else {
+                    binding.emptyText.visibility = View.VISIBLE
+                }
+
+//                binding.emptyText.visibility = View.VISIBLE
                 binding.address.text = name
                 updateLyouts(ViewUtils.isOfferSender(name))
             }
@@ -395,6 +574,7 @@ class ConversationActivity : BaseActivity() {
             0L
         }
     }
+
     private fun sendMessage() {
         highlightQuery = null
         val text = binding.editTextMessage.text.toString().trim()
@@ -412,7 +592,7 @@ class ConversationActivity : BaseActivity() {
             threadId
         }
         if (numbersSet.size > 1) {
-              messagingUtils.insertSmsMessage(
+            messagingUtils.insertSmsMessage(
                 subId = subscriptionId,
                 dest = numbersSet.joinToString("|"), // Group identifier
                 text = text,
@@ -513,31 +693,25 @@ class ConversationActivity : BaseActivity() {
         startActivity(chooser)
     }
 
+    private fun shareMessages() {
+        val selectedMessages = adapter.getSelectedItems().toList()
 
-    /*fun deleteSelectedMessages() {
-        val contentResolver = contentResolver
-        val selectedMessageItems = adapter.getSelectedItems().toList()
-
-        for (messageItem in selectedMessageItems) {
-            Log.d("TAG", "deleteSelectedMessages: "+messageItem.id)
-
-            val selection = "${Telephony.Sms._ID} = ${messageItem.id}"
-            try {
-                contentResolver.delete(Telephony.Sms.CONTENT_URI, selection, null)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            val position = adapter.getPositionOfMessage(messageItem)
-            if (position != RecyclerView.NO_POSITION) {
-                adapter.removeMessageWithAnimation(position)
-            }
+        if (selectedMessages.isEmpty()) {
+            Toast.makeText(
+                this,
+                getString(R.string.no_messages_selected_to_share), Toast.LENGTH_SHORT
+            ).show()
+            return
         }
+        val shareContent = selectedMessages.joinToString(separator = "\n\n") { it.body }
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareContent)
+        }
+        val chooser = Intent.createChooser(shareIntent, "Share messages via")
+        startActivity(chooser)
 
-        adapter.clearSelection()
-        viewModel.loadConversation(threadId)
-    }*/
-
+    }
 
     private fun deleteSelectedMessages() {
         val selectedMessages = adapter.getSelectedItems().toList()
@@ -569,35 +743,6 @@ class ConversationActivity : BaseActivity() {
             }
         }.start()
     }
-
-
-
-
-
-    //working delete code proper
-     /*fun deleteSelectedMessages() {
-         val contentResolver = contentResolver
-         val selectedMessageItems = adapter.getSelectedItems().toList()
-
-         for (messageItem in selectedMessageItems) {
-             val uri = Uri.parse("content://sms/${messageItem.id}")
-             contentResolver.delete(uri, null, null)
-             val position = adapter.getPositionOfMessage(messageItem)
-             if (position != RecyclerView.NO_POSITION) {
-                 adapter.removeMessageWithAnimation(position)
-             }
-         }
-
-         adapter.clearSelection()
-
-
-         val lastConversationItem = adapter.currentList.lastOrNull { it.threadId == threadId } as? ConversationItem
-         val lastMessageText = lastConversationItem?.body
-         val lastMessageTime = lastConversationItem?.date
-
-         EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText, lastMessageTime))
-         viewModel.loadConversation(threadId)
-     }*/
 
 
     private fun copySelectedMessages() {
@@ -694,7 +839,7 @@ class ConversationActivity : BaseActivity() {
                 binding.btnStar.visibility = View.VISIBLE
                 val selectedMessage = adapter.selectedItems.first()
                 val isStarred = starredMessageIds.contains(selectedMessage.id)
-                binding.btnStar.setImageResource(if (isStarred) R.drawable.ic_unstar else R.drawable.ic_star)
+                binding.btnStar.setImageResource(if (isStarred) R.drawable.ic_star else R.drawable.ic_unstar)
             } else {
                 binding.btnStar.visibility = View.GONE
             }
@@ -709,7 +854,6 @@ class ConversationActivity : BaseActivity() {
             binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
         }, 100)
     }
-
 
 
     override fun onBackPressed() {

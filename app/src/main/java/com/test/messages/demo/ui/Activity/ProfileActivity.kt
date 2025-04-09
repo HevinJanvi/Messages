@@ -159,7 +159,7 @@ class ProfileActivity : BaseActivity() {
             addContactLauncher.launch(intent)*/
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this) {
+            val deleteDialog = DeleteDialog(this,false) {
                 deleteMessage()
             }
             deleteDialog.show()

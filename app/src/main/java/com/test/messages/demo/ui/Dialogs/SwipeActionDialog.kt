@@ -11,12 +11,14 @@ import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.SWIPE_NONE
+import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.databinding.DialogSwipeActionBinding
 
 class SwipeActionDialog(
     context: Context,
     private val selectedAction: Int,
+    private val isRightSwipe: Boolean,
     private val onActionSelected: (Int) -> Unit
 ) : Dialog(context) {
 
@@ -57,7 +59,11 @@ class SwipeActionDialog(
             it.blinkThen {
                 val selectedAction =
                     radioButtons.entries.find { it.key.isChecked }?.value ?: SWIPE_NONE
+                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe)
+
                 onActionSelected(selectedAction)
+                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe = false)
+
                 dismiss()
             }
         }

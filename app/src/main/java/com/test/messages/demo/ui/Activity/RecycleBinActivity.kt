@@ -34,6 +34,8 @@ import com.test.messages.demo.data.viewmodel.BackupViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityRecyclebinBinding
 import com.test.messages.demo.ui.Adapter.RecycleBinAdapter
+import com.test.messages.demo.ui.Dialogs.DeleteDialog
+import com.test.messages.demo.ui.Fragment.ConversationFragment
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -81,7 +83,10 @@ class RecycleBinActivity : BaseActivity() {
         }
 
         binding.btnDelete.setOnClickListener {
-            deleteSelectedMessages()
+            val deleteDialog = DeleteDialog(this,true) {
+                deleteSelectedMessages()
+            }
+            deleteDialog.show()
         }
 
         binding.btnRestore.setOnClickListener {
@@ -195,7 +200,8 @@ class RecycleBinActivity : BaseActivity() {
 
                     for ((threadId, pair) in restoredThreadMap) {
                         val (lastMessage, lastTime) = pair
-                        EventBus.getDefault().post(MessageRestoredEvent(threadId, lastMessage, lastTime))
+                        EventBus.getDefault()
+                            .post(MessageRestoredEvent(threadId, lastMessage, lastTime))
                     }
 
                     recycleBinAdapter.clearSelection()
@@ -208,7 +214,8 @@ class RecycleBinActivity : BaseActivity() {
                 e.printStackTrace()
                 Handler(Looper.getMainLooper()).post {
                     dialog.dismiss()
-                    Toast.makeText(this, getString(R.string.restore_failed), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.restore_failed), Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }.start()

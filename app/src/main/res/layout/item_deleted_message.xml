@@ -83,7 +83,7 @@
             android:maxLines="2"
             android:textDirection="locale"
             android:text="message "
-            android:textColor="@color/subtext_color"
+            android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
             android:textSize="13dp"
             app:layout_constraintEnd_toStartOf="@+id/lyExtra"

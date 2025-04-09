@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.GROUP_MEMBERS
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME
@@ -69,12 +70,17 @@ class GroupProfileActivity : BaseActivity() {
             onBackPressed()
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this) {
+            val deleteDialog = DeleteDialog(this,false) {
                 deleteMessage()
             }
             deleteDialog.show()
         }
-
+        binding.notifyLy.setOnClickListener {
+            val intent = Intent(this, NotificationActivity::class.java)
+            intent.putExtra(EXTRA_THREAD_ID, threadId)
+            intent.putExtra(CommanConstants.NUMBER, numbersList)
+            startActivity(intent)
+        }
     }
 
     private fun checkIfArchived(threadId: Long) {

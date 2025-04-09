@@ -11,7 +11,6 @@
         android:id="@+id/Toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -45,9 +44,9 @@
                 android:layout_marginEnd="8dp"
                 android:fontFamily="@font/product_sans_medium"
                 android:maxLines="1"
-                android:textDirection="locale"
                 android:text=""
                 android:textColor="@color/textcolor"
+                android:textDirection="locale"
                 android:textFontWeight="500"
                 android:textSize="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -94,7 +93,7 @@
 
             <ImageView
                 android:id="@+id/icClose"
-                android:layout_width="wrap_content"
+                android:layout_width="24dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:adjustViewBounds="true"
@@ -126,7 +125,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
                 android:adjustViewBounds="true"
-                android:src="@drawable/ic_star"
+                android:src="@drawable/ic_unstar"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnCopy"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -146,13 +145,25 @@
                 android:id="@+id/btnDelete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
+                android:layout_marginEnd="8dp"
                 android:adjustViewBounds="true"
                 android:src="@drawable/ic_delete"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnMore"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="@color/colorPrimary" />
+
+            <ImageView
+                android:id="@+id/btnMore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="15dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_more"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -320,6 +331,7 @@
         android:id="@+id/bottomLy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
@@ -338,8 +350,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:padding="3dp"
-                android:src="@drawable/ic_send" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_add_disable" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -360,11 +372,11 @@
                         android:id="@+id/selectedTimeTextView"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:lineSpacingExtra="2dp"
+                        android:paddingStart="15dp"
+                        android:paddingTop="10dp"
                         android:text=""
                         android:textSize="15dp"
-                        android:paddingTop="10dp"
-                        android:paddingStart="15dp"
-                        android:lineSpacingExtra="2dp"
                         app:layout_constraintEnd_toStartOf="@+id/close"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -378,17 +390,17 @@
                         android:layout_marginEnd="12dp"
                         android:adjustViewBounds="true"
                         android:padding="3dp"
-                        app:layout_constraintTop_toTopOf="parent"
+                        android:src="@drawable/ic_close"
                         app:layout_constraintEnd_toEndOf="parent"
-                        android:src="@drawable/ic_close" />
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height=".5dp"
-                    android:background="@color/subtext_color"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginHorizontal="10dp"
-                    app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height=".5dp"
+                        android:layout_marginHorizontal="10dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/subtext_color"
+                        app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -401,7 +413,7 @@
                     android:background="@null"
                     android:fontFamily="@font/product_sans_regular"
                     android:hint="@string/write_a_message"
-                    android:inputType="text"
+                    android:imeOptions="normal"
                     android:paddingHorizontal="15dp"
                     android:paddingVertical="17dp"
                     android:textColor="@color/gray_txtcolor"
@@ -414,8 +426,81 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:padding="3dp"
-                android:src="@drawable/ic_send" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_send_disable" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/addLyouts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:visibility="gone"
+            android:layout_marginTop="5dp"
+            android:layout_marginHorizontal="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/msgSendLayout">
+
+            <LinearLayout
+                android:id="@+id/lySchedule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:background="@drawable/send_btm_bg"
+                android:layout_margin="8dp"
+                android:padding="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:padding="3dp"
+                    android:src="@drawable/img_schedule"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/schedule_sms"
+                    android:textColor="@color/textcolor"
+                    android:textSize="15dp"
+                    android:textFontWeight="400"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/product_sans_regular"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/lyShareContact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:background="@drawable/send_btm_bg"
+                android:layout_margin="8dp"
+                android:padding="15dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:padding="3dp"
+                    android:src="@drawable/img_share_contact"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/share_contact"
+                    android:textColor="@color/textcolor"
+                    android:textSize="15dp"
+                    android:textFontWeight="400"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/product_sans_regular"/>
+
+            </LinearLayout>
+
         </LinearLayout>
 
         <LinearLayout

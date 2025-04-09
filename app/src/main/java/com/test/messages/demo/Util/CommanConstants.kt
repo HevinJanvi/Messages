@@ -45,6 +45,14 @@ object CommanConstants {
     const val ISDELETED = "isDeletedThread"
     const val GROUP_NAME = "GROUP_NAME"
     const val GROUP_MEMBERS = "GROUP_MEMBERS"
+    const val SOURCE = "source"
+    const val FORWARD = "forward"
+    const val FORWARDMSGS = "forwardedMessage"
+    const val SHARE = "is_share"
+    const val SHARECONTACT = "share_contact"
+    const val SHARECONTACTNUMBER = "shared_contact_number"
+    const val SHARECONTACTNAME = "shared_contact_name"
+
 
 
 

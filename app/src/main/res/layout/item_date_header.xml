@@ -81,7 +81,7 @@
         android:id="@+id/starIcon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_star"
+        android:src="@drawable/ic_unstar"
         android:visibility="gone"
         android:layout_marginStart="5dp"
         android:layout_alignParentEnd="true"

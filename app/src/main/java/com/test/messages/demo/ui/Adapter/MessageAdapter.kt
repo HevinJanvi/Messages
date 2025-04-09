@@ -140,12 +140,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
 
         } else {
             holder.messageBody.text = message.body
-            holder.messageBody.setTextColor(
-                ContextCompat.getColor(
-                    holder.itemView.context,
-                    R.color.textcolor
-                )
-            )
         }
 
 

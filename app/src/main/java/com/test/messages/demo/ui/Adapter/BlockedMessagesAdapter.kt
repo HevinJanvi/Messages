@@ -49,7 +49,7 @@ class BlockedMessagesAdapter(
         } else {
             holder.senderName.setTypeface(null, Typeface.NORMAL)
             holder.blueDot.visibility = View.GONE
-            holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.subtext_color))
+            holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
 
         if (selectedMessages.contains(message)) {

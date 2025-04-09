@@ -189,7 +189,7 @@ class ArchivedActivity : BaseActivity() {
         }
 
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this) {
+            val deleteDialog = DeleteDialog(this,false) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
                     deleteMessages(selectedThreadIds)

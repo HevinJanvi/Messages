@@ -184,10 +184,10 @@ class ConversationFragment : Fragment() {
                     }
                     .filter { filterByCategory(it, selectedCategory) }
                     .sortedByDescending { it.isPinned }
-                Log.d(
+                /*Log.d(
                     "ConversationFragment",
                     "Messages After Filtering (${selectedCategory}): ${filteredMessages.size}"
-                )
+                )*/
 
                 val unreadMessagesCount = filteredMessages.count { !it.isRead }
 
@@ -208,8 +208,8 @@ class ConversationFragment : Fragment() {
             startActivity(intent)
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val threadIds = fetchAllThreadIds()
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+        val threadIds = fetchAllThreadIds()
             viewModel.insertMissingThreadIds(threadIds)
         }
         return binding.getRoot();

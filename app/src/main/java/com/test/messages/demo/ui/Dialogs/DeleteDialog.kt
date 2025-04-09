@@ -13,6 +13,7 @@ import com.test.messages.demo.Util.ViewUtils.blinkThen
 
 class DeleteDialog(
     context: Context,
+   private val fromBin:Boolean,
     private val onDeleteConfirmed: () -> Unit
 ) : Dialog(context) {
 
@@ -28,6 +29,11 @@ class DeleteDialog(
         val btnCancel = findViewById<TextView>(R.id.btnCancel)
         val btnConfirmDelete = findViewById<TextView>(R.id.btnConfirmDelete)
 
+        if(fromBin){
+            btnConfirmDelete.setText(context.getString(R.string.delete))
+        }else{
+            btnConfirmDelete.setText(context.getString(R.string.move_to_recycle_bin))
+        }
         btnCancel.setOnClickListener {
             it.blinkThen {
                 dismiss()

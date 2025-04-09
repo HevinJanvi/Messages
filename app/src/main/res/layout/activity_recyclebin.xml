@@ -80,7 +80,7 @@
                 android:id="@+id/txtSelectedCount"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="13dp"
                 android:layout_marginEnd="5dp"
                 android:fontFamily="@font/product_sans_medium"
                 android:gravity="start"
@@ -96,13 +96,31 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <TextView
+        android:id="@+id/Note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/product_sans_regular"
+        android:gravity="start"
+        android:lineSpacingExtra="5dp"
+        android:text="@string/recyclebin_note"
+        android:textColor="@color/gray_txtcolor"
+        android:textSize="14dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbarLyBin" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycleBinRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="15dp"
         app:layout_constraintBottom_toTopOf="@+id/selectMenuBin"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarLyBin" />
+        app:layout_constraintTop_toBottomOf="@+id/Note" />
 
     <LinearLayout
         android:id="@+id/selectMenuBin"

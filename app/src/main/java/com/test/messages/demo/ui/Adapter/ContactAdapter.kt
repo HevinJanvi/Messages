@@ -157,6 +157,8 @@ class ContactAdapter(
                     ColorStateList.valueOf(TimeUtils.getRandomColor(contact.name))
             }
             itemView.setOnClickListener { onContactSelected(contact) }
+
+
         }
     }
 
@@ -167,18 +169,6 @@ class ContactAdapter(
             sectionTitle.text = section
         }
     }
-
-    /*override fun getSections(): Array<String> {
-        return sections.toTypedArray()
-    }
-
-    override fun getPositionForSection(sectionIndex: Int): Int {
-        return sectionPositions.getOrNull(sectionIndex) ?: 0
-    }
-
-    override fun getSectionForPosition(position: Int): Int {
-        return sectionPositions.indexOfFirst { it >= position }
-    }*/
 
     override fun getTextToShowInBubble(pos: Int): String {
         if (contacts.size > pos) {

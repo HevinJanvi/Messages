@@ -119,7 +119,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
 
         binding.icDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this) {
+            val deleteDialog = DeleteDialog(this,false) {
                 val fragment =
                     supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
                 fragment?.deleteSelectedMessages()

@@ -253,5 +253,23 @@
     <string name="copy_otp">Copy OTP</string>
     <string name="move_to_recycle_bin">Move to recycle bin</string>
     <string name="move_this_conversation_to_the_rrecycle_bin">Move this conversation to the Rrecycle bin?</string>
+    <string name="share">Share</string>
+    <string name="forward">Forward</string>
+    <string name="no_messages_selected_to_share">No messages selected to share</string>
+    <string name="message_details">Message Details</string>
+    <string name="type">Type </string>
+    <string name="to">To</string>
+    <string name="sent">Sent</string>
+    <string name="unknown">Unknown</string>
+    <string name="web_type">Web type</string>
+    <string name="phone_type">phone type</string>
+    <string name="sms_received">SMS (Received)</string>
+    <string name="sms_sent">SMS (Sent)</string>
+    <string name="sms_outbox">SMS (Outbox)</string>
+    <string name="sms_failed">SMS (Failed)</string>
+    <string name="sms_queued">SMS (Queued)</string>
+    <string name="schedule_sms">Schedule SMS</string>
+    <string name="share_contact">Share Contact</string>
+    <string name="recyclebin_note">Messages in the recycle bin will be permanently\ndeleted after 30 Days.</string>
 
 </resources>

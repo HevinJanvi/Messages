@@ -94,7 +94,7 @@
                 android:id="@+id/txtSelectedCount"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="13dp"
                 android:layout_marginEnd="5dp"
                 android:fontFamily="@font/product_sans_medium"
                 android:gravity="start"
