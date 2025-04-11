@@ -10,7 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBarConv"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="52dp"
         android:animateLayoutChanges="true"
         android:orientation="vertical"
         android:visibility="visible"
@@ -20,12 +20,12 @@
 
         <ImageView
             android:id="@+id/icBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="7dp"
             android:adjustViewBounds="true"
-            android:padding="1dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:background="@drawable/ripple_effect_round"
             android:src="@drawable/ic_back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -35,14 +35,14 @@
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="7dp"
             android:layout_marginEnd="10dp"
             android:fontFamily="@font/product_sans_medium"
             android:gravity="start"
             android:text="@string/new_conversation"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
-            android:textSize="19dp"
+            android:textSize="19sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/icBack"
             app:layout_constraintTop_toTopOf="parent" />
@@ -54,7 +54,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fillViewport="true"
-        android:padding="8dp"
+        android:paddingVertical="8dp"
         android:scrollbars="none"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/toolBarConv">
@@ -87,7 +87,7 @@
             android:gravity="top"
             android:hint="@string/recipient"
             android:textFontWeight="400"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:paddingHorizontal="3dp"
             android:background="@null"
             android:fontFamily="@font/product_sans_regular"
@@ -139,18 +139,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="4dp"
         android:gravity="center_vertical"
         android:layout_marginHorizontal="5dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-
         <ImageView
             android:id="@+id/buttonAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:adjustViewBounds="true"
             android:alpha="0.5"
+            android:visibility="gone"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_add_disable" />
 
@@ -160,21 +161,23 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textFontWeight="400"
-            android:textSize="15dp"
+            android:textSize="15sp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
-            android:textColor="@color/gray_txtcolor"
+            android:textColor="@color/textcolor"
             android:fontFamily="@font/product_sans_regular"
             android:hint="@string/write_a_message"
             android:paddingVertical="17dp"
+            android:textColorHint="@color/gray_txtcolor"
             android:paddingHorizontal="15dp"
             android:background="@drawable/send_msg_bg"
             android:inputType="text" />
 
         <ImageView
             android:id="@+id/btnSendMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:padding="6dp"
             android:adjustViewBounds="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_send_disable"/>

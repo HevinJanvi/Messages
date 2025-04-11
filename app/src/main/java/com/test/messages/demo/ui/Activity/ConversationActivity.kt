@@ -434,7 +434,11 @@ class ConversationActivity : BaseActivity() {
 
 
     private fun setupRecyclerView() {
-        adapter = ConversationAdapter(this) { selectedCount ->
+
+        val contactName = viewModel.getContactName(this@ConversationActivity,name)
+        val isContactSaved = contactName != number
+
+        adapter = ConversationAdapter(this,isContactSaved) { selectedCount ->
             updateUI(selectedCount)
             adapter.setSearchQuery(highlightQuery)
         }
@@ -728,7 +732,8 @@ class ConversationActivity : BaseActivity() {
                     body = message.body,
                     type = message.type,
                     read = message.read,
-                    subscriptionId = message.subscriptionId
+                    subscriptionId = message.subscriptionId,
+                    deletedTime = System.currentTimeMillis()
                 )
 
                 db.insertMessage(deletedMessage)
@@ -898,8 +903,7 @@ class ConversationActivity : BaseActivity() {
         val currentMinute = calendar.get(Calendar.MINUTE)
 
         val datePickerDialog = DatePickerDialog(
-            this,
-            R.style.CustomDatePickerDialog,
+            this@ConversationActivity,R.style.CustomDatePicker,
             { _, year, month, dayOfMonth ->
                 val selectedDate = Calendar.getInstance().apply {
                     set(Calendar.YEAR, year)
@@ -908,8 +912,8 @@ class ConversationActivity : BaseActivity() {
                 }
 
                 val timePickerDialog = TimePickerDialog(
-                    this,
-                    R.style.CustomTimePickerDialog,
+                    this,R.style.CustomDatePicker,
+
                     { _, hourOfDay, minute ->
                         val selectedCalendar = Calendar.getInstance().apply {
                             set(Calendar.YEAR, year)

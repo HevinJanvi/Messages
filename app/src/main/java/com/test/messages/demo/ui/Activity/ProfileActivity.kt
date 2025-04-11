@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
+import android.provider.Telephony
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -36,6 +37,8 @@ import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.ViewUtils.isServiceNumber
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -160,7 +163,7 @@ class ProfileActivity : BaseActivity() {
         }
         binding.deleteLy.setOnClickListener {
             val deleteDialog = DeleteDialog(this,false) {
-                deleteMessage()
+                deleteMessagesForCurrentThread(threadId)
             }
             deleteDialog.show()
         }
@@ -292,21 +295,85 @@ class ProfileActivity : BaseActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    fun deleteMessage() {
-        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+    fun deleteMessagesForCurrentThread(threadId: Long) {
+        val contentResolver = contentResolver
+        val db = AppDatabase.getDatabase(this).recycleBinDao()
+
         Thread {
             try {
-                val uri = Uri.parse("content://sms/conversations/$threadId")
-                val deletedRows = contentResolver.delete(uri, null, null)
-                if (deletedRows > 0) {
-                    updatedList.removeAll { it.threadId == threadId }
-                    refreshListStatus()
+                val deletedMessages = mutableListOf<DeletedMessage>()
+                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>() // To prevent duplicates
+
+                val cursor = contentResolver.query(
+                    Telephony.Sms.CONTENT_URI,
+                    null,
+                    "thread_id = ?",
+                    arrayOf(threadId.toString()),
+                    Telephony.Sms.DEFAULT_SORT_ORDER
+                )
+
+                cursor?.use {
+                    val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                    val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                    val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                    val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                    val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                    val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+                    val messageIdIndex = it.getColumnIndex(Telephony.Sms._ID)
+
+                    while (it.moveToNext()) {
+                        val body = it.getString(bodyIndex) ?: ""
+                        val date = it.getLong(dateIndex)
+                        val key = Pair(body, date)
+
+                        if (existingBodyDatePairs.contains(key)) continue
+                        existingBodyDatePairs.add(key)
+
+                        val deletedMessage = DeletedMessage(
+                            messageId = it.getLong(messageIdIndex),
+                            threadId = threadId,
+                            address = it.getString(addressIndex) ?: "",
+                            date = date,
+                            body = body,
+                            type = it.getInt(typeIndex),
+                            read = it.getInt(readIndex) == 1,
+                            subscriptionId = it.getInt(subIdIndex),
+                            deletedTime = System.currentTimeMillis()
+                        )
+
+                        deletedMessages.add(deletedMessage)
+                    }
                 }
+                val uri = Uri.parse("content://sms/conversations/$threadId")
+                contentResolver.delete(uri, null, null)
+                db.insertMessages(deletedMessages)
+                Handler(Looper.getMainLooper()).post {
+                    finish()
+                }
+
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }.start()
     }
 
+
+    /* @RequiresApi(Build.VERSION_CODES.Q)
+     fun deleteMessage() {
+         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+         Thread {
+             try {
+                 val uri = Uri.parse("content://sms/conversations/$threadId")
+                 val deletedRows = contentResolver.delete(uri, null, null)
+                 if (deletedRows > 0) {
+                     updatedList.removeAll { it.threadId == threadId }
+                     refreshListStatus()
+                 }
+             } catch (e: Exception) {
+             }
+         }.start()
+     }
+ */
 
     private fun disableLy() {
         binding.icNoti.isEnabled = false

@@ -17,7 +17,7 @@
         android:text="@string/short_codes_are_local"
         android:textColor="@color/gray_txtcolor"
         android:textFontWeight="400"
-        android:textSize="14dp" />
+        android:textSize="14sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
         android:text="@string/you_can_reply"
         android:textColor="@color/gray_txtcolor"
         android:textFontWeight="400"
-        android:textSize="14dp" />
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/btnOk"
@@ -39,13 +39,14 @@
         android:layout_marginEnd="15dp"
         android:layout_weight="1"
         android:backgroundTint="@color/gray"
+        android:paddingVertical="5dp"
         android:fontFamily="@font/product_sans_medium"
-        android:paddingHorizontal="20dp"
+        android:paddingHorizontal="10dp"
         android:text="@string/ok"
         android:layout_marginTop="20dp"
         android:textColor="@color/colorPrimary"
         android:textFontWeight="500"
-        android:textSize="17dp" />
+        android:textSize="17sp" />
 
 
 </LinearLayout>

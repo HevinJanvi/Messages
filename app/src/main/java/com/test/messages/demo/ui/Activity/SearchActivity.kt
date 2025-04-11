@@ -136,7 +136,7 @@ class SearchActivity : BaseActivity() {
         rootView.getWindowVisibleDisplayFrame(rect)
         val screenHeight = rootView.height
         val keypadHeight = screenHeight - rect.bottom
-        return keypadHeight > screenHeight * 0.15  // Keyboard is open if height > 15% of screen
+        return keypadHeight > screenHeight * 0.15
     }
 
     override fun onBackPressed() {

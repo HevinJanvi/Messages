@@ -702,7 +702,8 @@ class ConversationFragment : Fragment() {
                                 body = body,
                                 type = it.getInt(typeIndex),
                                 read = it.getInt(readIndex) == 1,
-                                subscriptionId = it.getInt(subIdIndex)
+                                subscriptionId = it.getInt(subIdIndex),
+                                deletedTime = System.currentTimeMillis()
                             )
 
                             deletedMessages.add(deletedMessage)

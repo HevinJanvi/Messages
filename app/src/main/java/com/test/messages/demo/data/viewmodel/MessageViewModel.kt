@@ -1,6 +1,7 @@
 package com.test.messages.demo.data.viewmodel
 
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
@@ -346,4 +347,7 @@ class MessageViewModel @Inject constructor(
         }
     }
 
+    fun getContactName(context: Context, phoneNumber: String): String {
+        return repository.getContactName(context,phoneNumber)
+    }
 }

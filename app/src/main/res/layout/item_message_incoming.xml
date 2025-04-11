@@ -23,7 +23,6 @@
             android:text="uuuuuuuuuuuuuu"
             android:textDirection="locale"
             android:textSize="15sp"
-            android:longClickable="true"
             android:lineSpacingExtra="3dp"
             android:textFontWeight="400"
             android:fontFamily="@font/product_sans_regular"

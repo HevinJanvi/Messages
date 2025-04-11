@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.telephony.SmsManager
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.R
@@ -18,11 +19,16 @@ import com.test.messages.demo.ui.Dialogs.ScheduleDialog
 import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SmsSender
+import com.test.messages.demo.data.viewmodel.MessageViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
+@AndroidEntryPoint
 class ScheduleActivity : BaseActivity() {
     private lateinit var binding: ActivityScheduleBinding
     private lateinit var adapter: ScheduledMessageAdapter
+    private val viewModel: MessageViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityScheduleBinding.inflate(layoutInflater)
@@ -67,6 +73,7 @@ class ScheduleActivity : BaseActivity() {
                 Thread {
                     AppDatabase.getDatabase(this).scheduledMessageDao().delete(message)
                     runOnUiThread { loadScheduledMessages() }
+
                 }.start()
             },
             onSendNow = {
@@ -106,6 +113,7 @@ class ScheduleActivity : BaseActivity() {
                         messageUri = messageUri
                     )
                     AppDatabase.getDatabase(this).scheduledMessageDao().delete(it)
+
                 } catch (e: Exception) {
                 }
             }

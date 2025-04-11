@@ -10,7 +10,8 @@
         android:id="@+id/itemContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="15dp"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="12dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <FrameLayout
@@ -68,7 +69,7 @@
             android:textDirection="locale"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
-            android:textSize="17dp"
+            android:textSize="17sp"
             app:layout_constraintEnd_toStartOf="@+id/date"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toTopOf="parent" />
@@ -119,12 +120,10 @@
             android:text="00:00 am"
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
-            android:textSize="13dp"
+            android:textSize="13sp"
             android:layout_marginTop="2dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/lyExtra"
@@ -132,7 +131,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toBottomOf="@id/senderName"
             app:layout_constraintEnd_toStartOf="@+id/blueDot">
@@ -147,7 +146,7 @@
                 android:text="@string/app_name"
                 android:textColor="@color/gray_txtcolor"
                 android:textFontWeight="400"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 android:textDirection="locale"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"

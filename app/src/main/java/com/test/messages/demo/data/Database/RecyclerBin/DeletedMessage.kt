@@ -31,5 +31,7 @@ data class DeletedMessage(
     val read: Boolean,
 
     @ColumnInfo(name = "subscription_id")
-    val subscriptionId: Int
+    val subscriptionId: Int,
+
+    val deletedTime: Long = System.currentTimeMillis()
 )

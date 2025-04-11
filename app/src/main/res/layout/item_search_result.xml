@@ -10,7 +10,8 @@
         android:id="@+id/itemContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="15dp"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="12dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <FrameLayout
@@ -91,7 +92,7 @@
             android:text="00:00 am"
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
-            android:textSize="13dp"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

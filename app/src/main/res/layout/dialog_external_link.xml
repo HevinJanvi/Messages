@@ -39,7 +39,7 @@
             android:text="@string/link_from_people"
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
-            android:textSize="14dp" />
+            android:textSize="14sp" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -74,7 +74,7 @@
                     android:text="@string/continue_with_possible_risk"
                     android:textColor="@color/textcolor"
                     android:textFontWeight="400"
-                    android:textSize="15dp"
+                    android:textSize="15sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -86,7 +86,7 @@
                     android:text="@string/i_understand"
                     android:textColor="@color/gray_txtcolor"
                     android:textFontWeight="400"
-                    android:textSize="14dp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/txtTitl" />
 
@@ -116,7 +116,7 @@
                 android:text="@string/continues"
                 android:textColor="@color/gray_txtcolor"
                 android:textFontWeight="500"
-                android:textSize="17dp" />
+                android:textSize="17sp" />
 
             <TextView
                 android:id="@+id/btnCancel"
@@ -130,7 +130,7 @@
                 android:text="@string/cancel"
                 android:textColor="@color/colorPrimary"
                 android:textFontWeight="500"
-                android:textSize="17dp" />
+                android:textSize="17sp" />
 
         </LinearLayout>
     </LinearLayout>

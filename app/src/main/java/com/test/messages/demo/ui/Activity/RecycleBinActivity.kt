@@ -41,6 +41,7 @@ import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databas
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -106,6 +107,10 @@ class RecycleBinActivity : BaseActivity() {
     private fun loadGroupedMessages() {
         Thread {
             val dao = AppDatabase.getDatabase(this).recycleBinDao()
+            val thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000
+            val cutoffTime = System.currentTimeMillis() - thirtyDaysInMillis
+            dao.deleteMessagesOlderThan(cutoffTime)
+
             val groupedMessages = dao.getGroupedDeletedMessages()
 
             runOnUiThread {
@@ -123,7 +128,7 @@ class RecycleBinActivity : BaseActivity() {
         }.start()
     }
 
-    private fun deleteSelectedMessages() {
+   /* private fun deleteSelectedMessages() {
         if (recycleBinAdapter.selectedMessages.isNotEmpty()) {
             val messagesToDelete = recycleBinAdapter.selectedMessages.toList()
             lifecycleScope.launch(Dispatchers.IO) {
@@ -133,9 +138,119 @@ class RecycleBinActivity : BaseActivity() {
             recycleBinAdapter.clearSelection()
             loadGroupedMessages()
         }
+    }*/
+
+    private fun deleteSelectedMessages() {
+        if (recycleBinAdapter.selectedMessages.isNotEmpty()) {
+            val selectedThreads = recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val dao = AppDatabase.getDatabase(this@RecycleBinActivity).recycleBinDao()
+                selectedThreads.forEach { threadId ->
+                    dao.deleteMessagesByThreadId(threadId)
+                }
+
+                withContext(Dispatchers.Main) {
+                    recycleBinAdapter.clearSelection()
+                    loadGroupedMessages()
+                }
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
+    private fun restoreSelectedMessages() {
+        val contentResolver = contentResolver
+        val db = AppDatabase.getDatabase(this).recycleBinDao()
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        dialog.window?.apply {
+            setGravity(Gravity.BOTTOM)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        dialog.show()
+
+        val startTime = System.currentTimeMillis()
+
+        Thread {
+            try {
+                val restoredThreadMap = mutableMapOf<Long, Pair<String, Long>>()
+                val allMessagesToRestore = mutableListOf<DeletedMessage>()
+
+                // ✅ Fix: Properly gather all selected message threads and their messages
+                val selectedThreadIds = recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
+
+                for (threadId in selectedThreadIds) {
+                    val threadMessages = db.getAllMessagesByThread(threadId)
+                    allMessagesToRestore.addAll(threadMessages)
+                }
+
+                // ✅ Restore messages
+                for (deletedMessage in allMessagesToRestore) {
+                    var threadId = deletedMessage.threadId
+                    if (!isThreadExists(threadId)) {
+                        threadId = getThreadId(deletedMessage.address)
+                    }
+
+                    val values = ContentValues().apply {
+                        put(Telephony.Sms.THREAD_ID, threadId)
+                        put(Telephony.Sms.DATE, deletedMessage.date)
+                        put(Telephony.Sms.BODY, deletedMessage.body)
+                        put(Telephony.Sms.ADDRESS, deletedMessage.address)
+                        put(Telephony.Sms.TYPE, deletedMessage.type)
+                        put(Telephony.Sms.READ, if (deletedMessage.read) 1 else 0)
+                        put(Telephony.Sms.SUBSCRIPTION_ID, deletedMessage.subscriptionId)
+                    }
+
+                    contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
+                    db.deleteMessage(deletedMessage)
+
+                    restoredThreadMap[threadId] = Pair(deletedMessage.body, deletedMessage.date)
+                }
+
+                // Show dialog for a minimum duration
+                val elapsed = System.currentTimeMillis() - startTime
+                val minDisplay = 800L
+                if (elapsed < minDisplay) {
+                    Thread.sleep(minDisplay - elapsed)
+                }
+
+                Handler(Looper.getMainLooper()).post {
+                    dialog.dismiss()
+                    recycleBinAdapter.clearSelection()
+                    loadGroupedMessages()
+                    viewModel.loadMessages()
+
+                    for ((threadId, pair) in restoredThreadMap) {
+                        val (lastMessage, lastTime) = pair
+                        EventBus.getDefault().post(MessageRestoredEvent(threadId, lastMessage, lastTime))
+                    }
+
+//                    Toast.makeText(this, getString(R.string.messages_restored), Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Handler(Looper.getMainLooper()).post {
+                    dialog.dismiss()
+                    Toast.makeText(this, getString(R.string.restore_failed), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+
+
+    /*@RequiresApi(Build.VERSION_CODES.Q)
     private fun restoreSelectedMessages() {
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
@@ -219,7 +334,10 @@ class RecycleBinActivity : BaseActivity() {
                 }
             }
         }.start()
-    }
+    }*/
+
+
+
 
 
     fun getThreadId(address: String): Long {

@@ -75,7 +75,7 @@
         android:textDirection="locale"
         android:textColor="@color/textcolor"
         android:textFontWeight="500"
-        android:textSize="16dp"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageContainer"
         app:layout_constraintTop_toTopOf="parent" />
@@ -91,7 +91,7 @@
         android:text="11344679"
         android:textDirection="locale"
         android:textColor="@color/gray_txtcolor"
-        android:textSize="13dp"
+        android:textSize="13sp"
         app:layout_constraintStart_toEndOf="@+id/imageContainer"
         app:layout_constraintTop_toBottomOf="@id/contactName" />
 </androidx.constraintlayout.widget.ConstraintLayout>

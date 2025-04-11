@@ -9,7 +9,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBarStarred"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="52dp"
         android:orientation="vertical"
         android:visibility="visible"
         android:animateLayoutChanges="true"
@@ -19,12 +19,12 @@
 
         <ImageView
             android:id="@+id/icBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="7dp"
             android:adjustViewBounds="true"
-            android:padding="1dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:background="@drawable/ripple_effect_round"
             android:src="@drawable/ic_back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,13 +34,13 @@
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="7dp"
             android:fontFamily="@font/product_sans_medium"
             android:gravity="start"
             android:text="@string/starred_messages"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
-            android:textSize="19dp"
+            android:textSize="19sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/icBack"
             app:layout_constraintTop_toTopOf="parent" />
@@ -52,10 +52,9 @@
         android:id="@+id/recyclerViewStarred"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolBarStarred"
-        tools:listitem="@layout/item_message" />
+        tools:listitem="@layout/item_message_starred" />
 
     <TextView
         android:id="@+id/emptyList"

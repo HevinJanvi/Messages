@@ -28,11 +28,14 @@ class DeleteDialog(
 
         val btnCancel = findViewById<TextView>(R.id.btnCancel)
         val btnConfirmDelete = findViewById<TextView>(R.id.btnConfirmDelete)
+        val txtDialogMessage = findViewById<TextView>(R.id.txtDialogMessage)
 
         if(fromBin){
             btnConfirmDelete.setText(context.getString(R.string.delete))
+            txtDialogMessage.setText(context.getString(R.string.permanently_delete_conversation))
         }else{
             btnConfirmDelete.setText(context.getString(R.string.move_to_recycle_bin))
+            txtDialogMessage.setText(context.getString(R.string.move_this_conversation_to_the_rrecycle_bin))
         }
         btnCancel.setOnClickListener {
             it.blinkThen {

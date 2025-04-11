@@ -70,7 +70,7 @@
         android:textColor="@color/gray_txtcolor"
         android:textFontWeight="400"
         android:fontFamily="@font/product_sans_regular"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:text=""
         android:layout_marginVertical="5dp"
         android:textStyle="bold"

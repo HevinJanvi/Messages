@@ -19,9 +19,6 @@ interface RecycleBinDao {
     @Query("SELECT * FROM recycle_bin WHERE thread_id = :threadId")
     fun getAllMessagesByThread(threadId: Long): List<DeletedMessage>
 
-//    @Query("SELECT * FROM recycle_bin ORDER BY date DESC")
-//    fun getAllDeletedMessages(): LiveData<List<DeletedMessage>>
-
     @Query("SELECT * FROM recycle_bin")
     fun getAllDeletedMessages(): List<DeletedMessage>
     @Query("DELETE FROM recycle_bin WHERE id = :messageId")
@@ -29,20 +26,8 @@ interface RecycleBinDao {
     @Query("DELETE FROM recycle_bin WHERE message_id = :id")
     fun deleteMessageById(id: Long)
 
-
     @Query("SELECT * FROM recycle_bin WHERE thread_id = :threadId")
     fun getDeletedMessages(threadId: Long): DeletedMessage?
-
-//    @Query("""
-//    SELECT d.* FROM recycle_bin d
-//    INNER JOIN (
-//        SELECT thread_id, MAX(date) as max_date
-//        FROM recycle_bin
-//        GROUP BY thread_id
-//    ) grouped ON d.thread_id = grouped.thread_id AND d.date = grouped.max_date
-//    ORDER BY d.date DESC
-//""")
-//    fun getGroupedDeletedMessages(): List<DeletedMessage>
 
     @Query("""
     SELECT DISTINCT d.* FROM recycle_bin d
@@ -56,6 +41,11 @@ interface RecycleBinDao {
 """)
     fun getGroupedDeletedMessages(): List<DeletedMessage>
 
+    @Query("DELETE FROM recycle_bin WHERE deletedTime < :cutoffTime")
+    fun deleteMessagesOlderThan(cutoffTime: Long)
+
+    @Query("DELETE FROM recycle_bin WHERE thread_id = :threadId")
+    fun deleteMessagesByThreadId(threadId: Long)
 
     @Delete
     fun deleteMessage(deletedMessage: DeletedMessage)

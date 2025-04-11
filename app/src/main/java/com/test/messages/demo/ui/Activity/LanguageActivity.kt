@@ -30,13 +30,14 @@ class LanguageActivity : BaseActivity() {
 
     private val langArray = arrayOf(
         Locale.ENGLISH.toString(),
-        Locale("af").toString(),
         Locale("ar").toString(),
+        Locale("de").toString(),
+        Locale("es").toString(),
+        Locale("fr").toString(),
+        Locale("hi").toString(),
+        Locale("af").toString(),
         Locale("bn").toString(),
         Locale("fil").toString(),
-        Locale("fr").toString(),
-        Locale("de").toString(),
-        Locale("hi").toString(),
         Locale("in").toString(),
         Locale("it").toString(),
         Locale("ja").toString(),
@@ -44,7 +45,6 @@ class LanguageActivity : BaseActivity() {
         Locale("pl").toString(),
         Locale("pt").toString(),
         Locale("ru").toString(),
-        Locale("es").toString(),
         Locale("th").toString(),
         Locale("tr").toString(),
         Locale("uk").toString(),
@@ -53,13 +53,14 @@ class LanguageActivity : BaseActivity() {
     )
     private val langFlag = intArrayOf(
         R.drawable.flag_en,
-        R.drawable.flag_af,
         R.drawable.flag_ar,
+        R.drawable.flag_de,
+        R.drawable.flag_es,
+        R.drawable.flag_fr,
+        R.drawable.flag_hi,
+        R.drawable.flag_af,
         R.drawable.flag_bn,
         R.drawable.flag_fil,
-        R.drawable.flag_fr,
-        R.drawable.flag_de,
-        R.drawable.flag_hi,
         R.drawable.flag_in,
         R.drawable.flag_it,
         R.drawable.flag_ja,
@@ -67,7 +68,6 @@ class LanguageActivity : BaseActivity() {
         R.drawable.flag_pl,
         R.drawable.flag_pt,
         R.drawable.flag_ru,
-        R.drawable.flag_es,
         R.drawable.flag_th,
         R.drawable.flag_tr,
         R.drawable.flag_uk,
@@ -194,87 +194,87 @@ class LanguageActivity : BaseActivity() {
                 val mainText: String
                 when (language) {
                     "en" -> {
-                        mainText = resources.getString(R.string.english)
+                        mainText = resources.getString(R.string.subtext_english)
                     }
 
                     "af" -> {
-                        mainText = resources.getString(R.string.afrikaans)
+                        mainText = resources.getString(R.string.subtext_afrikaans)
                     }
 
                     "ar" -> {
-                        mainText = resources.getString(R.string.arabic)
+                        mainText = resources.getString(R.string.subtext_arabic)
                     }
 
                     "bn" -> {
-                        mainText = resources.getString(R.string.bangla)
+                        mainText = resources.getString(R.string.subtext_bangla)
                     }
 
                     "fil" -> {
-                        mainText = resources.getString(R.string.filipino)
+                        mainText = resources.getString(R.string.subtext_fillipino)
                     }
 
                     "fr" -> {
-                        mainText = resources.getString(R.string.french)
+                        mainText = resources.getString(R.string.subtext_French)
                     }
 
                     "de" -> {
-                        mainText = resources.getString(R.string.german)
+                        mainText = resources.getString(R.string.subtext_German)
                     }
 
                     "hi" -> {
-                        mainText = resources.getString(R.string.hindi)
+                        mainText = resources.getString(R.string.subtext_Indian)
                     }
 
                     "in" -> {
-                        mainText = resources.getString(R.string.indonesian)
+                        mainText = resources.getString(R.string.subtext_Indonesia)
                     }
 
                     "it" -> {
-                        mainText = resources.getString(R.string.italian)
+                        mainText = resources.getString(R.string.subtext_italian)
                     }
 
                     "ja" -> {
-                        mainText = resources.getString(R.string.japanese)
+                        mainText = resources.getString(R.string.subtext_Japanese)
                     }
 
                     "ko" -> {
-                        mainText = resources.getString(R.string.korean)
+                        mainText = resources.getString(R.string.subtext_Korean)
                     }
 
                     "pl" -> {
-                        mainText = resources.getString(R.string.polish)
+                        mainText = resources.getString(R.string.subtext_polish)
                     }
 
                     "pt" -> {
-                        mainText = resources.getString(R.string.portuguese)
+                        mainText = resources.getString(R.string.subtext_portugal)
                     }
 
                     "ru" -> {
-                        mainText = resources.getString(R.string.russian)
+                        mainText = resources.getString(R.string.subtext_Russian)
                     }
 
                     "es" -> {
-                        mainText = resources.getString(R.string.spanish)
+                        mainText = resources.getString(R.string.subtext_Spanish)
                     }
 
                     "th" -> {
-                        mainText = resources.getString(R.string.thai)
+                        mainText = resources.getString(R.string.subtext_thai)
                     }
 
                     "tr" -> {
-                        mainText = resources.getString(R.string.turkish)
+                        mainText = resources.getString(R.string.subtext_turkish)
                     }
 
                     "uk" -> {
-                        mainText = resources.getString(R.string.ukrainian)
+                        mainText = resources.getString(R.string.subtext_ukrainian)
                     }
 
                     "vi" -> {
-                        mainText = resources.getString(R.string.vietnamese)
+                        mainText = resources.getString(R.string.subtext_Vietnamese)
                     }
 
                     "zh" -> {
-                        mainText = resources.getString(R.string.chinese)
+                        mainText = resources.getString(R.string.subtext_chinese)
                     }
 
                     else -> {

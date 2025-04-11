@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/Toolbar"
@@ -16,7 +18,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/actionbar"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="52dp"
             android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -24,12 +26,12 @@
 
             <ImageView
                 android:id="@+id/icBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="7dp"
                 android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="1dp"
+                android:background="@drawable/ripple_effect_round"
+                android:padding="6dp"
                 android:src="@drawable/ic_back"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +42,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="15dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginEnd="8dp"
                 android:fontFamily="@font/product_sans_medium"
                 android:maxLines="1"
@@ -48,7 +50,7 @@
                 android:textColor="@color/textcolor"
                 android:textDirection="locale"
                 android:textFontWeight="500"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnCall"
                 app:layout_constraintStart_toEndOf="@+id/icBack"
@@ -56,11 +58,12 @@
 
             <ImageView
                 android:id="@+id/btnCall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="5dp"
                 android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/ripple_effect_round"
+                android:padding="7dp"
                 android:src="@drawable/ic_call"
                 android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -69,11 +72,12 @@
 
             <ImageView
                 android:id="@+id/btnInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="7dp"
                 android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/ripple_effect_round"
+                android:padding="6dp"
                 android:src="@drawable/ic_info"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -85,7 +89,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/actionSelectItem"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="52dp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -93,12 +97,14 @@
 
             <ImageView
                 android:id="@+id/icClose"
-                android:layout_width="24dp"
+                android:layout_width="40dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
+                android:layout_marginStart="7dp"
+                android:layout_marginTop="4dp"
                 android:adjustViewBounds="true"
-                android:padding="1dp"
+                android:padding="7dp"
                 android:src="@drawable/ic_close"
+                android:background="@drawable/ripple_effect_round"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -113,7 +119,7 @@
                 android:text="@string/app_name"
                 android:textColor="@color/textcolor"
                 android:textFontWeight="500"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnStar"
                 app:layout_constraintStart_toEndOf="@+id/icClose"
@@ -121,10 +127,10 @@
 
             <ImageView
                 android:id="@+id/btnStar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:adjustViewBounds="true"
+                android:padding="6dp"
                 android:src="@drawable/ic_unstar"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnCopy"
@@ -132,10 +138,10 @@
 
             <ImageView
                 android:id="@+id/btnCopy"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:adjustViewBounds="true"
+                android:padding="6dp"
                 android:src="@drawable/ic_copy"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnDelete"
@@ -143,10 +149,10 @@
 
             <ImageView
                 android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:adjustViewBounds="true"
+                android:padding="6dp"
                 android:src="@drawable/ic_delete"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnMore"
@@ -155,11 +161,12 @@
 
             <ImageView
                 android:id="@+id/btnMore"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_marginTop="2dp"
-                android:layout_marginEnd="15dp"
+                android:layout_marginEnd="4dp"
                 android:adjustViewBounds="true"
+                android:padding="6dp"
                 android:src="@drawable/ic_more"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -281,7 +288,8 @@
         android:paddingBottom="8dp"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toTopOf="@+id/secureLy"
-        app:layout_constraintTop_toBottomOf="@+id/blockLy" />
+        app:layout_constraintTop_toBottomOf="@+id/blockLy"
+        tools:listitem="@layout/item_message_incoming" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/secureLy"
@@ -327,11 +335,12 @@
 
     </androidx.cardview.widget.CardView>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/bottomLy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="5dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
@@ -340,24 +349,23 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="8dp"
+            android:paddingVertical="4dp"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/buttonAdd"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="62dp"
+                android:layout_height="62dp"
+                android:padding="6dp"
                 android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/ripple_effect_round"
                 android:src="@drawable/ic_add_disable" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
                 android:layout_weight="1"
                 android:background="@drawable/send_msg_bg"
                 android:orientation="vertical">
@@ -416,17 +424,19 @@
                     android:imeOptions="normal"
                     android:paddingHorizontal="15dp"
                     android:paddingVertical="17dp"
-                    android:textColor="@color/gray_txtcolor"
+                    android:textColor="@color/textcolor"
+                    android:textColorHint="@color/gray_txtcolor"
                     android:textFontWeight="400"
                     android:textSize="15dp" />
             </LinearLayout>
 
             <ImageView
                 android:id="@+id/buttonSend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="62dp"
+                android:layout_height="62dp"
+                android:padding="6dp"
                 android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/ripple_effect_round"
                 android:src="@drawable/ic_send_disable" />
         </LinearLayout>
 
@@ -434,40 +444,40 @@
             android:id="@+id/addLyouts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2"
-            android:visibility="gone"
-            android:layout_marginTop="5dp"
             android:layout_marginHorizontal="5dp"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:weightSum="2"
             app:layout_constraintTop_toBottomOf="@+id/msgSendLayout">
 
             <LinearLayout
                 android:id="@+id/lySchedule"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_margin="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/send_btm_bg"
-                android:layout_margin="8dp"
-                android:padding="15dp"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="15dp">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:padding="3dp"
-                    android:src="@drawable/img_schedule"/>
+                    android:src="@drawable/img_schedule" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/product_sans_regular"
                     android:text="@string/schedule_sms"
                     android:textColor="@color/textcolor"
-                    android:textSize="15dp"
                     android:textFontWeight="400"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/product_sans_regular"/>
+                    android:textSize="15sp" />
 
             </LinearLayout>
 
@@ -475,29 +485,29 @@
                 android:id="@+id/lyShareContact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_margin="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/send_btm_bg"
-                android:layout_margin="8dp"
-                android:padding="15dp"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="15dp">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:padding="3dp"
-                    android:src="@drawable/img_share_contact"/>
+                    android:src="@drawable/img_share_contact" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/product_sans_regular"
                     android:text="@string/share_contact"
                     android:textColor="@color/textcolor"
-                    android:textSize="15dp"
                     android:textFontWeight="400"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/product_sans_regular"/>
+                    android:textSize="15sp" />
 
             </LinearLayout>
 
@@ -537,7 +547,7 @@
         </LinearLayout>
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

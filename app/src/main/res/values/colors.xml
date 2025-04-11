@@ -35,6 +35,6 @@
     <color name="snackbar_bg">#18181A</color>
     <color name="snackbar_text">#FCFCFE</color>
     <color name="serach_highlight_color">#010101</color>
-
+    <color name="default_shadow_color">#88757575</color>
 
 </resources>

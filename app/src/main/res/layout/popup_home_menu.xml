@@ -4,16 +4,14 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <androidx.cardview.widget.CardView
+    <com.test.messages.demo.Util.ShadowLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="1dp"
         android:layoutDirection="locale"
-        android:layout_marginBottom="5dp"
-        android:elevation="5dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="5dp"
-        app:cardBackgroundColor="@color/popup_bg">
+        app:sl_cornerRadius="13dp"
+        app:sl_shadowRadius="3dp"
+        app:sl_shadowColor="#14000000">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,7 +21,8 @@
             android:orientation="vertical"
             android:paddingHorizontal="15dp"
             android:paddingVertical="10dp"
-            android:paddingTop="10dp">
+            android:paddingTop="10dp"
+            android:background="@drawable/popup_bg">
 
             <TextView
                 android:id="@+id/editCategory"
@@ -83,5 +82,5 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+    </com.test.messages.demo.Util.ShadowLayout>
 </RelativeLayout>

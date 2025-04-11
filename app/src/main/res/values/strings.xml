@@ -97,7 +97,7 @@
     <string name="search_messages">Search messages</string>
     <string name="contacts">Contacts</string>
     <string name="your_conversation_will_apper_here">Your conversation will apper here</string>
-    <string name="scheduled_messages">Scheduled Messages</string>
+    <string name="scheduled_messages">Scheduled messages</string>
     <string name="automatically_send">Automatically send a messages, at the exact moment\nyou’d like</string>
     <string name="cannot_select_past_time">Cannot select past time</string>
     <string name="please_enter">Please enter a message and select time</string>
@@ -119,7 +119,7 @@
     <string name="intro_subtxt1">Stay connected with a clean, organized inbox.Chat effortlessly anytime!</string>
     <string name="intro_subtxt2">Schedule texts to send automatically—never forget a message!</string>
     <string name="intro_subtxt3">Easily block spam and unwanted contacts to keep your inbox clean.</string>
-    <string name="select_language">Select Language</string>
+<!--    <string name="select_language">Select language</string>-->
     <string name="flag">flag</string>
     <string name="chinese">Chinese ( Simplified )</string>
     <string name="vietnamese">Vietnamese</string>
@@ -155,27 +155,27 @@
     <string name="permissions_denied">Permissions denied</string>
 
 
-    <string name="subtext_english" translatable="false">(English)</string>
-    <string name="subtext_German" translatable="false">(Deutsch)</string>
-    <string name="subtext_Spanish" translatable="false">(español)</string>
-    <string name="subtext_French" translatable="false">(Français)</string>
-    <string name="subtext_Indian" translatable="false">(हिंदी)</string>
-    <string name="subtext_Indonesia" translatable="false">(bahasa)</string>
-    <string name="subtext_Japanese" translatable="false">(日本語)</string>
-    <string name="subtext_Korean" translatable="false">(한국인)</string>
-    <string name="subtext_portugal" translatable="false">(Português)</string>
-    <string name="subtext_Russian" translatable="false">(Русский)</string>
-    <string name="subtext_Vietnamese" translatable="false">(Tiếng Việt)</string>
-    <string name="subtext_chinese" translatable="false">(中国人)</string>
-    <string name="subtext_afrikaans" translatable="false">(Afrikaans)</string>
-    <string name="subtext_arabic" translatable="false">(عربي)</string>
-    <string name="subtext_bangla" translatable="false">(বাংলা)</string>
-    <string name="subtext_italian" translatable="false">(Italiana)</string>
-    <string name="subtext_polish" translatable="false">(Polski)</string>
-    <string name="subtext_thai" translatable="false">(แบบไทย)</string>
-    <string name="subtext_turkish" translatable="false">(Türkçe)</string>
-    <string name="subtext_fillipino" translatable="false">(Filipino)</string>
-    <string name="subtext_ukrainian" translatable="false">(українська)</string>
+    <string name="subtext_english" translatable="false">English</string>
+    <string name="subtext_German" translatable="false">Deutsch</string>
+    <string name="subtext_Spanish" translatable="false">español</string>
+    <string name="subtext_French" translatable="false">Français</string>
+    <string name="subtext_Indian" translatable="false">हिंदी</string>
+    <string name="subtext_Indonesia" translatable="false">bahasa</string>
+    <string name="subtext_Japanese" translatable="false">日本語</string>
+    <string name="subtext_Korean" translatable="false">한국인</string>
+    <string name="subtext_portugal" translatable="false">Português</string>
+    <string name="subtext_Russian" translatable="false">Русский</string>
+    <string name="subtext_Vietnamese" translatable="false">Tiếng Việt</string>
+    <string name="subtext_chinese" translatable="false">中国人</string>
+    <string name="subtext_afrikaans" translatable="false">Afrikaans</string>
+    <string name="subtext_arabic" translatable="false">عربي</string>
+    <string name="subtext_bangla" translatable="false">বাংলা</string>
+    <string name="subtext_italian" translatable="false">Italiana</string>
+    <string name="subtext_polish" translatable="false">Polski</string>
+    <string name="subtext_thai" translatable="false">แบบไทย</string>
+    <string name="subtext_turkish" translatable="false">Türkçe</string>
+    <string name="subtext_fillipino" translatable="false">Filipino</string>
+    <string name="subtext_ukrainian" translatable="false">українська </string>
     <string name="appearance">Appearance</string>
     <string name="theme_mode">Theme Mode</string>
     <string name="system_mode">System mode</string>
@@ -271,5 +271,10 @@
     <string name="schedule_sms">Schedule SMS</string>
     <string name="share_contact">Share Contact</string>
     <string name="recyclebin_note">Messages in the recycle bin will be permanently\ndeleted after 30 Days.</string>
+    <string name="email_type">Email</string>
+    <string name="map_type">Map</string>
+    <string name="select_language">Select language</string>
+    <string name="permanently_delete_conversation">Permanently delete conversation?</string>
+    <string name="no_data">No data</string>
 
 </resources>

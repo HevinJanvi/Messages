@@ -17,12 +17,13 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.text.style.UnderlineSpan
-import android.text.util.Linkify
 import android.util.Log
-import android.util.Patterns
+import android.view.GestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -35,19 +36,23 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.BetterLinkMovementMethod
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CustomLinkMovementMethod
 import com.test.messages.demo.Util.ViewUtils
-import com.test.messages.demo.data.Model.ConversationItem
-import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
 import com.test.messages.demo.Util.ViewUtils.extractOtp
+import com.test.messages.demo.data.Model.ConversationItem
+import com.test.messages.demo.data.repository.MessageRepository
+import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.regex.Pattern
 
-class ConversationAdapter(private val context: Context,
+
+class ConversationAdapter(
+    private val context: Context,
+    private val isContactSaved: Boolean,
     private val onSelectionChanged: (Int) -> Unit
 ) : ListAdapter<ConversationItem, ConversationAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<ConversationItem>() {
@@ -69,6 +74,7 @@ class ConversationAdapter(private val context: Context,
     private val expandedMessages = mutableSetOf<Long>()
     private var lastMessagePosition: Int? = null
     private var searchQuery: String? = null
+
 
     interface OnMessageRetryListener {
         fun onRetry(message: ConversationItem)
@@ -131,7 +137,7 @@ class ConversationAdapter(private val context: Context,
                 messageBody.visibility = View.VISIBLE
 
                 if (!searchQuery.isNullOrEmpty()) {
-                    messageBody.text = highlightText(message.body, searchQuery!!,itemView.context)
+                    messageBody.text = highlightText(message.body, searchQuery!!, itemView.context)
                 } else {
                     messageBody.text = message.body
                 }
@@ -158,7 +164,8 @@ class ConversationAdapter(private val context: Context,
                         }
 
                         Telephony.Sms.MESSAGE_TYPE_FAILED -> {
-                            messageStatus.text = itemView.context.getString(R.string.failed_to_send_tap)
+                            messageStatus.text =
+                                itemView.context.getString(R.string.failed_to_send_tap)
                             messageStatus.visibility = View.VISIBLE
                             messageStatus.setTextColor(Color.RED)
                             messageStatus.setCompoundDrawablesWithIntrinsicBounds(
@@ -169,14 +176,11 @@ class ConversationAdapter(private val context: Context,
                             )
 
 
-
                             messageStatus.setOnClickListener {
-                                // 🔄 Show sending UI with animation
                                 messageStatus.text = itemView.context.getString(R.string.sending)
                                 messageStatus.setTextColor(Color.GRAY)
                                 messageStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                                 messageStatus.startAnimation(blinkAnimation)
-
                                 retryListener?.onRetry(message)
                             }
                         }
@@ -220,27 +224,26 @@ class ConversationAdapter(private val context: Context,
                     starIcon.visibility = View.GONE
                 }
 
-//                itemView.setOnClickListener {
-//                    if (isMultiSelectionEnabled) {
-//                        toggleSelection(message,1)
-//                    } else {
-//                        toggleTimeVisibility(message)
-//                    }
-//                }
-//                itemView.setOnLongClickListener {
-//                    enableMultiSelection(message)
-//                    true
-//                }
+                /*  messageBody.setOnClickListener {
+                      if (isMultiSelectionEnabled) {
+                          toggleSelection(message,1)
+                      } else {
+                          toggleTimeVisibility(message)
+                      }
+                  }
+                  messageBody.setOnLongClickListener {
+                      Log.d("TAG", "bind:setlongpress ")
+                      enableMultiSelection(message)
+                      true
+                  }*/
+
+
                 messageBody.setOnClickListener {
                     if (isMultiSelectionEnabled) {
-                        toggleSelection(message,1)
+                        toggleSelection(message, 1)
                     } else {
                         toggleTimeVisibility(message)
                     }
-                }
-                messageBody.setOnLongClickListener {
-                    enableMultiSelection(message)
-                    true
                 }
 
                 formatMessageWithLinks(
@@ -252,52 +255,51 @@ class ConversationAdapter(private val context: Context,
                     isOpenPopup = false
                 )
 
-//                formatMessageWithLinks(messageBody,message.type,message,message.body,messageBody.text.toString(),false)
-              /*  val link = message.extractLink()
-                if (link != null) {
-                    val spannable = SpannableString(message.body)
-                    val matcher = Patterns.WEB_URL.matcher(message.body)
+                /*  val link = message.extractLink()
+                  if (link != null) {
+                      val spannable = SpannableString(message.body)
+                      val matcher = Patterns.WEB_URL.matcher(message.body)
 
-                    while (matcher.find()) {
-                        val start = matcher.start()
-                        val end = matcher.end()
-                        val clickableSpan = object : ClickableSpan() {
-                            override fun onClick(widget: View) {
-                                ExternalLinkDialog(itemView.context, link).show()
-                            }
+                      while (matcher.find()) {
+                          val start = matcher.start()
+                          val end = matcher.end()
+                          val clickableSpan = object : ClickableSpan() {
+                              override fun onClick(widget: View) {
+                                  ExternalLinkDialog(itemView.context, link).show()
+                              }
 
-                            override fun updateDrawState(ds: TextPaint) {
-                                super.updateDrawState(ds)
-                                ds.color =
-                                    ContextCompat.getColor(itemView.context, R.color.textcolor)
-                                ds.isUnderlineText = true
-                                val typeface = ResourcesCompat.getFont(
-                                    itemView.context,
-                                    R.font.product_sans_medium
-                                )
-                                ds.typeface = typeface
-                            }
-                        }
-                        spannable.setSpan(
-                            clickableSpan,
-                            start,
-                            end,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        spannable.setSpan(
-                            UnderlineSpan(),
-                            start,
-                            end,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-                    messageBody.text = spannable
-//                    messageBody.movementMethod = LinkMovementMethod.getInstance()
-                    messageBody.movementMethod = CustomLinkMovementMethod()
-                    messageBody.setLongClickable(false)
-                    messageBody.isClickable = true
+                              override fun updateDrawState(ds: TextPaint) {
+                                  super.updateDrawState(ds)
+                                  ds.color =
+                                      ContextCompat.getColor(itemView.context, R.color.textcolor)
+                                  ds.isUnderlineText = true
+                                  val typeface = ResourcesCompat.getFont(
+                                      itemView.context,
+                                      R.font.product_sans_medium
+                                  )
+                                  ds.typeface = typeface
+                              }
+                          }
+                          spannable.setSpan(
+                              clickableSpan,
+                              start,
+                              end,
+                              Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                          )
+                          spannable.setSpan(
+                              UnderlineSpan(),
+                              start,
+                              end,
+                              Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                          )
+                      }
+                      messageBody.text = spannable
+  //                    messageBody.movementMethod = LinkMovementMethod.getInstance()
+                      messageBody.movementMethod = CustomLinkMovementMethod()
+                      messageBody.setLongClickable(false)
+                      messageBody.isClickable = true
 
-                }*/
+                  }*/
 
             }
         }
@@ -306,7 +308,7 @@ class ConversationAdapter(private val context: Context,
         private fun formatMessageWithLinks(
             textView: TextView,
             type: Int,
-            messages: ConversationItem,
+            conversationItem: ConversationItem,
             message: String,
             query: String,
             isOpenPopup: Boolean,
@@ -360,44 +362,53 @@ class ConversationAdapter(private val context: Context,
                                 }
                             }*/
 
-                            ExternalLinkDialog(textView.context, matchedText).show()
+                            if (!isContactSaved && conversationItem.isIncoming()) {
+
+                                ExternalLinkDialog(widget.context, matchedText).show()
+                            } else {
+                                onClick(matchedText)
+                            }
+
+//                            ExternalLinkDialog(textView.context, matchedText).show()
                         }
 
-                        /*override fun updateDrawState(ds: TextPaint) {
+                        override fun updateDrawState(ds: TextPaint) {
                             super.updateDrawState(ds)
-//                            if (messages.isValid) {
-                                ds.color =
-                                    if (isSelected()) sentSelectedTextColor else if (type == 1)
-                                        receiveTextColor else sentTextColor
-                                ds.isUnderlineText = true
-//                            }
+                            ds.color =
+                                ContextCompat.getColor(itemView.context, R.color.textcolor)
+                            ds.isUnderlineText = true
+                            val typeface = ResourcesCompat.getFont(
+                                itemView.context,
+                                R.font.product_sans_medium
+                            )
+                            ds.typeface = typeface
+                        }
 
-                        }*/
                     }, matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
             }
 
-          /*  applySpan(
+            applySpan(
                 emailPattern,
                 "Email",
-                getString(R.string.email_type),
+                context.getString(R.string.email_type),
             ) { email ->
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
-                baseActivity.startActivity(intent)
+                context.startActivity(intent)
             }
 
             applySpan(
                 mapPattern,
                 "Map",
-                baseActivity.getString(R.string.map_type),
+                context.getString(R.string.map_type),
             ) { address ->
                 val uri = Uri.parse("geo:0,0?q=${Uri.encode(address)}")
                 val intent = Intent(Intent.ACTION_VIEW, uri)
                 intent.setPackage("com.google.android.apps.maps")
-                baseActivity.startActivity(intent)
-            }*/
+                context.startActivity(intent)
+            }
 
-           /* applySpan(
+            applySpan(
                 urlPattern,
                 "Website",
                 context.getString(R.string.web_type),
@@ -424,39 +435,35 @@ class ConversationAdapter(private val context: Context,
                 val otpCode = otpMatcher.group(3) ?: otpMatcher.group(4)
                 val startIndex =
                     if (otpMatcher.group(3) != null) otpMatcher.start(3) else otpMatcher.start(4)
-                val endIndex = if (otpMatcher.group(3) != null) otpMatcher.end(3) else otpMatcher.end(4)
+                val endIndex =
+                    if (otpMatcher.group(3) != null) otpMatcher.end(3) else otpMatcher.end(4)
 
                 spannableString.setSpan(object : ClickableSpan() {
                     override fun onClick(widget: View) {
-                        *//*if (actionMode == null) {
-                            otpCode?.let {
-
-                                context.baseActivity.openMessageDialog(
-                                    "OTP",
-                                    baseActivity.getString(R.string.OTP_type),
-                                    it
-                                ) { copy ->
-                                    when (copy) {
-                                        1 -> baseActivity.copyToClipboard(it, 1)
-                                    }
-                                }
-                            }
-                        }*//*
+                        otpCode?.let {
+                            copyToClipboard(it)
+                        }
                     }
 
-//                    override fun updateDrawState(ds: TextPaint) {
-//                        super.updateDrawState(ds)
-//                        if (messages.isValid) {
-//                            ds.color =
-//                                if (isSelected(messages.id)) sentSelectedTextColor else if (type == 1) receiveTextColor else sentTextColor
-//                            ds.isUnderlineText = true
-//                        }
-//                    }
+                    override fun updateDrawState(ds: TextPaint) {
+                        super.updateDrawState(ds)
+                        ds.color =
+                            ContextCompat.getColor(itemView.context, R.color.textcolor)
+                        ds.isUnderlineText = false
+                        val typeface = ResourcesCompat.getFont(
+                            itemView.context,
+                            R.font.product_sans_medium
+                        )
+                        ds.typeface = typeface
+                    }
+
+
                 }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
-*/
             textView.text = spannableString
-            textView.movementMethod = CustomLinkMovementMethod()
+            textView.movementMethod = CustomLinkMovementMethod {
+                enableMultiSelection(conversationItem)
+            }
         }
 
         private fun copyToClipboard(otp: String) {
@@ -502,7 +509,7 @@ class ConversationAdapter(private val context: Context,
 
     private fun enableMultiSelection(message: ConversationItem) {
         isMultiSelectionEnabled = true
-        toggleSelection(message,2)
+        toggleSelection(message, 2)
     }
 
     fun getPositionOfMessage(messageItem: ConversationItem): Int {
@@ -527,7 +534,7 @@ class ConversationAdapter(private val context: Context,
         notifyDataSetChanged()
     }
 
-    private fun toggleSelection(message: ConversationItem,i:Int) {
+    private fun toggleSelection(message: ConversationItem, i: Int) {
         Log.d("TAG", "toggleSelection: $i")
         if (selectedItems.contains(message)) {
             selectedItems.remove(message)
@@ -559,24 +566,41 @@ class ConversationAdapter(private val context: Context,
         notifyDataSetChanged()
     }
 
-    private fun highlightText(fullText: String, searchText: String, context: Context): SpannableString {
+    private fun highlightText(
+        fullText: String,
+        searchText: String,
+        context: Context
+    ): SpannableString {
         val spannable = SpannableString(fullText)
         if (searchText.isNotEmpty()) {
-            val start = fullText.lowercase(Locale.getDefault()).indexOf(searchText.lowercase(Locale.getDefault()))
+            val start = fullText.lowercase(Locale.getDefault())
+                .indexOf(searchText.lowercase(Locale.getDefault()))
             if (start >= 0) {
                 val end = start + searchText.length
                 val highlightColor = ContextCompat.getColor(context, R.color.yellow)
                 val textColor = ContextCompat.getColor(context, R.color.serach_highlight_color)
-                spannable.setSpan(BackgroundColorSpan(highlightColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannable.setSpan(ForegroundColorSpan(textColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(
+                    BackgroundColorSpan(highlightColor),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.setSpan(
+                    ForegroundColorSpan(textColor),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
         }
         return spannable
     }
-
-
-
 
 
 }

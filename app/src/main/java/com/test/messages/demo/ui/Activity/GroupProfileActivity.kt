@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Telephony
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +28,8 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.UpdateGroupNameEvent
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,16 +74,10 @@ class GroupProfileActivity : BaseActivity() {
             onBackPressed()
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,false) {
-                deleteMessage()
+            val deleteDialog = DeleteDialog(this, false) {
+                deleteMessagesForCurrentThread(threadId)
             }
             deleteDialog.show()
-        }
-        binding.notifyLy.setOnClickListener {
-            val intent = Intent(this, NotificationActivity::class.java)
-            intent.putExtra(EXTRA_THREAD_ID, threadId)
-            intent.putExtra(CommanConstants.NUMBER, numbersList)
-            startActivity(intent)
         }
     }
 
@@ -111,6 +109,68 @@ class GroupProfileActivity : BaseActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
+    fun deleteMessagesForCurrentThread(threadId: Long) {
+        val contentResolver = contentResolver
+        val db = AppDatabase.getDatabase(this).recycleBinDao()
+
+        Thread {
+            try {
+                val deletedMessages = mutableListOf<DeletedMessage>()
+                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>() // To prevent duplicates
+
+                val cursor = contentResolver.query(
+                    Telephony.Sms.CONTENT_URI,
+                    null,
+                    "thread_id = ?",
+                    arrayOf(threadId.toString()),
+                    Telephony.Sms.DEFAULT_SORT_ORDER
+                )
+
+                cursor?.use {
+                    val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                    val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                    val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                    val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                    val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                    val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+                    val messageIdIndex = it.getColumnIndex(Telephony.Sms._ID)
+
+                    while (it.moveToNext()) {
+                        val body = it.getString(bodyIndex) ?: ""
+                        val date = it.getLong(dateIndex)
+                        val key = Pair(body, date)
+
+                        if (existingBodyDatePairs.contains(key)) continue
+                        existingBodyDatePairs.add(key)
+
+                        val deletedMessage = DeletedMessage(
+                            messageId = it.getLong(messageIdIndex),
+                            threadId = threadId,
+                            address = it.getString(addressIndex) ?: "",
+                            date = date,
+                            body = body,
+                            type = it.getInt(typeIndex),
+                            read = it.getInt(readIndex) == 1,
+                            subscriptionId = it.getInt(subIdIndex),
+                            deletedTime = System.currentTimeMillis()
+                        )
+
+                        deletedMessages.add(deletedMessage)
+                    }
+                }
+                val uri = Uri.parse("content://sms/conversations/$threadId")
+                contentResolver.delete(uri, null, null)
+                db.insertMessages(deletedMessages)
+                Handler(Looper.getMainLooper()).post {
+                    finish()
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+   /* @RequiresApi(Build.VERSION_CODES.Q)
     fun deleteMessage() {
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
         Thread {
@@ -125,7 +185,7 @@ class GroupProfileActivity : BaseActivity() {
             }
         }.start()
     }
-
+*/
     private fun refreshListStatus() {
         Handler(Looper.getMainLooper()).postDelayed({
             val intent = Intent(this, MainActivity::class.java)
@@ -155,9 +215,11 @@ class GroupProfileActivity : BaseActivity() {
 
     private fun loadGroupName(threadId: Long) {
         val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val groupName = sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", GROUP_NAME_DEFAULT)
+        val groupName =
+            sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", GROUP_NAME_DEFAULT)
         binding.textGroupName.text = groupName
     }
+
     override fun onResume() {
         super.onResume()
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
