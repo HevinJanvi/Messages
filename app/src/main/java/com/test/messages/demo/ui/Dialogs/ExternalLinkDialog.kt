@@ -10,6 +10,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ViewUtils.blinkThen
@@ -58,10 +59,16 @@ class ExternalLinkDialog(
             it.blinkThen {dismiss() }}
         btnContinue.setOnClickListener {
             it.blinkThen {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                val fixedLink = if (link.startsWith("http://") || link.startsWith("https://")) {
+                    link
+                } else {
+                    "http://$link"
+                }
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(fixedLink))
                 context.startActivity(intent)
                 dismiss()
             }
         }
+
     }
 }

@@ -32,13 +32,22 @@ object CommanConstants {
     const val ACTION_LARGE = 2
     const val ACTION_EXTRALARGE = 3
 
-    //intent keys
+    const val NOTIFICATION_CHANNEL = "sms_messenger"
 
+
+    //intent keys
+    const val MARK_AS_READ =  "mark_as_read"
+    const val REPLY =  "reply"
+
+    const val IS_MMS = "IS_MMS"
+    const val MESSAGE_ID = "MESSAGE_ID"
     const val EXTRA_THREAD_ID = "EXTRA_THREAD_ID"
     const val NUMBER = "NUMBER"
     const val NAME = "NAME"
     const val PROFILEURL = "ProfileUrl"
     const val FROMBLOCK = "fromBlock"
+    const val FROMARCHIVE= "fromArchive"
+    const val FROMSEARCH= "fromSearch"
     const val QUERY = "QUERY"
     const val ISSCHEDULED = "isScheduled"
     const val ISGROUP = "isGroup"
@@ -52,8 +61,16 @@ object CommanConstants {
     const val SHARECONTACT = "share_contact"
     const val SHARECONTACTNUMBER = "shared_contact_number"
     const val SHARECONTACTNAME = "shared_contact_name"
+    const val DROPMSG = "drop_messages"
+    const val THEMEMODE = "dark_mode"
+    const val LAUNCHFROM = "launched_from"
+    const val SHOW_CATEGORIES = "show_categories"
+    const val CATEGORY_ORDER = "category_order"
 
-
+    // lock screen visibility constants
+    const val LOCK_SCREEN_SENDER_MESSAGE = 1
+    const val LOCK_SCREEN_SENDER = 2
+    const val LOCK_SCREEN_NOTHING = 3
 
 
 }

@@ -13,7 +13,7 @@
     <string name="settings">Settings</string>
     <string name="selected">Selected</string>
     <string name="delete">Delete</string>
-    <string name="recycle_bin">Recycle Bin</string>
+    <string name="recycle_bin">Recycle bin</string>
     <string name="restor">Restore</string>
     <string name="unarchived">Unarchived</string>
     <string name="block_amp_spam"><![CDATA[Block & Spam]]></string>
@@ -98,7 +98,7 @@
     <string name="contacts">Contacts</string>
     <string name="your_conversation_will_apper_here">Your conversation will apper here</string>
     <string name="scheduled_messages">Scheduled messages</string>
-    <string name="automatically_send">Automatically send a messages, at the exact moment\nyou’d like</string>
+    <string name="automatically_send">Automatically send a messages, at the exact moment you’d like</string>
     <string name="cannot_select_past_time">Cannot select past time</string>
     <string name="please_enter">Please enter a message and select time</string>
     <string name="message_scheduled">Message Scheduled!</string>
@@ -177,18 +177,14 @@
     <string name="subtext_fillipino" translatable="false">Filipino</string>
     <string name="subtext_ukrainian" translatable="false">українська </string>
     <string name="appearance">Appearance</string>
-    <string name="theme_mode">Theme Mode</string>
     <string name="system_mode">System mode</string>
-    <string name="app_languages">App Languages</string>
-    <string name="conversation_categories">Conversation Categories</string>
-    <string name="call_end_screen">Call End Screen</string>
+
     <string name="font_size">Font size</string>
     <string name="normal">Normal</string>
     <string name="swipe_actions">Swipe actions</string>
     <string name="general">General</string>
     <string name="notification">Notification</string>
     <string name="privacy_plicy">Privacy Plicy</string>
-    <string name="rate_on_google_play">Rate on Google Play</string>
     <string name="share_app">Share App</string>
     <string name="about_messages">About Messages</string>
     <string name="light">Light</string>
@@ -228,8 +224,8 @@
     <string name="unarchived_successfully">Unarchived successfully</string>
     <string name="restore_failed">Restore failed!</string>
     <string name="restoring_messages">Restoring messages...</string>
-    <string name="new_message">%1$s New message</string>
-    <string name="new_messages">%1$s new messages</string>
+    <string name="new_message">New message</string>
+    <string name="new_messages">New messages</string>
 
 
     <string name="no_new_messages_restored">No new messages restored.</string>
@@ -276,5 +272,23 @@
     <string name="select_language">Select language</string>
     <string name="permanently_delete_conversation">Permanently delete conversation?</string>
     <string name="no_data">No data</string>
+    <string name="please_select_a_language">Please select a language</string>
+    <string name="theme_mode">Theme mode</string>
+    <string name="app_languages">App languages</string>
+    <string name="conversation_categories">Conversation categories</string>
+    <string name="call_end_screen">Call end screen</string>
+    <string name="rate_on_google_play">Rate on google play</string>
+    <string name="show_categories">Show categories</string>
+    <string name="moving_messages_to_recycle_bin">Moving messages to recycle bin...</string>
+    <string name="system_default">System Default</string>
+    <string name="organize_category">Organize category order with drag and drop</string>
+    <string name="me">Me</string>
+    <string name="channel_received_sms">Received SMS</string>
+    <string name="reply">Reply</string>
+    <string name="message_not_sent_short">Message not sent</string>
+    <string name="message_sending_error">Your message to \'%s\' has not been sent</string>
+    <string name="clear">Clear</string>
+    <string name="see_all">See all</string>
+    <string name="matches_found">%1$s matches found</string>
 
 </resources>

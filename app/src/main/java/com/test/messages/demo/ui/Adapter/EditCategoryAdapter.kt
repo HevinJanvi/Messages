@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.ui.AlphabticScroll.ItemMoveCallback
@@ -19,6 +20,7 @@ class EditCategoryAdapter(
     inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.categoryText)
         val view: View = itemView.findViewById(R.id.view)
+        val dragImage:ImageView = itemView.findViewById(R.id.dragHandle)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
@@ -30,17 +32,12 @@ class EditCategoryAdapter(
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         val category = categories[position]
         holder.textView.text = category
+
+        holder.dragImage.visibility =    if (position == 0) View.GONE else View.VISIBLE
         holder.view.visibility = if (position == categories.size - 1) View.GONE else View.VISIBLE
     }
 
     override fun getItemCount(): Int = categories.size
-
-
-    fun updateCategories(newCategories: List<String>) {
-        categories.clear()
-        categories.addAll(newCategories)
-        notifyDataSetChanged() // Refresh RecyclerView
-    }
 
 
     override fun onItemMove(fromPosition: Int, toPosition: Int) {

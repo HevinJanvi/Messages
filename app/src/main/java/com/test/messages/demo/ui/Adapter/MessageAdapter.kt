@@ -1,9 +1,5 @@
 package com.test.messages.demo.ui.Adapter
 
-
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.text.Spannable
@@ -32,7 +28,9 @@ import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.Util.TimeUtils.formatTimestamp
 import com.test.messages.demo.Util.TimeUtils.getInitials
 import com.test.messages.demo.Util.TimeUtils.getRandomColor
+import com.test.messages.demo.Util.ViewUtils.copyToClipboard
 import com.test.messages.demo.Util.ViewUtils.extractOtp
+import com.test.messages.demo.data.Model.ConversationItem
 
 class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
@@ -74,12 +72,8 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
-
-            Glide.with(holder.itemView.context)
-                .load(R.drawable.ic_group)
-                .apply(RequestOptions.bitmapTransform(MultiTransformation(CenterCrop(), RoundedCorners(50))))
-                .into(holder.icUser)
-        }else {
+            holder.icUser.setImageResource(R.drawable.ic_group)
+        } else {
             val firstChar = message.sender.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
 
@@ -142,12 +136,10 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.messageBody.text = message.body
         }
 
-
         val otp = message.body.extractOtp()
         if (!otp.isNullOrEmpty()) {
-            holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_code)
+            holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_otp)
             holder.otpTextView.visibility = View.VISIBLE
-
             holder.otpTextView.setOnClickListener {
                 copyToClipboard(holder.itemView.context, otp)
                 holder.otpTextView.animate()
@@ -184,7 +176,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.icMute.visibility = View.GONE
         }
 
-        if (selectedMessages.contains(message)) {
+        if (selectedMessages.find { it.threadId == message.threadId } != null) {
             holder.icSelect.visibility = View.VISIBLE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
         } else {
@@ -207,8 +199,8 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     }
 
     private fun toggleSelection(message: MessageItem, holder: ViewHolder) {
-        if (selectedMessages.contains(message)) {
-            selectedMessages.remove(message)
+        if (selectedMessages.find { it.threadId == message.threadId } != null) {
+            selectedMessages.removeIf { it.threadId == message.threadId }
             holder.icSelect.visibility = View.GONE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
         } else {
@@ -242,16 +234,11 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         diffResult.dispatchUpdatesTo(this)
     }
 
-    private fun copyToClipboard(context: Context, text: String) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("OTP", text)
-        clipboard.setPrimaryClip(clip)
-    }
 
     fun updateDrafts(drafts: Map<Long, Pair<String, Long>>) {
         this.draftMessages.clear()
         this.draftMessages.putAll(drafts)
-        notifyDataSetChanged()  // Refresh UI
+        notifyDataSetChanged()
     }
 
     fun getPositionForThreadId(threadId: Long): Int {
@@ -264,5 +251,19 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             messages[index].isRead = isRead
         }
     }
+
+    fun updateSubset(updatedItems: List<MessageItem>) {
+        val currentList = messages.toMutableList()
+        for (item in updatedItems) {
+            val index = currentList.indexOfFirst {
+                it.threadId == item.threadId &&
+                        it.body == item.body &&
+                        it.timestamp == item.timestamp
+            }
+            if (index != -1) currentList[index] = item
+        }
+        submitList(currentList)
+    }
+
 
 }

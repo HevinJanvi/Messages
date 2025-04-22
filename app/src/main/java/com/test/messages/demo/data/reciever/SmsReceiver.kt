@@ -5,17 +5,24 @@ import android.content.BroadcastReceiver
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Telephony
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.DROPMSG
+import com.test.messages.demo.Util.ConversationOpenedEvent
+import com.test.messages.demo.Util.ViewUtils.getThreadId
 import com.test.messages.demo.data.repository.MessageRepository
+import com.test.messages.demo.ui.send.notificationHelper
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -24,6 +31,7 @@ class SmsReceiver : BroadcastReceiver() {
     @Inject
     lateinit var repository: MessageRepository
     private val messageCounts = mutableMapOf<Long, Int>()
+    private var messageId: Long = 0L
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onReceive(context: Context, intent: Intent) {
@@ -49,8 +57,8 @@ class SmsReceiver : BroadcastReceiver() {
             }
 
             CoroutineScope(Dispatchers.IO).launch {
-                val prefs = context.getSharedPreferences("block_prefs", Context.MODE_PRIVATE)
-                val isDropMessagesEnabled = prefs.getBoolean("drop_messages", false)
+                val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+                val isDropMessagesEnabled = prefs.getBoolean(DROPMSG, true)
                 val isDeleted = repository.isDeletedConversation(address)
 
                 if (isDeleted) {
@@ -79,7 +87,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                 } else {
                     threadId = getThreadId(context, address)
-                    insertMessageIntoSystemDatabase(
+                    val insertedUri = insertMessageIntoSystemDatabase(
                         context,
                         address,
                         subject,
@@ -91,14 +99,15 @@ class SmsReceiver : BroadcastReceiver() {
                         subscriptionId,
                         status
                     )
+
+                    messageId = insertedUri?.let { uri ->
+                        context.contentResolver.query(uri, arrayOf(Telephony.Sms._ID), null, null, null)?.use { cursor ->
+                            if (cursor.moveToFirst()) cursor.getLong(0) else 0L
+                        }
+                    } ?: 0L
                 }
 
-                /*val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
-                val isGlobalWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_GLOBAL", false)
-                val isThreadWakeEnabled = sharedPreferences.getBoolean("KEY_WAKE_SCREEN_$threadId", isGlobalWakeEnabled)
-                if (isThreadWakeEnabled) {
-                    wakeUpScreen(context)
-                }*/
+
                 val database = AppDatabase.getDatabase(context)
                 val notificationDao = database.notificationDao()
                 val isMuted = notificationDao.getNotificationStatus(threadId) ?: false
@@ -123,12 +132,18 @@ class SmsReceiver : BroadcastReceiver() {
                 val isArchived = archivedThreads.contains(threadId)
                 val isBlocked = blockedThreads.contains(threadId)
 
-                if (!isMuted && !isArchived && !isBlocked ) {
+                val openEvent = EventBus.getDefault().getStickyEvent(ConversationOpenedEvent::class.java)
+                val openThreadId = openEvent?.threadId ?: -1L
+
+                if (!isMuted && !isArchived && !isBlocked && threadId != openThreadId) {
                     incrementMessageCount(threadId)
-                    showNotification(context, displayName, body, threadId)
+                    val contactUri = repository.getPhotoUriFromPhoneNumber(address)
+                    val bitmap = repository.getNotificationBitmap(context,contactUri)
+                    Log.d("TAG", "onReceive:bitmap "+bitmap)
+                    context.notificationHelper.showMessageNotification(messageId, address, body, threadId, bitmap, sender = displayName, alertOnlyOnce = true)
                 }
                 repository.getMessages()
-                repository.getConversation(threadId)
+//                repository.getConversation(threadId)
             }
         }
     }
@@ -153,6 +168,8 @@ class SmsReceiver : BroadcastReceiver() {
         messageCounts[threadId] = count + 1
     }
 
+
+
     private fun insertMessageIntoSystemDatabase(
         context: Context,
         address: String,
@@ -164,8 +181,8 @@ class SmsReceiver : BroadcastReceiver() {
         type: Int,
         subscriptionId: Int,
         status: Int
-    ) {
-        try {
+    ): Uri? {
+        return try {
             val values = ContentValues().apply {
                 put(Telephony.Sms.ADDRESS, address)
                 put(Telephony.Sms.BODY, body)
@@ -178,27 +195,11 @@ class SmsReceiver : BroadcastReceiver() {
                 put(Telephony.Sms.SUBJECT, subject)
             }
 
-            val uri = context.contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values)
-            if (uri != null) {
-            } else {
-            }
+            context.contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values)
         } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
-    }
-
-    private fun getThreadId(context: Context, sender: String): Long {
-        val uri = Telephony.Sms.CONTENT_URI
-        val projection = arrayOf(Telephony.Sms.THREAD_ID)
-        val selection = "${Telephony.Sms.ADDRESS} = ?"
-        val selectionArgs = arrayOf(sender)
-
-        context.contentResolver.query(uri, projection, selection, selectionArgs, null)
-            ?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    return cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
-                }
-            }
-        return 0L
     }
 
 

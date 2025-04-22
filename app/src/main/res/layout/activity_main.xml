@@ -131,20 +131,11 @@
                     android:textFontWeight="500"
                     android:textSize="19dp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/icSearchItem"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/icSelecteAll"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageView
-                    android:id="@+id/icSearchItem"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="15dp"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_search"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+          />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -252,7 +243,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:padding="3dp"
-                        android:src="@drawable/ic_unarchive" />
+                        android:src="@drawable/ic_archive" />
 
                     <TextView
                         android:layout_width="wrap_content"

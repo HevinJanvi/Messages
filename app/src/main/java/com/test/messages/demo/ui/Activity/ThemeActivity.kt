@@ -1,5 +1,6 @@
 package com.test.messages.demo.ui.Activity
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -9,6 +10,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.CommanConstants.THEMEMODE
 import com.test.messages.demo.databinding.ActivityThemeBinding
 
 class ThemeActivity : BaseActivity() {
@@ -22,10 +25,10 @@ class ThemeActivity : BaseActivity() {
         val view: View = binding.getRoot()
         setContentView(view)
 
-        val sharedPref = getSharedPreferences("ThemePref", MODE_PRIVATE)
+        val sharedPref = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         editor = sharedPref.edit()
 
-        val selectedMode = sharedPref.getInt("dark_mode", 1)
+        val selectedMode = sharedPref.getInt(THEMEMODE, 1)
         when (selectedMode) {
             1 -> binding.radioSystem.isChecked = true
             2 -> binding.radioLight.isChecked = true
@@ -53,30 +56,20 @@ class ThemeActivity : BaseActivity() {
 
     private fun theme(mode: Int) {
         try {
-            editor!!.putInt("dark_mode", mode)
+            editor!!.putInt(THEMEMODE, mode)
             editor!!.apply()
-            when (mode) {
-                1 -> {
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                    }, 10)
-                    finish()
-                }
 
-                2 -> {
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                    }, 10)
-                    finish()
+            val resultIntent = Intent()
+            resultIntent.putExtra(THEMEMODE, mode)
+            setResult(RESULT_OK, resultIntent)
+            Handler(Looper.getMainLooper()).postDelayed({
+                when (mode) {
+                    1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                    2 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    3 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                 }
-
-                3 -> {
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                    }, 10)
-                    finish()
-                }
-            }
+                finish()
+            }, 10)
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }

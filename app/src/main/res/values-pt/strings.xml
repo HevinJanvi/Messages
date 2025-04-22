@@ -99,7 +99,7 @@
     <string name="contacts">Contatos</string>
     <string name="your_conversation_will_apper_here">Sua conversa aparecerá aqui</string>
     <string name="scheduled_messages">Mensagens programadas</string>
-    <string name="automatically_send">Enviar mensagens automaticamente, no momento exato\nque você gostaria</string>
+    <string name="automatically_send">Enviar mensagens automaticamente, no momento exato que você gostaria</string>
     <string name="cannot_select_past_time">Não é possível selecionar o horário anterior</string>
     <string name="please_enter">Digite uma mensagem e selecione o horário</string>
     <string name="message_scheduled">Mensagem programada!</string>

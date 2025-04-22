@@ -30,3 +30,6 @@
 }
 
 -keep class org.greenrobot.eventbus.android.AndroidComponentsImpl
+
+-keep class com.test.messages.demo.data.Model.** { *; }
+-keep class com.test.messages.demo.data.Database.Scheduled.ScheduledMessage.* { *; }

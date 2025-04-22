@@ -59,10 +59,10 @@ class SwipeActionDialog(
             it.blinkThen {
                 val selectedAction =
                     radioButtons.entries.find { it.key.isChecked }?.value ?: SWIPE_NONE
+//                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe)
                 ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe)
-
                 onActionSelected(selectedAction)
-                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe = false)
+//                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe = false)
 
                 dismiss()
             }

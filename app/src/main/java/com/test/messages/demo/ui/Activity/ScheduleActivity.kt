@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.telephony.SmsManager
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -44,6 +45,7 @@ class ScheduleActivity : BaseActivity() {
         binding.addSchedule.setOnClickListener {
             val intent = Intent(this, AddScheduleActivity::class.java)
             startActivity(intent)
+            finish()
         }
         binding.icBack.setOnClickListener {
             onBackPressed()
@@ -56,9 +58,11 @@ class ScheduleActivity : BaseActivity() {
             { scheduledMessages ->
                 if (scheduledMessages.isEmpty()) {
                     binding.emptyList.visibility = View.VISIBLE
+                    binding.emptyImage.visibility = View.VISIBLE
                     binding.scheduleRecycleview.visibility = View.GONE
                 } else {
                     binding.emptyList.visibility = View.GONE
+                    binding.emptyImage.visibility = View.GONE
                     binding.scheduleRecycleview.visibility = View.VISIBLE
                     adapter.submitList(scheduledMessages)
                 }
@@ -87,7 +91,7 @@ class ScheduleActivity : BaseActivity() {
 
     private fun sendMessageImmediately(message: ScheduledMessage) {
         val messagingUtils = MessageUtils(this)
-
+        Log.d("TAG", "sendMessageImmediately: ")
         Thread {
             val message =
                 AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
@@ -113,6 +117,7 @@ class ScheduleActivity : BaseActivity() {
                         messageUri = messageUri
                     )
                     AppDatabase.getDatabase(this).scheduledMessageDao().delete(it)
+                    viewModel.loadMessages()
 
                 } catch (e: Exception) {
                 }
@@ -132,6 +137,10 @@ class ScheduleActivity : BaseActivity() {
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
             return
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
     }
 
 }

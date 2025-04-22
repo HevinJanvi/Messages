@@ -9,7 +9,9 @@ import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ViewUtils.getThreadId
 import com.test.messages.demo.data.Model.ConversationItem
+import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -97,25 +99,28 @@ class BackupRepository(private val context: Context) {
         val restoredList: List<ConversationItem> =
             Gson().fromJson(json, object : TypeToken<List<ConversationItem>>() {}.type)
 
-
+        val sortedList = restoredList.sortedBy { it.date }
 
         val existingIds = getExistingMessageIds()
         val existingThreadIds = getExistingThreadIds()
 
         val insertedMessages = mutableListOf<ConversationItem>()
-        val totalMessages = restoredList.size.coerceAtLeast(1) // Avoid division by zero
+        val totalMessages = sortedList.size.coerceAtLeast(1) // Avoid division by zero
 
 
         try {
-            for ((index, conversation) in restoredList.withIndex()) {
-//            for (conversation in restoredList) {
+            for ((index, conversation) in sortedList.withIndex()) {
+                val originalThreadId = conversation.threadId // OLD threadId from backup
 
                 if (!existingIds.contains(conversation.id)) {
-                    var threadId = conversation.threadId
+                    var threadId = originalThreadId
+
                     if (!existingThreadIds.contains(threadId)) {
                         threadId = insertThreadIfNotExist(conversation)
-
+                        Log.d("TAG", "restoreMessages:if ")
                     } else {
+                        Log.d("TAG", "restoreMessages:else ")
+
                         val readStatus = if (conversation.read) 1 else 0
                         insertMessageIntoSystemDatabase(
                             context,
@@ -130,6 +135,11 @@ class BackupRepository(private val context: Context) {
                     }
 
                     insertedMessages.add(conversation)
+
+                    withContext(Dispatchers.IO) {
+                        AppDatabase.getDatabase(context).recycleBinDao().deleteMessagesByThreadId(originalThreadId)
+                    }
+
                     val progress = ((index + 1) * 100) / totalMessages
                     withContext(Dispatchers.Main) {
                         onProgressUpdate(progress)
@@ -144,9 +154,10 @@ class BackupRepository(private val context: Context) {
     }
 
     private fun insertThreadIfNotExist(conversation: ConversationItem): Long {
-        val threadId = getThreadId(conversation.address)
+        val threadId = getThreadId(context,conversation.address)
+        Log.d("TAG", "insertThreadIfNotExist: "+conversation.body)
         val values = ContentValues().apply {
-            put(Telephony.Sms.THREAD_ID, threadId)
+//            put(Telephony.Sms.THREAD_ID, threadId)
             put(Telephony.Sms.ADDRESS, conversation.address)
             put(Telephony.Sms.BODY, conversation.body)
             put(Telephony.Sms.DATE, conversation.date)
@@ -154,19 +165,23 @@ class BackupRepository(private val context: Context) {
             put(Telephony.Sms.TYPE, conversation.type)
             put(Telephony.Sms.SUBSCRIPTION_ID, conversation.subscriptionId)
         }
-        Log.d("TAG", "insertThreadIfNotExist: ")
 
         val uri = context.contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
+        if (uri != null) {
+            Log.d("TAG", "Message inserted successfully." + uri)
+        } else {
+            Log.d("TAG", "Failed to insert message.")
+        }
         return threadId
     }
 
-    fun getThreadId(address: String): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(context, address)
-        } catch (e: Exception) {
-            0L
-        }
-    }
+//    fun getThreadId(address: String): Long {
+//        return try {
+//            Telephony.Threads.getOrCreateThreadId(context, address)
+//        } catch (e: Exception) {
+//            0L
+//        }
+//    }
 
     private fun getExistingMessageIds(): Set<Long> {
         val uri = Telephony.Sms.CONTENT_URI

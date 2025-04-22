@@ -24,10 +24,16 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.CommanConstants.FROMARCHIVE
+import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
+import com.test.messages.demo.Util.CommanConstants.ISGROUP
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.Util.CommanConstants.PROFILEURL
+import com.test.messages.demo.Util.MessagesRefreshEvent
+import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.databinding.ActivityProfileBinding
 import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -43,6 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -53,6 +60,8 @@ class ProfileActivity : BaseActivity() {
     private lateinit var number: String
     private lateinit var name: String
     private lateinit var profileUrl: String
+    private var fromBlock: Boolean = false
+    private var fromArchive: Boolean = false
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var addContactLauncher: ActivityResultLauncher<Intent>
 
@@ -75,6 +84,8 @@ class ProfileActivity : BaseActivity() {
         number = intent.getStringExtra(NUMBER).toString()
         name = intent.getStringExtra(NAME).toString()
         profileUrl = intent.getStringExtra(PROFILEURL).toString()
+        fromBlock = intent.getBooleanExtra(FROMBLOCK, false)
+        fromArchive = intent.getBooleanExtra(FROMARCHIVE, false)
         loadContactDetails()
         setupClickListeners()
         if (threadId != -1L) {
@@ -83,13 +94,10 @@ class ProfileActivity : BaseActivity() {
         if (threadId != -1L) {
             checkIfArchived(threadId)
         }
-
     }
-
 
     private fun loadContactDetails() {
         viewModel.getContactNameOrNumberLive(number).observe(this) { contactName ->
-
 
             binding.adreesUser.text = contactName
             binding.number.text = number
@@ -97,7 +105,7 @@ class ProfileActivity : BaseActivity() {
             val firstChar = contactName.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
 
-            if (startsWithSpecialChar || profileUrl.isNotEmpty() && profileUrl != null  ) {
+            if (startsWithSpecialChar || profileUrl.isNotEmpty() && profileUrl != null) {
                 Glide.with(this)
                     .load(profileUrl)
                     .placeholder(R.drawable.user_icon)
@@ -108,11 +116,12 @@ class ProfileActivity : BaseActivity() {
                 binding.imgProfile.visibility = View.GONE
                 binding.profileContainer.visibility = View.VISIBLE
                 binding.initialsTextView.text = TimeUtils.getInitials(contactName)
-                          }
+            }
 
             if (isServiceNumber(number)) {
                 binding.profileCall.isEnabled = false
                 binding.profileContact.isEnabled = false
+
                 binding.profileContact.setImageResource(R.drawable.profile_contact_disable)
                 binding.profileCall.setImageResource(R.drawable.profile_call_disable)
             } else {
@@ -120,6 +129,20 @@ class ProfileActivity : BaseActivity() {
                 binding.profileContact.isEnabled = true
                 binding.profileContact.setImageResource(R.drawable.profile_contact)
                 binding.profileCall.setImageResource(R.drawable.profile_call)
+
+                checkIfContactExists(number) { exists, contactId ->
+                    if (exists) {
+                        binding.profileContact.setImageResource(R.drawable.profile_edit)
+                        binding.profileContact.setOnClickListener {
+                            openEditContact(contactId)
+                        }
+                    } else {
+                        binding.profileContact.setImageResource(R.drawable.profile_contact)
+                        binding.profileContact.setOnClickListener {
+                            openAddContact()
+                        }
+                    }
+                }
             }
             viewModel.loadConversation(threadId)
             val resultIntent = Intent()
@@ -127,6 +150,30 @@ class ProfileActivity : BaseActivity() {
             setResult(Activity.RESULT_OK, resultIntent)
 
         }
+    }
+
+    private fun checkIfContactExists(number: String, callback: (Boolean, String) -> Unit) {
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(number)
+        )
+
+        val cursor = contentResolver.query(
+            uri,
+            arrayOf(ContactsContract.PhoneLookup._ID),
+            null,
+            null,
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
+                callback(true, contactId)
+                return
+            }
+        }
+        callback(false, "")
     }
 
     private fun setupClickListeners() {
@@ -147,22 +194,33 @@ class ProfileActivity : BaseActivity() {
                 putExtra(EXTRA_THREAD_ID, threadId)
                 putExtra(NUMBER, number)
                 putExtra(NAME, name)
-                putExtra("isGroup", false)
+                putExtra(FROMBLOCK, fromBlock)
+                putExtra(ISGROUP, false)
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(intent)
+            finish()
+            overridePendingTransition(0, 0)
+        }
+
+        /*val (exists, _) = contactExists(number)
+        if (exists) {
+            binding.profileContact.setImageResource(R.drawable.profile_edit)
+        } else {
+            binding.profileContact.setImageResource(R.drawable.profile_contact)
         }
 
         binding.profileContact.setOnClickListener {
-            checkIfContactExistsAndOpen()
-           /* val intent = Intent(Intent.ACTION_INSERT).apply {
-                type = ContactsContract.Contacts.CONTENT_TYPE
-                putExtra(ContactsContract.Intents.Insert.PHONE, number)
+            val (exists, contactId) = contactExists(number)
+            if (exists && contactId != null) {
+                openEditContact(contactId)
+            } else {
+                openAddContact()
             }
-            addContactLauncher.launch(intent)*/
-        }
+        }*/
+
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,false) {
+            val deleteDialog = DeleteDialog(this, false) {
                 deleteMessagesForCurrentThread(threadId)
             }
             deleteDialog.show()
@@ -171,26 +229,10 @@ class ProfileActivity : BaseActivity() {
             val intent = Intent(this, NotificationActivity::class.java)
             intent.putExtra(EXTRA_THREAD_ID, threadId)
             intent.putExtra(NUMBER, number)
+            intent.putExtra(NAME, name)
             startActivity(intent)
         }
     }
-    private fun checkIfContactExistsAndOpen() {
-        val contentResolver = contentResolver
-        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number))
-        val cursor = contentResolver.query(uri, arrayOf(ContactsContract.PhoneLookup._ID), null, null, null)
-
-        cursor?.use {
-            if (it.moveToFirst()) {
-                // Contact exists, get the ID and open Edit Contact
-                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
-                openEditContact(contactId)
-            } else {
-                // Contact does not exist, open Add Contact
-                openAddContact()
-            }
-        }
-    }
-
     private fun openEditContact(contactId: String) {
         val intent = Intent(Intent.ACTION_EDIT).apply {
             data = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId)
@@ -223,27 +265,34 @@ class ProfileActivity : BaseActivity() {
                     viewModel.getBlockedConversations().map { it.conversationId }
 
                 withContext(Dispatchers.Main) {
-                    if (blockConversationIds.contains(threadId)) {
+                    val isBlocked = blockConversationIds.contains(threadId)
+                    if (isBlocked) {
                         disableLy()
+                        binding.profileBlock.setImageResource(R.drawable.profile_unblock)
                         binding.profileBlock.setOnClickListener {
                             val unblockDialog = UnblockDialog(this@ProfileActivity) {
                                 binding.profileBlock.isEnabled = false
                                 viewModel.unblockConversations(listOf(threadId))
+                                binding.profileBlock.setImageResource(R.drawable.profile_block)
                                 refreshCheck(threadId)
                             }
                             unblockDialog.show()
                         }
                     } else {
                         enableLy()
+                        binding.profileBlock.setImageResource(R.drawable.profile_block)
+
                         binding.profileBlock.setOnClickListener {
                             val blockDialog = BlockDialog(this@ProfileActivity) {
                                 binding.profileBlock.isEnabled = false
                                 viewModel.blockSelectedConversations(listOf(threadId))
+                                binding.profileBlock.setImageResource(R.drawable.profile_unblock)
                                 refreshCheck(threadId)
                             }
                             blockDialog.show()
                         }
                     }
+
                 }
             }
         }
@@ -287,8 +336,6 @@ class ProfileActivity : BaseActivity() {
 
     private fun refreshListStatus() {
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
             finish()
         }, 500)
         overridePendingTransition(R.anim.fadin, R.anim.fadout);
@@ -302,7 +349,8 @@ class ProfileActivity : BaseActivity() {
         Thread {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
-                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>() // To prevent duplicates
+                val existingBodyDatePairs =
+                    mutableSetOf<Pair<String, Long>>()
 
                 val cursor = contentResolver.query(
                     Telephony.Sms.CONTENT_URI,
@@ -347,9 +395,24 @@ class ProfileActivity : BaseActivity() {
                 val uri = Uri.parse("content://sms/conversations/$threadId")
                 contentResolver.delete(uri, null, null)
                 db.insertMessages(deletedMessages)
-                Handler(Looper.getMainLooper()).post {
-                    finish()
-                }
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (!fromBlock && !fromArchive) {
+                        Log.d("TAG", "deleteMessagesForCurrentThread:if ")
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Log.d("TAG", "deleteMessagesForCurrentThread:else ")
+
+                        EventBus.getDefault().post(MessagesRefreshEvent(true))
+                        onBackPressedDispatcher.onBackPressed()
+
+                    }
+
+                    overridePendingTransition(0, 0)
+                }, 100)
+
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -357,23 +420,6 @@ class ProfileActivity : BaseActivity() {
         }.start()
     }
 
-
-    /* @RequiresApi(Build.VERSION_CODES.Q)
-     fun deleteMessage() {
-         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
-         Thread {
-             try {
-                 val uri = Uri.parse("content://sms/conversations/$threadId")
-                 val deletedRows = contentResolver.delete(uri, null, null)
-                 if (deletedRows > 0) {
-                     updatedList.removeAll { it.threadId == threadId }
-                     refreshListStatus()
-                 }
-             } catch (e: Exception) {
-             }
-         }.start()
-     }
- */
 
     private fun disableLy() {
         binding.icNoti.isEnabled = false
@@ -412,6 +458,30 @@ class ProfileActivity : BaseActivity() {
         )
         binding.icArchiveText.setTextColor(ContextCompat.getColor(this, R.color.textcolor))
     }
+
+    private fun contactExists(number: String): Pair<Boolean, String?> {
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(number)
+        )
+
+        val cursor = contentResolver.query(
+            uri,
+            arrayOf(ContactsContract.PhoneLookup._ID),
+            null,
+            null,
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
+                return Pair(true, contactId)
+            }
+        }
+        return Pair(false, null)
+    }
+
     override fun onResume() {
         super.onResume()
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {

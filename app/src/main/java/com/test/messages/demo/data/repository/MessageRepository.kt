@@ -1,18 +1,26 @@
 package com.test.messages.demo.data.repository
 
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.BlockedNumberContract
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.util.Log
+import android.util.Patterns
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
@@ -44,7 +52,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getMessages(): List<MessageItem> {
         val startTime = System.currentTimeMillis()
-        val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val sharedPreferences =
+            context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
 
         return runBlocking(Dispatchers.IO) {
             val conversationsDeferred = async { getConversations() }
@@ -65,7 +74,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 //                Log.d("DEBUG", " Receipt IDs: ${messageItem.threadId} Sender:${messageItem.sender}  Body:${messageItem.body}")
 
                 if (messageItem.body.isNullOrBlank() || messageItem.sender == null) continue
-
+//                Log.d("TAG", "getMessages: "+messageItem.threadId)
                 val isGroupChat = reciptids.contains(" ")
 
                 val (displayName, rawPhoneNumber, photoUri) = if (isGroupChat) {
@@ -78,7 +87,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 //                    Log.d("DEBUG", "Mapped phone numbers: $rawPhoneNumbers")
 
                     val savedGroupName =
-                        sharedPreferences.getString("${GROUP_NAME_KEY}${messageItem.threadId}", null)
+                        sharedPreferences.getString(
+                            "${GROUP_NAME_KEY}${messageItem.threadId}",
+                            null
+                        )
 //                    Log.d("DEBUG", "Saved group name for thread ${messageItem.threadId}: $savedGroupName")
 
                     val groupName = savedGroupName ?: rawPhoneNumbers.map { number ->
@@ -90,20 +102,20 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 } else {
                     val rawPhone = (recipientMap[reciptids] ?: reciptids).replace(" ", "")
 //                    Log.d("DEBUG", "Processing individual chat. Raw phone number: $rawPhone")
-
                     var contactInfo = contactDetails[rawPhone]
                     if (contactInfo == null && rawPhone.length > 5) {
                         //remove +___12345
                         //remove +__12345
+
                         //remove +_12345
                         contactInfo = contactDetails[rawPhone.substring(4)]
                             ?: contactDetails[rawPhone.substring(3)]
                                     ?: contactDetails[rawPhone.substring(2)]
                                     ?: contactDetails[rawPhone.substring(1)]
-                       /* Log.d(
-                            "TAG",
-                            "getMessages: " + contactInfo?.name + "---------number----" + rawPhone
-                        )*/
+                        /* Log.d(
+                             "TAG",
+                             "getMessages: " + contactInfo?.name + "---------number----" + rawPhone
+                         )*/
                     }
 
                     Triple(
@@ -177,7 +189,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val reciptids =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
                 val isRead = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
-                val type= cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
+                val type = cursor.getInt(cursor.getColumnIndexOrThrow(Telephony.Sms.TYPE))
 
                 val senderName = ""
                 val profileImageUrl = ""
@@ -205,7 +217,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
 
         }
-        Log.d("ObserverDebug", "getConversations: " + conversations.size)
+//        Log.d("ObserverDebug", "getConversations: " + conversations.size)
         return conversations
     }
 
@@ -258,10 +270,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val recipientId = it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr._ID))
                 val recipientPhoneNumber =
                     it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr.ADDRESS))
-//                Log.d(
-//                    "TAG",
-//                    "getRecipientAddressesFor:---" + recipientId + "-------number-------" + recipientPhoneNumber
-//                )
+               /* Log.d(
+                    "DEBUG",
+                    "getRecipientAddressesFor:---" + recipientId + "-------number-------" + recipientPhoneNumber
+                )*/
 
                 recipientMap[recipientId] = recipientPhoneNumber
 
@@ -280,7 +292,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
             ContactsContract.CommonDataKinds.Phone.PHOTO_URI
-
         )
 
         val cursor = context.contentResolver.query(
@@ -296,10 +307,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val cid =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID))
                 val phoneNumber =
-                    (it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))).replace(
-                        " ",
-                        ""
-                    )
+                    (it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)))
                 val normalizePhoneNumber =
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
                 val displayName =
@@ -308,13 +316,17 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI))
                         ?: ""
                 if (phoneNumber != null) {
-//                    Log.d("TAG", "getContactDetails: "+phoneNumber+"-----name----"+displayName+"-----normalize numbr----"+normalizePhoneNumber )
+                    var number =phoneNumber.replace(
+                        " ",
+                        ""
+                    ).replace("(","").replace(")","").replace("-","")
+//                    Log.d("DEBUG", "getContactDetails: "+phoneNumber+"-----name----"+displayName+"-----normalize numbr----"+normalizePhoneNumber )
                     contactList.add(
                         ContactItem(
                             cid,
                             displayName,
-                            phoneNumber,
-                            normalizePhoneNumber ?: phoneNumber,
+                            number,
+                            normalizePhoneNumber ?: number,
                             profileImageUrl
                         )
                     )
@@ -362,7 +374,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
                 val subscriptionId =
                     it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
-//                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
+                Log.d("SMS", "Message: $body | Type: $type | Address: $address | date: $date")
 
                 conversationList.add(
                     ConversationItem(
@@ -370,7 +382,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         threadId,
                         date,
                         body,
-                        address ?:"",
+                        address ?: "",
                         type,
                         read,
                         subscriptionId,
@@ -681,60 +693,133 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
 
-    fun getAllMessages(threadId: String?): List<MessageItem> {
-        val messages = mutableListOf<MessageItem>()
+    fun getAllSearchConversation(): List<ConversationItem> {
+        val messages = mutableListOf<ConversationItem>()
         val uri = Telephony.Sms.CONTENT_URI
         val projection = arrayOf(
             Telephony.Sms._ID,
-            Telephony.Sms.BODY,
             Telephony.Sms.THREAD_ID,
-            Telephony.Sms.ADDRESS,
             Telephony.Sms.DATE,
-            Telephony.Sms.READ
+            Telephony.Sms.BODY,
+            Telephony.Sms.ADDRESS,
+            Telephony.Sms.TYPE,
+            Telephony.Sms.READ,
+            Telephony.Sms.SUBSCRIPTION_ID
         )
 
-        val selection = if (threadId != null) "${Telephony.Sms.THREAD_ID}=?" else null
-        val selectionArgs = if (threadId != null) arrayOf(threadId) else null
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
 
-        val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val cursor = context.contentResolver.query(
+            uri,
+            projection,
+            null,
+            null,
+            sortOrder
+        )
 
-        val cursor: Cursor? =
-            context.contentResolver.query(uri, projection, selection, selectionArgs, null)
         cursor?.use {
-            val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-            val threadIdIndex = it.getColumnIndex(Telephony.Sms.THREAD_ID)
-            val senderIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-            val timestampIndex = it.getColumnIndex(Telephony.Sms.DATE)
-            val isReadIndex = it.getColumnIndex(Telephony.Sms.READ)
+            val idIndex = it.getColumnIndexOrThrow(Telephony.Sms._ID)
+            val threadIdIndex = it.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID)
+            val dateIndex = it.getColumnIndexOrThrow(Telephony.Sms.DATE)
+            val bodyIndex = it.getColumnIndexOrThrow(Telephony.Sms.BODY)
+            val addressIndex = it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)
+            val typeIndex = it.getColumnIndexOrThrow(Telephony.Sms.TYPE)
+            val readIndex = it.getColumnIndexOrThrow(Telephony.Sms.READ)
+            val subIdIndex = it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID)
 
             while (it.moveToNext()) {
-                val body = it.getString(bodyIndex)
-                val tId = it.getLong(threadIdIndex)
-                val sender = it.getString(senderIndex) ?: "Unknown"
-                val timestamp = it.getLong(timestampIndex)
-                val isRead = it.getInt(isReadIndex) == 1
-                val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}$tId", null)
-                Log.d("TAG", "getAllMessages:timestamp-- "+timestamp)
-                messages.add(
-                    MessageItem(
-                        threadId = tId,
-                        sender = savedGroupName ?: sender,
-                        number = sender,
-                        body = body,
-                        timestamp = timestamp,
-                        isRead = isRead,
-                        reciptid = 0,
-                        reciptids = "",
-                        profileImageUrl = "",
-                        isPinned = false,
-                        isGroupChat = savedGroupName != null,
-                        isMuted = false
-                    )
+                val id = it.getLong(idIndex)
+                val threadId = it.getLong(threadIdIndex)
+                val date = it.getLong(dateIndex)
+                val body = it.getString(bodyIndex) ?: ""
+                val address = it.getString(addressIndex) ?: "Unknown"
+                val type = it.getInt(typeIndex)
+                val read = it.getInt(readIndex) == 1
+                val subscriptionId = if (!it.isNull(subIdIndex)) it.getInt(subIdIndex) else -1
+
+                val conversationItem = ConversationItem(
+                    id = id,
+                    threadId = threadId,
+                    date = date,
+                    body = body,
+                    address = address,
+                    type = type,
+                    read = read,
+                    subscriptionId = subscriptionId,
+                    profileImageUrl = "", // Can be set later from contact/photo lookup
+                    isHeader = false      // Will be used for date headers like "Today", etc.
                 )
+
+                messages.add(conversationItem)
             }
         }
+
         return messages
     }
+
+
+    fun getAllContacts(context: Context): List<ContactItem> {
+        val contactList = mutableListOf<ContactItem>()
+
+        val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+        )
+
+        val sortOrder = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} ASC"
+
+        val cursor = context.contentResolver.query(
+            uri,
+            projection,
+            null,
+            null,
+            sortOrder
+        )
+
+        cursor?.use {
+            val idIndex =
+                it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
+            val nameIndex =
+                it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+            val numberIndex =
+                it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            val normalizedIndex =
+                it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER)
+            val photoIndex =
+                it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI)
+
+            val seenNumbers = mutableSetOf<String>() // to avoid duplicates
+
+            while (it.moveToNext()) {
+                val id = it.getString(idIndex)
+                val name = it.getString(nameIndex)
+                val number = it.getString(numberIndex)?.replace("\\s".toRegex(), "") ?: continue
+                val normalized = it.getString(normalizedIndex) ?: number
+                val photoUri = it.getString(photoIndex) ?: ""
+
+                // Avoid duplicate phone numbers
+                if (seenNumbers.contains(number)) continue
+                seenNumbers.add(number)
+
+                val contact = ContactItem(
+                    cid = id,
+                    name = name,
+                    phoneNumber = number,
+                    normalizeNumber = normalized,
+                    profileImageUrl = photoUri
+                )
+
+                contactList.add(contact)
+            }
+        }
+
+        return contactList
+    }
+
 
 
 
@@ -752,7 +837,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         if (threadId == -1L) {
             notificationDao.updateGlobalPreviewOption(previewOption)
         } else {
-            notificationDao.updatePreviewOption(threadId, previewOption,true)
+            notificationDao.updatePreviewOption(threadId, previewOption, true)
         }
     }
 
@@ -762,7 +847,13 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
         if (missingThreadIds.isNotEmpty()) {
             val defaultSettings = missingThreadIds.map { threadId ->
-                NotificationSetting(threadId, isNotificationOn = 0, isWakeScreenOn = true, isCustom = false, previewOption = 0)
+                NotificationSetting(
+                    threadId,
+                    isNotificationOn = 0,
+                    isWakeScreenOn = true,
+                    isCustom = false,
+                    previewOption = 0
+                )
             }
             notificationDao.insertNotificationSettings(defaultSettings)
         }
@@ -774,7 +865,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
 
     fun getContactName(context: Context, phoneNumber: String): String {
-        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
         val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
 
         context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
@@ -783,6 +877,122 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
         }
         return phoneNumber // fallback to number if name not found
+    }
+
+
+    fun getPhotoUriFromPhoneNumber(number: String): String {
+
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(number)
+        )
+        val projection = arrayOf(
+            ContactsContract.PhoneLookup.PHOTO_URI
+        )
+
+        try {
+            val cursor = context.contentResolver.query(uri, projection, null, null, null)
+            cursor.use {
+                if (cursor?.moveToFirst() == true) {
+                    return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI))
+                        ?: ""
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+
+        return ""
+    }
+
+
+    fun getNotificationBitmap(context: Context,photoUri: String): Bitmap? {
+        val size =context.resources.getDimension(R.dimen.notification_large_icon_size).toInt()
+        if (photoUri.isEmpty()) {
+            return null
+        }
+
+        val options = RequestOptions()
+            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .centerCrop()
+
+        return try {
+            Glide.with(context)
+                .asBitmap()
+                .load(photoUri)
+                .apply(options)
+                .apply(RequestOptions.circleCropTransform())
+                .into(size, size)
+                .get()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun getContactUriFromNumber(context: Context, phoneNumber: String): String? {
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
+        context.contentResolver.query(
+            uri,
+            arrayOf(ContactsContract.PhoneLookup.PHOTO_URI),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI))
+            }
+        }
+        return null
+    }
+
+    fun getContactPhotoBitmap(context: Context, contactUri: Uri?): Bitmap? {
+        return try {
+            contactUri?.let {
+                ContactsContract.Contacts.openContactPhotoInputStream(context.contentResolver, it)
+                    ?.use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)
+                    }
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun getPhoneNumber(context: Context, address: String): String {
+        // If it's already a number, just return it
+        if (Patterns.PHONE.matcher(address).matches()) {
+            return address
+        }
+
+        // Otherwise, try to find the number by contact name
+        val uri = ContactsContract.Contacts.CONTENT_URI
+        val projection = arrayOf(ContactsContract.Contacts._ID)
+        val selection = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} = ?"
+        val selectionArgs = arrayOf(address)
+
+        context.contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val contactId = cursor.getString(0)
+
+                val phoneCursor = context.contentResolver.query(
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                    "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                    arrayOf(contactId),
+                    null
+                )
+                phoneCursor?.use {
+                    if (it.moveToFirst()) {
+                        return it.getString(0)
+                    }
+                }
+            }
+        }
+
+        // fallback to original if not found
+        return address
     }
 
 

@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.ui.Activity.ConversationActivity
 import kotlinx.coroutines.CoroutineScope
@@ -59,6 +60,7 @@ class GroupMemberAdapter(
         holder.messageButton.setOnClickListener {
             val intent = Intent(context, ConversationActivity::class.java).apply {
                 putExtra(NUMBER, number)
+                putExtra(NAME, holder.nameText.text)
             }
             context.startActivity(intent)
         }

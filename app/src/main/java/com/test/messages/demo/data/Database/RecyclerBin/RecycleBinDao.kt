@@ -26,6 +26,7 @@ interface RecycleBinDao {
     @Query("DELETE FROM recycle_bin WHERE message_id = :id")
     fun deleteMessageById(id: Long)
 
+
     @Query("SELECT * FROM recycle_bin WHERE thread_id = :threadId")
     fun getDeletedMessages(threadId: Long): DeletedMessage?
 
@@ -46,6 +47,7 @@ interface RecycleBinDao {
 
     @Query("DELETE FROM recycle_bin WHERE thread_id = :threadId")
     fun deleteMessagesByThreadId(threadId: Long)
+
 
     @Delete
     fun deleteMessage(deletedMessage: DeletedMessage)

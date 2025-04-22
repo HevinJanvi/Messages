@@ -99,7 +99,7 @@
     <string name="contacts">Kontakty</string>
     <string name="your_conversation_will_apper_here">Twoja konwersacja pojawi się tutaj</string>
     <string name="scheduled_messages">Zaplanowane wiadomości</string>
-    <string name="automatically_send">Automatycznie wysyłaj wiadomości, dokładnie w momencie,\nktóry chcesz</string>
+    <string name="automatically_send">Automatycznie wysyłaj wiadomości, dokładnie w momencie,który chcesz</string>
     <string name="cannot_select_past_time">Nie można wybrać czasu przeszłego</string>
     <string name="please_enter">Wprowadź wiadomość i wybierz czas</string>
     <string name="message_scheduled">Wiadomość zaplanowana!</string>

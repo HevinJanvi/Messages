@@ -59,7 +59,8 @@
             android:exported="false" />
         <activity
             android:name=".ui.Activity.SearchActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".ui.Activity.NotificationActivity"
             android:exported="false" />
@@ -171,6 +172,7 @@
         <activity android:name=".ui.Activity.BlockMessageActivity" />
         <activity android:name=".ui.Activity.StarredMessagesActivity" />
         <activity android:name=".ui.Activity.EditCategoryActivity" />
+        <activity android:name="com.test.messages.demo.ui.Activity.ConversationBinactivity" />
 
         <receiver android:name=".ui.send.SmsStatusSentReceiver" />
         <receiver
@@ -183,6 +185,33 @@
         <receiver
             android:name=".data.reciever.MessageSenderReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name=".data.reciever.MarkAsReadReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.simplemobiletools.smsmessenger.action.mark_as_read" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".data.reciever.DirectReplyReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.simplemobiletools.smsmessenger.action.reply" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".data.reciever.DeleteSmsReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.simplemobiletools.smsmessenger.action.delete" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

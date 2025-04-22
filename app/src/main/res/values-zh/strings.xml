@@ -99,7 +99,7 @@
     <string name="contacts">联系人</string>
     <string name="your_conversation_will_apper_here">您的对话将在此处显示</string>
     <string name="scheduled_messages">预定消息</string>
-    <string name="automatically_send">在您想要的确切时刻自动发送消息\n</string>
+    <string name="automatically_send">在您想要的确切时刻自动发送消息</string>
     <string name="cannot_select_past_time">无法选择过去的时间</string>
     <string name="please_enter">请输入消息并选择时间</string>
     <string name="message_scheduled">消息已安排！</string>

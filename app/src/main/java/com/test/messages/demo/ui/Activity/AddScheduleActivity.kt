@@ -131,6 +131,7 @@ class AddScheduleActivity : BaseActivity() {
         intent.putExtra(PROFILEURL, contact.profileImageUrl)
         intent.putExtra(ISSCHEDULED, true)
         startActivity(intent)
+        finish()
     }
     private fun updateSelectedContactsHeader() {
 

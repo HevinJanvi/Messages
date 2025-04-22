@@ -1,5 +1,6 @@
 package com.test.messages.demo.ui.Activity
 
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -9,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.provider.Settings
 import android.provider.Telephony
 import android.util.Log
 import android.util.TypedValue
@@ -20,11 +22,16 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.PopupWindow
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.GravityCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.LanguageChangeEvent
+import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -36,6 +43,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -44,6 +54,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     private lateinit var binding: ActivityMainBinding
     private var selectedMessagesCount = 0
     val viewModel: MessageViewModel by viewModels()
+    private lateinit var schedulePermissionLauncher: ActivityResultLauncher<Intent>
 
     override fun onResume() {
         super.onResume()
@@ -58,6 +69,11 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         outState.putBoolean("drawer_open_state", isDrawerOpen)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        EventBus.getDefault().unregister(this)
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,9 +83,10 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         if (Telephony.Sms.getDefaultSmsPackage(this) != packageName) {
             startActivity(Intent(this, SmsPermissionActivity::class.java))
         }
+        EventBus.getDefault().register(this)
 
         val drawerWasOpen = savedInstanceState?.getBoolean("drawer_open_state", false) ?: false
-        handleDrawerState(binding.drawerLayout,drawerWasOpen)
+        handleDrawerState(binding.drawerLayout, drawerWasOpen)
         loadConversationFragment()
 
         updateSelectedItemsCount(0)
@@ -119,7 +136,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
 
         binding.icDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,false) {
+            val deleteDialog = DeleteDialog(this, false) {
                 val fragment =
                     supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
                 fragment?.deleteSelectedMessages()
@@ -171,11 +188,39 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             startActivity(intent)
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
+
         binding.include.lySchedule.setOnClickListener {
-            val intent = Intent(this, ScheduleActivity::class.java)
-            startActivity(intent)
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!alarmManager.canScheduleExactAlarms()) {
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                    intent.data = Uri.parse("package:$packageName")
+                    schedulePermissionLauncher.launch(intent)
+                } else {
+                    val intent = Intent(this, ScheduleActivity::class.java)
+                    startActivity(intent)
+                }
+            } else {
+                val intent = Intent(this, ScheduleActivity::class.java)
+                startActivity(intent)
+            }
+
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
+        schedulePermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    val intent = Intent(this, ScheduleActivity::class.java)
+                    startActivity(intent)
+                } else {
+//                    Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         binding.include.lySetting.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
@@ -187,6 +232,11 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onChangeLanguage(event: LanguageChangeEvent) {
+        recreate()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -235,7 +285,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
             when {
                 pinnedCount > unpinnedCount -> {
-                    binding.icpin.setImageResource(R.drawable.ic_unpin)
+                    binding.icpin.setImageResource(R.drawable.ic_unpin2)
                     pinTextView.text = getString(R.string.unpin)
                 }
 
@@ -245,7 +295,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
                 }
 
                 else -> {
-                    binding.icpin.setImageResource(R.drawable.ic_unpin)
+                    binding.icpin.setImageResource(R.drawable.ic_unpin2)
                     pinTextView.text = getString(R.string.unpin)
                 }
             }

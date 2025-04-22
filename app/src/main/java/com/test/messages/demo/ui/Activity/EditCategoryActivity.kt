@@ -14,6 +14,9 @@ import com.test.messages.demo.ui.Adapter.EditCategoryAdapter
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.CategoryUpdateEvent
 import com.test.messages.demo.Util.CategoryVisibilityEvent
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.CATEGORY_ORDER
+import com.test.messages.demo.Util.CommanConstants.SHOW_CATEGORIES
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
 
@@ -31,8 +34,6 @@ class EditCategoryActivity : BaseActivity() {
         categories =
             intent.getStringArrayListExtra("category_list")?.toMutableList() ?: mutableListOf()
 
-
-//        adapter = EditCategoryAdapter(categories)
         adapter = EditCategoryAdapter(categories) { updatedList ->
             saveCategories(updatedList)
         }
@@ -43,8 +44,8 @@ class EditCategoryActivity : BaseActivity() {
         val itemTouchHelper = ItemTouchHelper(ItemMoveCallback(adapter))
         itemTouchHelper.attachToRecyclerView(binding.recyclerViewCategories)
 
-        val sharedPrefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-        binding.categorySwitch.isChecked = sharedPrefs.getBoolean("SHOW_CATEGORIES", true)
+        val sharedPrefs = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        binding.categorySwitch.isChecked = sharedPrefs.getBoolean(SHOW_CATEGORIES, true)
         binding.categorySwitch.setOnCheckedChangeListener { _, isChecked ->
             ViewUtils.setCategoryEnabled(this,isChecked)
             EventBus.getDefault().post(CategoryVisibilityEvent(isChecked))
@@ -57,21 +58,18 @@ class EditCategoryActivity : BaseActivity() {
 
     private fun saveCategories(updatedList: List<String>) {
         val orderedList = mutableListOf<String>().apply {
-            add(getString(R.string.inbox)) // Ensure Inbox is always first
-            addAll(updatedList.filterNot { it == getString(R.string.inbox) }) // Add others
+            add(getString(R.string.inbox))
+            addAll(updatedList.filterNot { it == getString(R.string.inbox) })
         }
-
-        Log.d("EditCategoryActivity", "Saving Categories: $orderedList")
-
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         val json = JSONArray(orderedList).toString()
-        sharedPrefs.edit().putString("CATEGORY_ORDER", json).apply()
-
-        Log.d("EditCategoryActivity", "Saved CATEGORY_ORDER JSON: $json")
-
+        sharedPrefs.edit().putString(CATEGORY_ORDER, json).apply()
         EventBus.getDefault().post(CategoryUpdateEvent(orderedList))
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+    }
 
 
 }

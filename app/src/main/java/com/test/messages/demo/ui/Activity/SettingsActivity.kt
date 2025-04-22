@@ -1,17 +1,24 @@
 package com.test.messages.demo.ui.Activity
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+
 import android.view.View
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.LAUNCHFROM
+import com.test.messages.demo.Util.CommanConstants.THEMEMODE
 import com.test.messages.demo.databinding.ActivitySettingsBinding
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.ui.Dialogs.FontsizeDialog
 
 class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
+    var editor: SharedPreferences.Editor? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -21,22 +28,29 @@ class SettingsActivity : BaseActivity() {
         binding.icBack.setOnClickListener {
             onBackPressed()
         }
+        val sharedPref = getSharedPreferences(CommanConstants.PREFS_NAME, MODE_PRIVATE)
+        editor = sharedPref.edit()
+        val selectedMode = sharedPref.getInt(THEMEMODE, 1)
+        when (selectedMode) {
+            1 -> binding.themeMode.text = getString(R.string.system_default)
+            2 -> binding.themeMode.text = getString(R.string.light)
+            3 -> binding.themeMode.text = getString(R.string.dark)
+        }
         binding.themeLy.setOnClickListener {
             val intent = Intent(this, ThemeActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, 102)
         }
         binding.langLy.setOnClickListener {
             val intent = Intent(this, LanguageActivity::class.java)
-            startActivity(intent)
-            finish()
+            intent.putExtra(LAUNCHFROM, "settings")
+            startActivityForResult(intent, 100)
+
         }
         binding.categoryLy.setOnClickListener {
-
             val categories = ViewUtils.getCategoriesFromPrefs(this)
             val intent = Intent(this, EditCategoryActivity::class.java)
             intent.putStringArrayListExtra("category_list", ArrayList(categories))
             startActivity(intent)
-            finish()
         }
         binding.recycleLy.setOnClickListener {
             val intent = Intent(this, RecycleBinActivity::class.java)
@@ -114,6 +128,28 @@ class SettingsActivity : BaseActivity() {
             )
             startActivity(intent)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            recreate()
+        } else if (requestCode == 102 && resultCode == RESULT_OK) {
+            val selectedTheme = data?.getIntExtra(THEMEMODE, 1) ?: 1
+
+            Log.d("TAG", "onActivityResult: " + selectedTheme)
+            // Update the theme name on screen or UI accordingly
+            when (selectedTheme) {
+                1 -> binding.themeMode.text = getString(R.string.system_default)
+                2 -> binding.themeMode.text = getString(R.string.light)
+                3 -> binding.themeMode.text = getString(R.string.dark)
+            }
+        }
+
+    }
+
+    override fun onBackPressed() {
+        finish()
     }
 
 }

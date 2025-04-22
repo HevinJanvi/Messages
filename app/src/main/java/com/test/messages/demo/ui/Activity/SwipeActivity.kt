@@ -28,17 +28,19 @@ class SwipeActivity : BaseActivity() {
         }
 
         binding.btnLeftChangeSwipe.setOnClickListener {
-            SwipeActionDialog(this, savedLeftAction,false) { selectedAction ->
-                ViewUtils.saveSwipeAction(this, selectedAction, false)
-                updateSwipeUI(selectedAction, savedRightAction)
+            val currentLeftAction = ViewUtils.getSwipeAction(this, false)
+            SwipeActionDialog(this, currentLeftAction, false) { selectedAction ->
+                val updatedRightAction = ViewUtils.getSwipeAction(this, true)
+                updateSwipeUI(selectedAction, updatedRightAction)
                 EventBus.getDefault().post(SwipeActionEvent(selectedAction, isRightSwipe = false))
             }.show()
         }
 
         binding.btnRightChangeSwipe.setOnClickListener {
-            SwipeActionDialog(this, savedRightAction,true) { selectedAction ->
-                ViewUtils.saveSwipeAction(this, selectedAction, true)
-                updateSwipeUI(savedLeftAction, selectedAction)
+            val currentRightAction = ViewUtils.getSwipeAction(this, true)
+            SwipeActionDialog(this, currentRightAction, true) { selectedAction ->
+                val updatedLeftAction = ViewUtils.getSwipeAction(this, false)
+                updateSwipeUI(updatedLeftAction, selectedAction)
                 EventBus.getDefault().post(SwipeActionEvent(selectedAction, isRightSwipe = true))
             }.show()
         }
@@ -56,8 +58,6 @@ class SwipeActivity : BaseActivity() {
             else -> getString(R.string.none)
         }
     }
-
-
 
     private fun updateSwipeUI(leftAction: Int, rightAction: Int) {
         binding.tvLeftSwipeAction.text = getSwipeActionName(leftAction)

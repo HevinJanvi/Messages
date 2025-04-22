@@ -65,17 +65,28 @@ class RecycleBinActivity : BaseActivity() {
         recycleBinAdapter = RecycleBinAdapter { selectedCount ->
             updateActionLayout(selectedCount)
         }
+
         binding.recycleBinRecyclerView.adapter = recycleBinAdapter
         recycleBinAdapter.onBinItemClick = { deletedMessage ->
-            val intent = Intent(this, RecycleConversationactivity::class.java)
+//            val intent = Intent(this, RecycleConversationactivity::class.java)
+            val intent = Intent(this, ConversationBinactivity::class.java)
             intent.putExtra(ISDELETED, true)
             intent.putExtra(EXTRA_THREAD_ID, deletedMessage.threadId)
             intent.putExtra(NAME, deletedMessage.address)
-            startActivity(intent)
+            startActivityForResult(intent, 101)
         }
-
         loadGroupedMessages()
+
         setupClickListeners()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 101 && resultCode == RESULT_OK) {
+            loadGroupedMessages()
+            recycleBinAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun setupClickListeners() {
@@ -84,7 +95,7 @@ class RecycleBinActivity : BaseActivity() {
         }
 
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,true) {
+            val deleteDialog = DeleteDialog(this, true) {
                 deleteSelectedMessages()
             }
             deleteDialog.show()
@@ -127,18 +138,6 @@ class RecycleBinActivity : BaseActivity() {
             }
         }.start()
     }
-
-   /* private fun deleteSelectedMessages() {
-        if (recycleBinAdapter.selectedMessages.isNotEmpty()) {
-            val messagesToDelete = recycleBinAdapter.selectedMessages.toList()
-            lifecycleScope.launch(Dispatchers.IO) {
-                AppDatabase.getDatabase(this@RecycleBinActivity).recycleBinDao()
-                    .deleteMessages(messagesToDelete)
-            }
-            recycleBinAdapter.clearSelection()
-            loadGroupedMessages()
-        }
-    }*/
 
     private fun deleteSelectedMessages() {
         if (recycleBinAdapter.selectedMessages.isNotEmpty()) {
@@ -187,7 +186,8 @@ class RecycleBinActivity : BaseActivity() {
                 val allMessagesToRestore = mutableListOf<DeletedMessage>()
 
                 // ✅ Fix: Properly gather all selected message threads and their messages
-                val selectedThreadIds = recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
+                val selectedThreadIds =
+                    recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
 
                 for (threadId in selectedThreadIds) {
                     val threadMessages = db.getAllMessagesByThread(threadId)
@@ -232,97 +232,11 @@ class RecycleBinActivity : BaseActivity() {
 
                     for ((threadId, pair) in restoredThreadMap) {
                         val (lastMessage, lastTime) = pair
-                        EventBus.getDefault().post(MessageRestoredEvent(threadId, lastMessage, lastTime))
-                    }
-
-//                    Toast.makeText(this, getString(R.string.messages_restored), Toast.LENGTH_SHORT).show()
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Handler(Looper.getMainLooper()).post {
-                    dialog.dismiss()
-                    Toast.makeText(this, getString(R.string.restore_failed), Toast.LENGTH_SHORT).show()
-                }
-            }
-        }.start()
-    }
-
-
-
-    /*@RequiresApi(Build.VERSION_CODES.Q)
-    private fun restoreSelectedMessages() {
-        val contentResolver = contentResolver
-        val db = AppDatabase.getDatabase(this).recycleBinDao()
-
-        val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
-
-        dialog.window?.apply {
-            setGravity(Gravity.BOTTOM)
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-        dialog.show()
-
-        val startTime = System.currentTimeMillis()
-
-        Thread {
-            try {
-                val restoredThreadMap = mutableMapOf<Long, Pair<String, Long>>()
-                val allMessagesToRestore = mutableListOf<DeletedMessage>()
-
-                for (selectedThread in recycleBinAdapter.selectedMessages) {
-                    val threadMessages = db.getAllMessagesByThread(selectedThread.threadId)
-                    allMessagesToRestore.addAll(threadMessages)
-                }
-
-                for (deletedMessage in allMessagesToRestore) {
-                    var threadId = deletedMessage.threadId
-                    if (!isThreadExists(threadId)) {
-                        threadId = getThreadId(deletedMessage.address)
-                    }
-
-                    val values = ContentValues().apply {
-                        put(Telephony.Sms.THREAD_ID, threadId)
-                        put(Telephony.Sms.DATE, deletedMessage.date)
-                        put(Telephony.Sms.BODY, deletedMessage.body)
-                        put(Telephony.Sms.ADDRESS, deletedMessage.address)
-                        put(Telephony.Sms.TYPE, deletedMessage.type)
-                        put(Telephony.Sms.READ, if (deletedMessage.read) 1 else 0)
-                        put(Telephony.Sms.SUBSCRIPTION_ID, deletedMessage.subscriptionId)
-                    }
-
-                    contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
-                    db.deleteMessage(deletedMessage)
-                    restoredThreadMap[threadId] = Pair(deletedMessage.body, deletedMessage.date)
-                }
-
-                val elapsed = System.currentTimeMillis() - startTime
-                val minDisplay = 800L
-                if (elapsed < minDisplay) {
-                    Thread.sleep(minDisplay - elapsed)
-                }
-
-                Handler(Looper.getMainLooper()).post {
-                    dialog.dismiss()
-
-                    for ((threadId, pair) in restoredThreadMap) {
-                        val (lastMessage, lastTime) = pair
                         EventBus.getDefault()
                             .post(MessageRestoredEvent(threadId, lastMessage, lastTime))
                     }
 
-                    recycleBinAdapter.clearSelection()
-                    loadGroupedMessages()
-                    viewModel.loadMessages()
-
+//                    Toast.makeText(this, getString(R.string.messages_restored), Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
@@ -334,11 +248,7 @@ class RecycleBinActivity : BaseActivity() {
                 }
             }
         }.start()
-    }*/
-
-
-
-
+    }
 
     fun getThreadId(address: String): Long {
         return try {
@@ -364,10 +274,21 @@ class RecycleBinActivity : BaseActivity() {
 
         binding.btnSelectAll.isChecked = recycleBinAdapter.isAllSelected()
 
+        binding.txtSelectedCount.text = "$selectedCount" + " " + getString(R.string.selected)
         val isSelectionActive = selectedMessages.isNotEmpty()
         binding.selectMenuBin.visibility = if (selectedCount > 0) View.VISIBLE else View.GONE
         binding.lySelectedItemsBin.visibility = if (selectedCount > 0) View.VISIBLE else View.GONE
         binding.toolBarBin.visibility = if (selectedCount > 0) View.GONE else View.VISIBLE
     }
+
+    override fun onBackPressed() {
+        if (recycleBinAdapter.selectedMessages.size > 0) {
+            recycleBinAdapter.clearSelection()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+
 
 }

@@ -163,10 +163,37 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         diffResult.dispatchUpdatesTo(this)
     }
 
-    fun updateReadStatus(threadIds: List<Long>) {
+   /* fun updateReadStatus(threadIds: List<Long>) {
         val newList = messages.map { message ->
             if (threadIds.contains(message.threadId)) message.copy(isRead = true) else message
         }
         submitList(newList)
+    }*/
+
+    fun updateReadStatus(threadIds: List<Long>) {
+        val updatedItems = messages.toMutableList()
+        var hasChanges = false
+
+        threadIds.forEachIndexed { _, threadId ->
+            val index = updatedItems.indexOfFirst { it.threadId == threadId }
+            if (index != -1) {
+                val item = updatedItems[index]
+                updatedItems[index] = item.copy(isRead = !item.isRead)
+                notifyItemChanged(index)
+                hasChanges = true
+            }
+        }
+
+        if (hasChanges) {
+            submitList(updatedItems)
+        }
     }
+
+    fun updateUnreadStatus(threadIds: List<Long>) {
+        val newList = messages.map { message ->
+            if (threadIds.contains(message.threadId)) message.copy(isRead = false) else message
+        }
+        submitList(newList)
+    }
+
 }

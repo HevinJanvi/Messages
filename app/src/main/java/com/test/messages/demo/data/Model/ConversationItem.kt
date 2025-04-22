@@ -34,8 +34,4 @@ data class ConversationItem(
     fun isIncoming(): Boolean {
         return type == Telephony.Sms.MESSAGE_TYPE_INBOX
     }
-    fun extractLink(): String? {
-        val linkRegex = "(https?://[\\w./?=#%&_-]+)".toRegex()
-        return linkRegex.find(body)?.value
-    }
 }

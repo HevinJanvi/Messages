@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -12,29 +14,36 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
 import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SnackbarUtil
+import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
+import com.test.messages.demo.ui.Fragment.ConversationFragment
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -42,6 +51,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -78,6 +90,7 @@ class ArchivedActivity : BaseActivity() {
         binding = ActivityArchivedBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        EventBus.getDefault().register(this)
 
         binding.archiveRecyclerView.layoutManager = LinearLayoutManager(this)
         adapter = ArchiveMessageAdapter(
@@ -101,6 +114,7 @@ class ArchivedActivity : BaseActivity() {
                 putExtra(EXTRA_THREAD_ID, message.threadId)
                 putExtra(NUMBER, message.number)
                 putExtra(NAME, message.sender)
+                putExtra(CommanConstants.FROMARCHIVE,true)
             }
             conversationResultLauncher.launch(intent)
         }
@@ -238,6 +252,21 @@ class ArchivedActivity : BaseActivity() {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessagesRefreshed(event: MessagesRefreshEvent) {
+        if (event.success) {
+            Log.d("TAG", "onMessagesRefreshed:archiv ")
+            Handler(Looper.getMainLooper()).postDelayed({
+                viewModel.loadMessages()
+            }, 100)
+
+        }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.emptyConversation()
+        EventBus.getDefault().unregister(this)
+    }
 
     private fun updateSelectedItemsCount() {
         binding.txtSelectedCount.text =
@@ -260,12 +289,18 @@ class ArchivedActivity : BaseActivity() {
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+        val handler = Handler(Looper.getMainLooper())
+        val deleteDialog = DeleteProgressDialog(this)
 
+        val showDialogRunnable = Runnable {
+            deleteDialog.show(getString(R.string.moving_messages_to_recycle_bin))
+        }
+        handler.postDelayed(showDialogRunnable, 300)
         Thread {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
                 val existingBodyDatePairs =
-                    mutableSetOf<Pair<String, Long>>() // to avoid duplicates
+                    mutableSetOf<Pair<String, Long>>()
 
                 for (item in adapter.selectedMessages) {
                     val threadId = item.threadId
@@ -279,6 +314,7 @@ class ArchivedActivity : BaseActivity() {
                     )
 
                     cursor?.use {
+                        val idIndex = it.getColumnIndex(Telephony.Sms._ID)
                         val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
                         val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
                         val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
@@ -287,18 +323,17 @@ class ArchivedActivity : BaseActivity() {
                         val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
 
                         while (it.moveToNext()) {
+                            val messageId = it.getLong(idIndex)
                             val body = it.getString(bodyIndex) ?: ""
                             val date = it.getLong(dateIndex)
-
-                            // Check for body + date duplicate
                             val key = Pair(body, date)
                             if (existingBodyDatePairs.contains(key)) {
-                                continue // skip this duplicate
+                                continue
                             }
                             existingBodyDatePairs.add(key)
 
                             val deletedMessage = DeletedMessage(
-                                messageId = 0,
+                                messageId = messageId,
                                 threadId = threadId,
                                 address = it.getString(addressIndex) ?: "",
                                 date = date,
@@ -321,18 +356,9 @@ class ArchivedActivity : BaseActivity() {
 
                 db.insertMessages(deletedMessages)
 
-                /*if (deletedThreads.isNotEmpty()) {
-                    Handler(Looper.getMainLooper()).post {
-                        val updatedList =
-                            viewModel.messages.value?.filterNot { it.threadId in deletedThreads }
-                                ?: emptyList()
-                        viewModel.updateMessages(updatedList)
-                        adapter.removeItems(deletedThreads)
-                        adapter.clearSelection()
-                    }
-                }*/
-
                 Handler(Looper.getMainLooper()).post {
+                    handler.removeCallbacks(showDialogRunnable)
+                    deleteDialog.dismiss()
                     adapter.removeItems(threadIds)
                     adapter.selectedMessages.clear()
                     viewModel.updateMessages(updatedList)
@@ -342,29 +368,141 @@ class ArchivedActivity : BaseActivity() {
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                handler.removeCallbacks(showDialogRunnable)
+                deleteDialog.dismiss()
             }
         }.start()
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+
     fun showPopup(view: View) {
         val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val dialog = layoutInflater.inflate(R.layout.popup_menu, null)
 
         val popupWindow = PopupWindow(
-            dialog, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+            dialog,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
 
-        popupWindow.setBackgroundDrawable(BitmapDrawable())
-        popupWindow.isOutsideTouchable = true
+        val marginDp = 16
+        val marginPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            marginDp.toFloat(),
+            view.resources.displayMetrics
+        ).toInt()
+
+
+        dialog.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val popupWidth = dialog.measuredWidth
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        val anchorX = location[0]
+        val anchorY = location[1] + view.height
+        val isRTL = view.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val x = if (isRTL) {
+            anchorX + marginPx
+        } else {
+            anchorX + view.width - popupWidth - marginPx
+        }
+
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, x, anchorY)
 
         val lyMarkAsRead: LinearLayout = dialog.findViewById(R.id.txtMarkAsRead)
+        val selectedMessages = adapter.selectedMessages
+
+        if (selectedMessages.isNotEmpty()) {
+            val allUnread = selectedMessages.all { !it.isRead }
+            val allRead = selectedMessages.all { it.isRead }
+            val firstIsRead = selectedMessages.first().isRead
+
+            val textView = lyMarkAsRead.getChildAt(0) as TextView
+
+            when {
+                allUnread -> {
+                    textView.text = getString(R.string.mark_as_read)
+                    textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_read, 0, 0, 0)
+                }
+
+                allRead -> {
+                    textView.text = getString(R.string.mark_as_unread)
+                    textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_mark_read, 0, 0, 0)
+                }
+
+                else -> {
+
+                    if (firstIsRead) {
+                        textView.text = getString(R.string.mark_as_unread)
+                        textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_mark_read, 0, 0, 0)
+                    } else {
+                        textView.text = getString(R.string.mark_as_read)
+                        textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_read, 0, 0, 0)
+                    }
+                }
+            }
+        }
+
         lyMarkAsRead.setOnClickListener {
             popupWindow.dismiss()
-            markThreadsAsRead()
+            markThreadsReadOrUnread()
             adapter.clearSelection()
         }
-        popupWindow.showAsDropDown(view, 0, 0, Gravity.CENTER_VERTICAL or Gravity.END)
+
+    }
+
+    private fun markThreadsReadOrUnread() {
+        val selectedMessages = adapter.selectedMessages
+        if (selectedMessages.isEmpty()) return
+
+        val firstIsRead = selectedMessages.first().isRead
+        val newReadStatus = if (firstIsRead) 0 else 1
+
+        val threadIds = selectedMessages.map { it.threadId }
+        val contentValues = ContentValues().apply {
+            put(Telephony.Sms.READ, newReadStatus)
+        }
+
+        val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(",")})"
+        val updatedRows = contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
+
+        if (updatedRows > 0) {
+            val updatedList = viewModel.messages.value?.map { message ->
+                if (threadIds.contains(message.threadId)) {
+                    message.copy(isRead = newReadStatus == 1)
+                } else message
+            } ?: emptyList()
+
+            viewModel.updateMessages(updatedList)
+            adapter.updateReadStatus(threadIds)
+        }
+    }
+
+
+    private fun markThreadsAsUnread() {
+        val selectedThreadIds = adapter.getSelectedThreadIds()
+        if (selectedThreadIds.isEmpty()) return
+
+        val contentValues = ContentValues().apply { put(Telephony.Sms.READ, 0) }
+        val selection = "${Telephony.Sms.THREAD_ID} IN (${selectedThreadIds.joinToString(",")})"
+
+        val updatedRows =
+            contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
+        if (updatedRows > 0) {
+            val updatedList = viewModel.messages.value?.map { message ->
+                if (selectedThreadIds.contains(message.threadId)) {
+                    message.copy(isRead = false)
+                } else {
+                    message
+                }
+            } ?: emptyList()
+
+            viewModel.updateMessages(updatedList)
+            adapter.updateUnreadStatus(selectedThreadIds)
+        }
     }
 
     private fun markThreadsAsRead() {

@@ -8,7 +8,6 @@ import android.app.NotificationManager
 import android.app.TimePickerDialog
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -43,8 +42,6 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.R
@@ -52,10 +49,13 @@ import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.FORWARD
 import com.test.messages.demo.Util.CommanConstants.FORWARDMSGS
+import com.test.messages.demo.Util.CommanConstants.FROMARCHIVE
 import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
+import com.test.messages.demo.Util.CommanConstants.FROMSEARCH
 import com.test.messages.demo.Util.CommanConstants.GROUP_MEMBERS
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.CommanConstants.ISGROUP
 import com.test.messages.demo.Util.CommanConstants.ISSCHEDULED
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
@@ -65,6 +65,8 @@ import com.test.messages.demo.Util.CommanConstants.SHARECONTACT
 import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNAME
 import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNUMBER
 import com.test.messages.demo.Util.CommanConstants.SOURCE
+import com.test.messages.demo.Util.ConversationOpenedEvent
+import com.test.messages.demo.Util.DeleteSearchMessageEvent
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
@@ -78,12 +80,14 @@ import com.test.messages.demo.Util.ViewUtils.resetMessageCount
 import com.test.messages.demo.data.reciever.MessageScheduler
 import com.test.messages.demo.Util.MessageUnstarredEvent
 import com.test.messages.demo.Util.RefreshMessagesEvent
+import com.test.messages.demo.Util.SmsUtils
+import com.test.messages.demo.Util.SmsUtils.markThreadAsRead
 import com.test.messages.demo.Util.UpdateGroupNameEvent
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import com.test.messages.demo.ui.Dialogs.MessageDetailsDialog
-import com.test.messages.demo.ui.Fragment.ConversationFragment
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -116,34 +120,29 @@ class ConversationActivity : BaseActivity() {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var oldBottom = 0
     var isfromBlock: Boolean = false
+    var isfromArchive: Boolean = false
+    var isfromSearch: Boolean = false
     var isScheduled: Boolean = false
+    var isGroup: Boolean = false
     private val starredMessageIds = mutableSetOf<Long>()
-    private var highlightQuery: String? = null
+    private var highlightQuery: String = ""
     private var selectedTimeInMillis: Long = 0L
     private lateinit var profileLauncher: ActivityResultLauncher<Intent>
+    private var hasDraftPreviously: Boolean = false
 
-    private fun markThreadAsRead(threadId: Long) {
-        if (threadId == -1L) return
-        val contentValues = ContentValues().apply {
-            put(Telephony.Sms.READ, 1)
-            put(Telephony.Sms.SEEN, 1)
-        }
-        val uri = Telephony.Sms.CONTENT_URI
-        val selection = "${Telephony.Sms.THREAD_ID} = ?"
-        val selectionArgs = arrayOf(threadId.toString())
-        val updatedRows = contentResolver.update(uri, contentValues, selection, selectionArgs)
-        Log.d(
-            "ConversationActivity",
-            "Marked $updatedRows archive messages as read in thread $threadId"
-        )
-        Handler(Looper.getMainLooper()).post { viewModel.loadMessages() }
-    }
 
     override fun onResume() {
         super.onResume()
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
             return
         }
+        val threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
+        EventBus.getDefault().postSticky(ConversationOpenedEvent(threadId))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        EventBus.getDefault().removeStickyEvent(ConversationOpenedEvent::class.java)
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -151,6 +150,7 @@ class ConversationActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         messagingUtils = MessageUtils(this)
         EventBus.getDefault().register(this)
 
@@ -159,8 +159,14 @@ class ConversationActivity : BaseActivity() {
         name = intent.getStringExtra(NAME).toString()
         profileUrl = intent.getStringExtra(PROFILEURL).toString()
         isfromBlock = intent.getBooleanExtra(FROMBLOCK, false)
-        highlightQuery = intent.getStringExtra(QUERY)
+        isfromArchive = intent.getBooleanExtra(FROMARCHIVE, false)
+        isfromSearch= intent.getBooleanExtra(FROMSEARCH, false)
+        highlightQuery = intent.getStringExtra(QUERY).toString()
         isScheduled = intent.getBooleanExtra(ISSCHEDULED, false)
+        isGroup = intent.getBooleanExtra(ISGROUP, false)
+        Handler(Looper.getMainLooper()).postDelayed({
+            viewModel.loadConversation(threadId)
+        }, 50)
 
         val forwardedMessage = intent.getStringExtra("forwardedMessage")
         if (!forwardedMessage.isNullOrEmpty()) {
@@ -179,6 +185,7 @@ class ConversationActivity : BaseActivity() {
             binding.schedulLy.visibility = View.GONE
         }
         Log.d("TAG", "onCreate: threadId :- " + threadId)
+        Log.d("TAG", "onCreate: isgroup--:- " + isGroup)
         setupRecyclerView()
         if (threadId != -1L) {
             resetMessageCount(this, threadId)
@@ -188,8 +195,9 @@ class ConversationActivity : BaseActivity() {
         } else {
             threadId = getThreadId(setOf(number))
         }
-        markThreadAsRead(threadId)
-        viewModel.loadConversation(threadId)
+        SmsUtils.markThreadAsRead(this@ConversationActivity, threadId) {
+            viewModel.loadMessages()
+        }
         observeViewModel()
         loadStarredMessages()
 
@@ -210,13 +218,23 @@ class ConversationActivity : BaseActivity() {
         }
 
         draftViewModel.getDraft(threadId).observe(this) { draftText ->
+            hasDraftPreviously = !draftText.isNullOrEmpty()
+
             binding.editTextMessage.setText(draftText)
         }
 
         binding.editTextMessage.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                if(!isScheduled){
+                if (!isScheduled) {
                     draftViewModel.saveDraft(threadId, s.toString())
+
+                    /*val isNowEmpty = s!!.isBlank()
+                    if (hasDraftPreviously && isNowEmpty) {
+                        hasDraftPreviously = false // reset
+                        EventBus.getDefault().post(DraftChangedEvent(threadId, false))
+                    } else if (!isNowEmpty) {
+                        hasDraftPreviously = true
+                    }*/
                 }
             }
 
@@ -257,7 +275,7 @@ class ConversationActivity : BaseActivity() {
         }
         binding.btnInfo.setOnClickListener {
 
-            Log.d("INFO_CLICK", "Raw Number String: $number")
+            Log.d("TAG", "Raw Number String: $number")
             val numbersList = number.split(",").map { it.trim() }.filter { it.isNotEmpty() }
 
             if (numbersList.size > 1) {
@@ -273,12 +291,14 @@ class ConversationActivity : BaseActivity() {
                 intent.putExtra(EXTRA_THREAD_ID, threadId)
                 intent.putExtra(NUMBER, number)
                 intent.putExtra(NAME, name)
+                intent.putExtra(FROMBLOCK, isfromBlock)
+                intent.putExtra(FROMARCHIVE, isfromArchive)
                 intent.putExtra(PROFILEURL, profileUrl)
                 profileLauncher.launch(intent)
 
             }
 
-            if (isfromBlock) {
+            if (isfromBlock || isfromArchive) {
                 finish()
             }
         }
@@ -301,8 +321,9 @@ class ConversationActivity : BaseActivity() {
             }
         }
 
+
         binding.lySchedule.setOnClickListener {
-            isScheduled=true
+            isScheduled = true
             showDateTimePickerDialog()
             binding.close.setOnClickListener {
                 binding.schedulLy.visibility = View.GONE
@@ -331,6 +352,7 @@ class ConversationActivity : BaseActivity() {
         }
     }
 
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -338,12 +360,18 @@ class ConversationActivity : BaseActivity() {
             val selectedNumber = data?.getStringExtra(SHARECONTACTNUMBER) ?: return
             val contactName = data.getStringExtra(SHARECONTACTNAME) ?: getString(R.string.unknown)
 
-            val contactText = "$contactName\n$selectedNumber"
-            binding.editTextMessage.setText(contactText)
-            binding.editTextMessage.setSelection(contactText.length)
+            val newContactText = "$contactName\n$selectedNumber"
+
+            if (binding.editTextMessage.text.isNotEmpty()) {
+                binding.editTextMessage.append("\n\n")
+            }
+
+            binding.editTextMessage.append(newContactText)
+
+            // Move cursor to the end
+            binding.editTextMessage.setSelection(binding.editTextMessage.text.length)
         }
     }
-
 
 
     fun showPopupMore(view: View) {
@@ -435,10 +463,10 @@ class ConversationActivity : BaseActivity() {
 
     private fun setupRecyclerView() {
 
-        val contactName = viewModel.getContactName(this@ConversationActivity,name)
+        val contactName = viewModel.getContactName(this@ConversationActivity, name)
         val isContactSaved = contactName != number
 
-        adapter = ConversationAdapter(this,isContactSaved) { selectedCount ->
+        adapter = ConversationAdapter(this, isContactSaved) { selectedCount ->
             updateUI(selectedCount)
             adapter.setSearchQuery(highlightQuery)
         }
@@ -486,6 +514,8 @@ class ConversationActivity : BaseActivity() {
             }
 
             if (groupedList.isNotEmpty()) {
+                Log.d("TAG", "observeViewModel: if ")
+
                 binding.emptyText.visibility = View.GONE
                 CoroutineScope(Dispatchers.IO).launch {
                     val sharedPreferences =
@@ -501,20 +531,26 @@ class ConversationActivity : BaseActivity() {
                     }
                 }
 
-                updateLyouts(ViewUtils.isOfferSender(name))
-                markThreadAsRead(threadId)
+                updateLyouts(ViewUtils.isOfferSender(number),isGroup)
+                markThreadAsRead(this@ConversationActivity, threadId) {
+                    viewModel.loadMessages()
+                }
+
             } else {
+
+                Log.d("TAG", "observeViewModel: else ")
                 val hasForwardedText =
                     intent.getStringArrayListExtra("forwardedMessages")?.isNotEmpty() == true
                 if (hasForwardedText) {
                     binding.emptyText.visibility = View.GONE
                 } else {
-                    binding.emptyText.visibility = View.VISIBLE
-                }
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        binding.emptyText.visibility = View.VISIBLE
+                    }, 150)
 
-//                binding.emptyText.visibility = View.VISIBLE
+                }
                 binding.address.text = name
-                updateLyouts(ViewUtils.isOfferSender(name))
+                updateLyouts(ViewUtils.isOfferSender(name),isGroup)
             }
         }
     }
@@ -558,8 +594,8 @@ class ConversationActivity : BaseActivity() {
         layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
     }
 
-    private fun updateLyouts(isServiceNumber: Boolean) {
-        if (isServiceNumber) {
+    private fun updateLyouts(isServiceNumber: Boolean,isGroup:Boolean) {
+        if (isServiceNumber && !isGroup) {
             binding.msgSendLayout.visibility = View.GONE
             binding.learnMoreLy.visibility = View.VISIBLE
             binding.secureLy.visibility = View.VISIBLE
@@ -580,11 +616,10 @@ class ConversationActivity : BaseActivity() {
     }
 
     private fun sendMessage() {
-        highlightQuery = null
+        highlightQuery = ""
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
-            Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG)
-                .show()
+
             return
         }
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
@@ -619,7 +654,7 @@ class ConversationActivity : BaseActivity() {
         scrolltoBottom()
         viewModel.loadMessages()
         viewModel.loadConversation(threadId)
-        adapter.setSearchQuery(null)
+        adapter.setSearchQuery("")
     }
 
     fun resendMessage(message: ConversationItem) {
@@ -678,11 +713,6 @@ class ConversationActivity : BaseActivity() {
             withContext(Dispatchers.Main) {
                 binding.blockLy.visibility = View.GONE
                 isfromBlock = false
-                Toast.makeText(
-                    this@ConversationActivity,
-                    getString(R.string.contact_blocked), Toast.LENGTH_SHORT
-                )
-                    .show()
                 finish()
             }
         }
@@ -714,20 +744,26 @@ class ConversationActivity : BaseActivity() {
         }
         val chooser = Intent.createChooser(shareIntent, "Share messages via")
         startActivity(chooser)
-
     }
 
     private fun deleteSelectedMessages() {
         val selectedMessages = adapter.getSelectedItems().toList()
+        if (selectedMessages.isEmpty()) return
+        val deleteDialog = DeleteProgressDialog(this)
+        val handler = Handler(Looper.getMainLooper())
+        val showDialogRunnable = Runnable {
+            deleteDialog.show(getString(R.string.moving_messages_to_recycle_bin))
+        }
+        handler.postDelayed(showDialogRunnable, 400)
 
         Thread {
             val db = AppDatabase.getDatabase(this).recycleBinDao()
-
+/*
             for (message in selectedMessages) {
                 val deletedMessage = DeletedMessage(
                     messageId = message.id,
                     threadId = message.threadId,
-                    address = name,
+                    address = message.address,
                     date = message.date,
                     body = message.body,
                     type = message.type,
@@ -740,15 +776,56 @@ class ConversationActivity : BaseActivity() {
 
                 val uri = Uri.parse("content://sms/${message.id}")
                 contentResolver.delete(uri, null, null)
+            }*/
+
+            val messageIds = selectedMessages.map { it.id }
+            val deletedMessages = selectedMessages.map { message ->
+                DeletedMessage(
+                    messageId = message.id,
+                    threadId = message.threadId,
+                    address = message.address,
+                    date = message.date,
+                    body = message.body,
+                    type = message.type,
+                    read = message.read,
+                    subscriptionId = message.subscriptionId,
+                    deletedTime = System.currentTimeMillis()
+                )
             }
 
+// 1. Insert all messages into Recycle Bin
+                db.insertMessages(deletedMessages) // Use insertMessages(List<DeletedMessage>)
+
+// 2. Delete all messages in one query
+                if (messageIds.isNotEmpty()) {
+                    val placeholders = messageIds.joinToString(",") { "?" }
+                    val selectionArgs = messageIds.map { it.toString() }.toTypedArray()
+
+                    contentResolver.delete(
+                        Telephony.Sms.CONTENT_URI,
+                        "_id IN ($placeholders)",
+                        selectionArgs
+                    )
+                }
+
+
+                val deletedMessageId = if (isfromSearch && selectedMessages.isNotEmpty()) {
+                selectedMessages[0].id.toString()
+            } else null
+
             runOnUiThread {
+                handler.removeCallbacks(showDialogRunnable)
+                deleteDialog.dismiss()
                 adapter.clearSelection()
                 viewModel.loadConversation(threadId)
+
+                if (isfromSearch && deletedMessageId != null) {
+                    val deletedIds = selectedMessages.map { it.id }
+                    EventBus.getDefault().post(DeleteSearchMessageEvent(deletedIds))
+                }
             }
         }.start()
     }
-
 
     private fun copySelectedMessages() {
         if (adapter.selectedItems.isNotEmpty()) {
@@ -884,6 +961,7 @@ class ConversationActivity : BaseActivity() {
         viewModel.loadConversation(threadId)
     }
 
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGroupNameUpdated(event: UpdateGroupNameEvent) {
         if (event.threadId == threadId) {
@@ -903,7 +981,7 @@ class ConversationActivity : BaseActivity() {
         val currentMinute = calendar.get(Calendar.MINUTE)
 
         val datePickerDialog = DatePickerDialog(
-            this@ConversationActivity,R.style.CustomDatePicker,
+            this@ConversationActivity, R.style.CustomDatePicker,
             { _, year, month, dayOfMonth ->
                 val selectedDate = Calendar.getInstance().apply {
                     set(Calendar.YEAR, year)
@@ -912,7 +990,7 @@ class ConversationActivity : BaseActivity() {
                 }
 
                 val timePickerDialog = TimePickerDialog(
-                    this,R.style.CustomDatePicker,
+                    this, R.style.CustomTimePicker,
 
                     { _, hourOfDay, minute ->
                         val selectedCalendar = Calendar.getInstance().apply {

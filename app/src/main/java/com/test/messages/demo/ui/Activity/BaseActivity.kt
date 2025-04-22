@@ -1,6 +1,7 @@
 package com.test.messages.demo.ui.Activity
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -13,6 +14,8 @@ import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.CommanConstants.THEMEMODE
 import com.test.messages.demo.Util.ViewUtils
 import java.util.Locale
 
@@ -23,13 +26,14 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setLanguage(this)
+
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.statusBarColor = resources.getColor(R.color.bg, theme)
         }
         updateSystemBarsColor()
 
-        setLanguage(this)
     }
 
     open fun setLanguage(context: Context): Context? {
@@ -40,6 +44,18 @@ open class BaseActivity : AppCompatActivity() {
         configuration.setLocale(locale)
         configuration.setLayoutDirection(locale)
         return context.createConfigurationContext(configuration)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        val sharedPref = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val selectedMode = sharedPref.getInt(THEMEMODE, 1)
+
+        if (selectedMode == 1) {
+            // Only recreate if using system theme
+            recreate()
+        }
     }
 
     fun handleDrawerState(drawerLayout: DrawerLayout,drawerWasOpen :Boolean=false) {

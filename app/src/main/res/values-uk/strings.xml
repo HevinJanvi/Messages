@@ -99,7 +99,7 @@
     <string name="contacts">Контакти</string>
     <string name="your_conversation_will_apper_here">Тут з’явиться ваша розмова</string>
     <string name="scheduled_messages">Заплановані повідомлення</string>
-    <string name="automatically_send">Автоматично надсилайте повідомлення в потрібний момент\n</string>
+    <string name="automatically_send">Автоматично надсилайте повідомлення в потрібний момент</string>
     <string name="cannot_select_past_time">Неможливо вибрати минулий час</string>
     <string name="please_enter">Будь ласка, введіть повідомлення та виберіть час</string>
     <string name="message_scheduled">Повідомлення заплановано!</string>

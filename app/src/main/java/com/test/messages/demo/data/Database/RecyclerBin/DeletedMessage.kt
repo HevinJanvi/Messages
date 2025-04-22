@@ -16,7 +16,7 @@ data class DeletedMessage(
     val threadId: Long,
 
     @ColumnInfo(name = "address")
-    val address: String,
+    var address: String,
 
     @ColumnInfo(name = "date")
     val date: Long,
@@ -33,5 +33,8 @@ data class DeletedMessage(
     @ColumnInfo(name = "subscription_id")
     val subscriptionId: Int,
 
-    val deletedTime: Long = System.currentTimeMillis()
+    val deletedTime: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "is_group_chat") val isGroupChat: Boolean = false,
+    @ColumnInfo(name = "profile_image_url") val profileImageUrl: String? = null
 )

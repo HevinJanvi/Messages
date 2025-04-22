@@ -36,8 +36,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:adjustViewBounds="true"
-                android:padding="1dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="1dp"
                 android:src="@drawable/ic_back"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -53,11 +53,12 @@
                 android:background="@null"
                 android:fontFamily="@font/product_sans_regular"
                 android:hint="@string/search_messages"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:textColor="@color/textcolor"
                 android:textColorHint="@color/gray_txtcolor"
                 android:textDirection="locale"
-                android:inputType="text"
                 android:textFontWeight="400"
-                android:textColor="@color/textcolor"
                 android:textSize="15dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnclose"
@@ -70,9 +71,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:adjustViewBounds="true"
-                android:visibility="gone"
-                android:src="@drawable/ic_close"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -81,59 +82,119 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/listLy"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolBar">
 
-        <TextView
-            android:id="@+id/messagesHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="10dp"
-            android:layout_marginStart="22dp"
-            android:fontFamily="@font/product_sans_regular"
-            android:text="@string/conversation"
-            android:textColor="@color/textcolor"
-            android:textSize="16sp"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewMessages"
+        <LinearLayout
+            android:id="@+id/listLy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/messagesHeader" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/contactsHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="10dp"
-            android:layout_marginStart="22dp"
-            android:fontFamily="@font/product_sans_regular"
-            android:text="@string/contacts"
-            android:textColor="@color/textcolor"
-            android:textSize="16sp"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recyclerViewMessages" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewContacts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginHorizontal="5dp"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/contactsHeader" />
+                <TextView
+                    android:id="@+id/messagesHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    android:layout_marginStart="22dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/conversation"
+                    android:textColor="@color/textcolor"
+                    android:textSize="16sp"
+                    android:visibility="gone"
+                    android:paddingVertical="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/seeAllMessages"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:paddingHorizontal="15dp"
+                    android:paddingVertical="5dp"
+                    android:layout_marginVertical="10dp"
+                    android:layout_marginEnd="5dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:gravity="end"
+                    android:text="@string/see_all"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="15sp"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewMessages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/contactsHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    android:layout_marginStart="22dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:text="@string/contacts"
+                    android:textColor="@color/textcolor"
+                    android:textSize="16sp"
+                    android:paddingVertical="5dp"
+                    android:visibility="gone"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/seeAllContacts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginVertical="10dp"
+                    android:paddingHorizontal="15dp"
+                    android:paddingVertical="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:fontFamily="@font/product_sans_regular"
+                    android:gravity="end"
+                    android:text="@string/see_all"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="15sp"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewContacts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@+id/contactsHeader" />
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 
     <TextView
@@ -146,9 +207,9 @@
         android:text="@string/your_conversation_will_apper_here"
         android:textColor="@color/gray_txtcolor"
         android:textFontWeight="400"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolBar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

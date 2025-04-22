@@ -99,7 +99,7 @@
     <string name="contacts">Kontakte</string>
     <string name="your_conversation_will_apper_here">Jou gesprek sal hier verskyn</string>
     <string name="scheduled_messages">Geskeduleerde boodskappe</string>
-    <string name="automatically_send">Stuur outomaties \'n boodskap op die presiese oomblik\jy wil</string>
+    <string name="automatically_send">Stuur outomaties  boodskap op die presiese oomblik\jy wil</string>
     <string name="cannot_select_past_time">Kan nie verlede tyd kies nie</string>
     <string name="please_enter">Voer asseblief \'n boodskap in en kies tyd</string>
     <string name="message_scheduled">Boodskap geskeduleer!</string>

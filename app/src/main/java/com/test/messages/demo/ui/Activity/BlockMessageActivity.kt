@@ -8,21 +8,27 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants.DROPMSG
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.MessagesRefreshEvent
+import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.databinding.ActivityBlockBinding
 import com.test.messages.demo.ui.Adapter.BlockedMessagesAdapter
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -30,13 +36,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 @AndroidEntryPoint
 class BlockMessageActivity : BaseActivity() {
     private lateinit var binding: ActivityBlockBinding
     private lateinit var adapter: BlockedMessagesAdapter
     private val viewModel: MessageViewModel by viewModels()
-    private val prefs by lazy { getSharedPreferences("block_prefs", Context.MODE_PRIVATE) }
+    private val prefs by lazy { getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +53,7 @@ class BlockMessageActivity : BaseActivity() {
         binding = ActivityBlockBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-
+        EventBus.getDefault().register(this)
         binding.blockRecyclerView.layoutManager = LinearLayoutManager(this)
         adapter = BlockedMessagesAdapter(
             onSelectionChanged = { selectedCount ->
@@ -57,9 +66,9 @@ class BlockMessageActivity : BaseActivity() {
                 }
             }
         )
-        binding.switchDropMessages.isChecked = prefs.getBoolean("drop_messages", false)
+        binding.switchDropMessages.isChecked = prefs.getBoolean(DROPMSG, true)
         binding.switchDropMessages.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("drop_messages", isChecked).apply()
+            prefs.edit().putBoolean(DROPMSG, isChecked).apply()
         }
         binding.blockRecyclerView.adapter = adapter
         adapter.onBlockItemClickListener = { message ->
@@ -154,7 +163,16 @@ class BlockMessageActivity : BaseActivity() {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessagesRefreshed(event: MessagesRefreshEvent) {
+        if (event.success) {
+            Log.d("TAG", "onMessagesRefreshed: ")
+            Handler(Looper.getMainLooper()).postDelayed({
+                viewModel.loadMessages()
+            }, 100)
 
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun deleteMessages(threadIds: List<Long>) {
@@ -163,12 +181,17 @@ class BlockMessageActivity : BaseActivity() {
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
-
+        val handler = Handler(Looper.getMainLooper())
+        val deleteDialog = DeleteProgressDialog(this@BlockMessageActivity)
+        val showDialogRunnable = Runnable {
+            deleteDialog.show(getString(R.string.moving_messages_to_recycle_bin))
+        }
+        handler.postDelayed(showDialogRunnable, 300)
         Thread {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
                 val existingBodyDatePairs =
-                    mutableSetOf<Pair<String, Long>>() // to avoid duplicates
+                    mutableSetOf<Pair<String, Long>>()
 
                 for (item in adapter.selectedMessages) {
                     val threadId = item.threadId
@@ -182,6 +205,7 @@ class BlockMessageActivity : BaseActivity() {
                     )
 
                     cursor?.use {
+                        val idIndex = it.getColumnIndex(Telephony.Sms._ID)
                         val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
                         val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
                         val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
@@ -190,18 +214,17 @@ class BlockMessageActivity : BaseActivity() {
                         val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
 
                         while (it.moveToNext()) {
+                            val messageId = it.getLong(idIndex)
                             val body = it.getString(bodyIndex) ?: ""
                             val date = it.getLong(dateIndex)
-
-                            // Check for body + date duplicate
                             val key = Pair(body, date)
                             if (existingBodyDatePairs.contains(key)) {
-                                continue // skip this duplicate
+                                continue
                             }
                             existingBodyDatePairs.add(key)
 
                             val deletedMessage = DeletedMessage(
-                                messageId = 0,
+                                messageId = messageId,
                                 threadId = threadId,
                                 address = it.getString(addressIndex) ?: "",
                                 date = date,
@@ -225,6 +248,8 @@ class BlockMessageActivity : BaseActivity() {
                 db.insertMessages(deletedMessages)
 
                 Handler(Looper.getMainLooper()).post {
+                    handler.removeCallbacks(showDialogRunnable)
+                    deleteDialog.dismiss()
                     adapter.removeItems(threadIds)
                     adapter.selectedMessages.clear()
                     viewModel.updateMessages(updatedList)
@@ -233,6 +258,8 @@ class BlockMessageActivity : BaseActivity() {
                 }
 
             } catch (e: Exception) {
+                handler.removeCallbacks(showDialogRunnable)
+                deleteDialog.dismiss()
                 e.printStackTrace()
             }
         }.start()
@@ -244,6 +271,11 @@ class BlockMessageActivity : BaseActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        EventBus.getDefault().unregister(this)
     }
 
     override fun onResume() {

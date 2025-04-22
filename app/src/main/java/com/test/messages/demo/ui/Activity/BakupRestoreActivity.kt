@@ -114,7 +114,6 @@ class BakupRestoreActivity : BaseActivity() {
                 setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
             }
         }
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -168,7 +167,7 @@ class BakupRestoreActivity : BaseActivity() {
         binding.progressBar.visibility = View.GONE
     }
 
-    private fun showRestoreSuccessDialog(restoredList: List<ConversationItem>) {
+    /*private fun showRestoreSuccessDialog(restoredList: List<ConversationItem>) {
         val messageCount = restoredList.size
         val messagesPreview = restoredList.joinToString("\n") { "${it.address}: ${it.body}" }
 
@@ -178,5 +177,5 @@ class BakupRestoreActivity : BaseActivity() {
                 .setPositiveButton("OK", null).show()
         }
     }
-
+*/
 }

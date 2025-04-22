@@ -100,7 +100,7 @@
     <string name="contacts">যোগাযোগ</string>
     <string name="your_conversation_will_apper_here">আপনার কথোপকথন এখানে দেখাবে</string>
     <string name="scheduled_messages">তালিকাভুক্ত মেসেজ</string>
-    <string name="automatically_send">একটি নির্দিষ্ট সময়ে স্বয়ংক্রিয়ভাবে\nমেসেজ পাঠান</string>
+    <string name="automatically_send">একটি নির্দিষ্ট সময়ে স্বয়ংক্রিয়ভাবে মেসেজ পাঠান</string>
     <string name="cannot_select_past_time">পূর্ববর্তী সময় নির্বাচন করা যাবে না</string>
     <string name="please_enter">একটি মেসেজ লিখুন এবং সময় নির্বাচন করুন</string>
     <string name="message_scheduled">মেসেজ তালিকাভুক্ত হয়েছে!</string>

@@ -15,25 +15,49 @@ class CustomLinkMovementMethod(
     private var longPressed = false
     private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
 
+    private var initialX = 0f
+    private var initialY = 0f
+
     override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
+           /* MotionEvent.ACTION_DOWN -> {
                 longPressed = false
                 handler = Handler(Looper.getMainLooper())
                 handler?.postDelayed({
                     longPressed = true
                     onLongClick?.invoke()
                 }, longPressTimeout)
+            }*/
+            MotionEvent.ACTION_DOWN -> {
+                longPressed = false
+                initialX = event.x
+                initialY = event.y
+
+                handler = Handler(Looper.getMainLooper())
+                handler?.postDelayed({
+                    longPressed = true
+                    onLongClick?.invoke()
+                    widget.performHapticFeedback(MotionEvent.ACTION_DOWN)
+                    widget.performLongClick()
+                }, longPressTimeout)
             }
 
             MotionEvent.ACTION_MOVE, MotionEvent.ACTION_CANCEL -> {
-                handler?.removeCallbacksAndMessages(null)
+//                handler?.removeCallbacksAndMessages
+                if (Math.abs(event.x - initialX) > 10 || Math.abs(event.y - initialY) > 10) {
+                    handler?.removeCallbacksAndMessages(null) // cancel long press if finger moved
+                }
             }
-
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                handler?.removeCallbacksAndMessages(null)
+                if (longPressed) {
+                    return true
+                }
+            }
+         /*   MotionEvent.ACTION_UP -> {
                 handler?.removeCallbacksAndMessages(null)
                 if (longPressed) return true
-            }
+            }*/
         }
 
         return super.onTouchEvent(widget, buffer, event)

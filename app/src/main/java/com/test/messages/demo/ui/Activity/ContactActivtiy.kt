@@ -225,6 +225,9 @@ class ContactActivtiy : BaseActivity() {
             }
 
             binding.selectedContactsLayout.addView(contactView)
+            binding.selectedContactsScroll.post {
+                binding.selectedContactsScroll.fullScroll(View.FOCUS_RIGHT)
+            }
             binding.selectedContactsScroll.visibility = View.VISIBLE
 
             selectedContactViews[contact.phoneNumber] = contactView

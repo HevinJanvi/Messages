@@ -88,11 +88,12 @@
             android:hint="@string/recipient"
             android:textFontWeight="400"
             android:textSize="20sp"
+            android:imeOptions="actionDone"
             android:paddingHorizontal="3dp"
             android:background="@null"
             android:fontFamily="@font/product_sans_regular"
             android:textColor="@color/subtext_color"
-            android:inputType="text"
+            android:inputType="textCapSentences"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/addContact"
             app:layout_constraintStart_toStartOf="parent"/>

@@ -33,6 +33,8 @@ interface NotificationDao {
     @Query("SELECT previewOption FROM notification_settings WHERE isDefault = -1 AND isCustom=0")
     fun getPreviewOptionforGlobal(): Int?
 
+    @Query("SELECT previewOption FROM notification_settings WHERE threadId = :threadId")
+    suspend fun getPreviewOption(threadId: Long): Int?
     @Query("UPDATE notification_settings SET previewOption = :previewOption WHERE isCustom = 0")
     suspend fun updateGlobalPreviewOption(previewOption: Int)
 
@@ -41,6 +43,7 @@ interface NotificationDao {
 
     @Query("SELECT isWakeScreenOn FROM notification_settings WHERE  isDefault = -1 AND isCustom = 0")
     fun getWakeScreenSettingGlobal(): Boolean?
+
 
     @Query("UPDATE notification_settings SET isWakeScreenOn = :newState WHERE threadId = :threadId")
     fun updateWakeScreenSetting(threadId: Long, newState: Boolean)

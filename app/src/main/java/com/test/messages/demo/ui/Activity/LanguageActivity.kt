@@ -2,14 +2,17 @@ package com.test.messages.demo.ui.Activity
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,12 +20,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityLanguageBinding
 import com.test.messages.demo.Util.DebouncedOnClickListener
+import com.test.messages.demo.Util.LanguageChangeEvent
+import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.ViewUtils
+import org.greenrobot.eventbus.EventBus
 import java.util.Locale
 
 class LanguageActivity : BaseActivity() {
     private lateinit var binding: ActivityLanguageBinding
     private var isSelected = false
+    private var launchedFrom = false
     private var languageAdapter: LanguageAdapter? = null
     private var selectedLanguage: String? = ""
     private var isFirstVisit: Boolean = false
@@ -84,6 +91,11 @@ class LanguageActivity : BaseActivity() {
         )
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("launched_from", launchedFrom.toString())
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,11 +103,14 @@ class LanguageActivity : BaseActivity() {
         val view: View = binding.getRoot()
         setContentView(view)
 
+        val launchedFrom = intent.getStringExtra("launched_from") ?: "first_time"
 
         isFirstVisit = !ViewUtils.isLanguageSelected(this)
         if (isFirstVisit) {
             binding.title.text = getString(R.string.select_language)
             binding.icBack.visibility = View.GONE
+            binding.titleMain.visibility = View.VISIBLE
+            binding.title.visibility = View.GONE
             binding.animatedIndicator.visibility = View.VISIBLE
             setupAnimatedIndicator()
         } else {
@@ -103,6 +118,8 @@ class LanguageActivity : BaseActivity() {
             pos = langArray.indexOf(selectedLanguage)
             binding.title.text = getString(R.string.language)
             binding.icBack.visibility = View.VISIBLE
+            binding.titleMain.visibility = View.GONE
+            binding.title.visibility = View.VISIBLE
             binding.animatedIndicator.visibility = View.INVISIBLE
         }
 
@@ -110,26 +127,49 @@ class LanguageActivity : BaseActivity() {
             onBackPressed()
         }
 
-
         binding.langRecyclerView!!.layoutManager =
             LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         languageAdapter = LanguageAdapter(this, langFlag, langArray, pos)
         binding.langRecyclerView!!.adapter = languageAdapter
 
         binding.btnDone.setOnClickListener {
-            selectedLanguage = languageAdapter?.getSelectedLanguage()
-            selectedLanguage?.let { ViewUtils.setSelectedLanguage(this, it) }
-            ViewUtils.setLanguageSelected(this)
+            val selectedLanguage = languageAdapter?.getSelectedLanguage()
+            if (selectedLanguage == null) {
+                Toast.makeText(
+                    this,
+                    getString(R.string.please_select_a_language),
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
 
-            if (!ViewUtils.isIntroShown(this)) {
-                startActivity(Intent(this, IntroActivity::class.java))
+            ViewUtils.setSelectedLanguage(this, selectedLanguage)
+            ViewUtils.setLanguageSelected(this)
+            EventBus.getDefault().post(LanguageChangeEvent(selectedLanguage))
+
+            if (launchedFrom.equals("settings")) {
+                setResult(RESULT_OK)
                 finish()
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+                if (!ViewUtils.isIntroShown(this)) {
+                    startActivity(Intent(this, IntroActivity::class.java))
+                    finish()
+                }
+
             }
         }
+
     }
+
+
+    override fun onBackPressed() {
+        if (launchedFrom.equals("settings")) {
+            finish()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
 
     internal inner class LanguageAdapter(
         private val context: Context,
@@ -166,14 +206,13 @@ class LanguageActivity : BaseActivity() {
             return languageOptions.size
         }
 
-        fun getSelectedLanguage(): String {
+        fun getSelectedLanguage(): String? {
             return if (selectedPosition in languageOptions.indices) {
                 languageOptions[selectedPosition]
             } else {
-                languageOptions.firstOrNull() ?: ""
+                null
             }
         }
-
 
 
         internal inner class LanguageViewHolder(itemView: View) :
@@ -289,6 +328,19 @@ class LanguageActivity : BaseActivity() {
             }
 
         }
+    }
+
+    override fun attachBaseContext(newBase: Context?) {
+        val language = ViewUtils.getSelectedLanguage(newBase ?: return)
+        val context = newBase.let {
+            val locale = Locale(language ?: "en")
+            Locale.setDefault(locale)
+
+            val config = Configuration()
+            config.setLocale(locale)
+            it.createConfigurationContext(config)
+        }
+        super.attachBaseContext(context)
     }
 
 }

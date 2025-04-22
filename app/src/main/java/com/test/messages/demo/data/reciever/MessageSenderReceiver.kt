@@ -5,9 +5,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsManager
+import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsSender
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import org.greenrobot.eventbus.EventBus
 
 class MessageSenderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -40,6 +42,8 @@ class MessageSenderReceiver : BroadcastReceiver() {
                     )
 
                     AppDatabase.getDatabase(context).scheduledMessageDao().delete(it)
+                    EventBus.getDefault().post(MessagesRestoredEvent(true))
+
                 } catch (e: Exception) {
                 }
             }

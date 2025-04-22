@@ -34,7 +34,7 @@ import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class NewConversationActivtiy : AppCompatActivity() {
+class NewConversationActivtiy : BaseActivity() {
     private lateinit var binding: ActivityNewConversationBinding
     private lateinit var contactAdapter: ConversationContactAdapter
     private var selectedContacts = LinkedHashSet<ContactItem>()
@@ -168,6 +168,9 @@ class NewConversationActivtiy : AppCompatActivity() {
                 removeFromSelectedContacts(contact)
             }
             binding.selectedContactsLayout.addView(contactView)
+            binding.selectedContactsScroll.post {
+                binding.selectedContactsScroll.fullScroll(View.FOCUS_RIGHT)
+            }
             binding.selectedContactsScroll.visibility = View.VISIBLE
             selectedContactViews[contact.phoneNumber] = contactView
         }
@@ -206,7 +209,6 @@ class NewConversationActivtiy : AppCompatActivity() {
     private fun sendMessage() {
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) {
-            Toast.makeText(this, getString(R.string.failed_to_send_message), Toast.LENGTH_LONG).show()
             return
         }
 

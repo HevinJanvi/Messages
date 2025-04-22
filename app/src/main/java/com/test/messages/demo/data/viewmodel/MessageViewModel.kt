@@ -14,6 +14,7 @@ import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.repository.MessageRepository
+import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +71,6 @@ class MessageViewModel @Inject constructor(
     }
 
     private val _conversation = MutableLiveData<List<ConversationItem>>()
-    val conversation_new: LiveData<List<ConversationItem>> get() = _conversation
 
     fun getConversation(threadId: Long): List<ConversationItem> {
         val updatedConversation = repository.getConversationDetails(threadId)
@@ -222,6 +222,8 @@ class MessageViewModel @Inject constructor(
         viewModelScope.launch {
             val blockIds = repository.getBlockThreadIds().toSet()
             _blockThreadIds.postValue(blockIds)
+
+
         }
     }
 
@@ -271,30 +273,166 @@ class MessageViewModel @Inject constructor(
 
     //search
 
-    private val _fmessages = MutableLiveData<List<MessageItem>>()
+   /* private val _fmessages = MutableLiveData<List<MessageItem>>()
     val Filetrmessages: LiveData<List<MessageItem>> get() = _fmessages
 
-    fun searchMessages(query: String, threadId: String?) {
+
+    fun setFilteredMessages(newList: List<MessageItem>) {
+        _fmessages.value = newList
+    }
+
+    fun searchMessages(context: Context,query: String, threadId: String?) {
         viewModelScope.launch(Dispatchers.IO) {
-            val allMessages = repository.getAllMessages(threadId)
-            val filteredMessages = allMessages.filter { it.body.contains(query, ignoreCase = true) }
+            val filteredMessages = repository.getAllSearchConversation()
+            // Group by number (or threadId if needed), but only include groups where ANY message matches the query
             val groupedMessages = filteredMessages
-                .sortedBy { it.timestamp }
+                .filter { it.number != null }
                 .groupBy { it.number }
-                .map { (number, messages) ->
-                    val lastMessage = messages.last()
-                    lastMessage
+                .mapNotNull { (_, messages) ->
+                    // Only pick last message IF it also contains the keyword
+                    val lastMatchingMessage = messages.lastOrNull { it.body.contains(query, ignoreCase = true) }
+                    lastMatchingMessage
                 }
+
             withContext(Dispatchers.Main) {
                 _fmessages.value = groupedMessages
             }
         }
+    }*/
+
+
+  //working
+    private val _fmessages = MutableLiveData<List<ConversationItem>>()
+    val Filetrmessages: LiveData<List<ConversationItem>> get() = _fmessages
+
+    fun setFilteredMessages(newList: List<ConversationItem>) {
+        _fmessages.postValue(newList)
+
     }
+
+    fun getAllMessages(context: Context): List<ConversationItem> {
+        return repository.getAllSearchConversation()
+    }
+
+
+    /*fun searchMessages(context: Context, query: String, threadId: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val allMessages = repository.getAllSearchConversation(threadId)
+
+            // Filter + last message per address
+            val filtered = allMessages
+                .asSequence()
+                .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
+                .groupBy { it.address }
+                .mapNotNull { (_, messages) ->
+                    messages.maxByOrNull { it.date }
+                }.toList()
+
+            // Get contacts
+            val contactMap = repository.getContactDetails().associateBy { it.phoneNumber }
+
+            // Enrich with contact name
+            val enriched = filtered.map { msg ->
+                val normalized = msg.address.replace(" ", "")
+                val contact = contactMap[normalized]
+                    ?: contactMap[normalized.removePrefix("+91")]
+                    ?: contactMap[normalized.removePrefix("+")] // fallback
+                msg.copy(address = contact?.name ?: msg.address)
+            }
+
+            withContext(Dispatchers.Main) {
+                _fmessages.value = enriched
+            }
+        }
+    }*/
+
+//    fun searchMessages(context: Context, query: String, threadId: String?, isExpanded: Boolean) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val allMessages = repository.getAllSearchConversation(threadId)
+//
+//            // Filter by query first
+//            val filtered = allMessages
+//                .asSequence()
+//                .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
+//                .groupBy { it.threadId } // Faster grouping if threads are your UI basis
+//                .mapNotNull { (_, messages) -> messages.maxByOrNull { it.date } }
+//                .let { if (isExpanded) it else it.take(3) }
+//                .toList()
+//
+//            withContext(Dispatchers.Main) {
+//                _fmessages.value = filtered
+//            }
+//        }
+//    }
+
+
+   /* fun searchMessages(context: Context, query: String, threadId: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (query.isBlank()) {
+                withContext(Dispatchers.Main) {
+                    _fmessages.value = emptyList()
+                }
+                return@launch
+            }
+
+            val allMessages = repository.getAllSearchConversation(threadId)
+
+            // Filter messages by query and non-empty address
+            val filtered = allMessages
+                .asSequence()
+                .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
+                .groupBy { it.address }
+                .mapNotNull { (_, messages) ->
+                    messages.maxByOrNull { it.date } // Get latest message per address
+                }.toList()
+
+            // Fetch contacts
+            val contactMap = repository.getContactDetails()
+                .associateBy { it.phoneNumber.replace(" ", "") }
+
+            // Enrich messages with contact name (fallback if not found)
+            val enriched = filtered.map { msg ->
+                val normalized = msg.address.replace(" ", "")
+                val contact = contactMap[normalized]
+                    ?: contactMap[normalized.removePrefix("+91")]
+                    ?: contactMap[normalized.removePrefix("+")]
+                msg.copy(address = contact?.name ?: msg.address)
+            }
+
+            withContext(Dispatchers.Main) {
+                _fmessages.value = enriched
+            }
+        }
+    }*/
+
 
     private val _filteredContacts = MutableLiveData<List<ContactItem>>()
     val filteredContacts: LiveData<List<ContactItem>> get() = _filteredContacts
 
+    fun setFilteredContacts(filtered: List<ContactItem>) {
+        _filteredContacts.postValue(filtered)
+    }
+    fun getAllContacts(context: Context): List<ContactItem> {
+        return repository.getAllContacts(context)
+    }
     fun searchContacts(query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val allContacts = repository.getContactDetails()
+            val filteredContacts = allContacts.filter {
+                it.name?.contains(query, ignoreCase = true) == true ||
+                        it.phoneNumber.contains(query, ignoreCase = true)
+            }
+            withContext(Dispatchers.Main) {
+                _filteredContacts.value = filteredContacts
+            }
+        }
+    }
+
+
+
+
+
+    /*fun searchContacts(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val allContacts = repository.getContactDetails()
             val filteredContacts = allContacts.filter {
@@ -305,7 +443,7 @@ class MessageViewModel @Inject constructor(
                 _filteredContacts.value = filteredContacts
             }
         }
-    }
+    }*/
 
 
 
@@ -350,4 +488,11 @@ class MessageViewModel @Inject constructor(
     fun getContactName(context: Context, phoneNumber: String): String {
         return repository.getContactName(context,phoneNumber)
     }
+
+     fun getContactNumber(context: Context, address: String): String {
+        return repository.getPhoneNumber(context,address)
+    }
+
+
+
 }

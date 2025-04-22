@@ -13,11 +13,20 @@ class MessageDiffCallback(
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         // Compare unique identifiers (e.g., threadId, or any unique field)
-        return oldList[oldItemPosition].threadId == newList[newItemPosition].threadId
+        return oldList[oldItemPosition].threadId == newList[newItemPosition].threadId &&
+                oldList[oldItemPosition].isPinned == newList[newItemPosition].isPinned
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        // Compare the contents of the item
-        return oldList[oldItemPosition] == newList[newItemPosition]
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old == new || (
+                old.body == new.body &&
+                        old.timestamp == new.timestamp &&
+                        old.isRead == new.isRead &&
+                        old.isPinned == new.isPinned &&
+                        old.isMuted == new.isMuted &&
+                        old.sender == new.sender
+                )
     }
 }

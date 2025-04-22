@@ -14,8 +14,10 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ViewUtils.blinkThen
+import com.test.messages.demo.Util.ViewUtils.resetMessageCount
 import com.test.messages.demo.Util.ViewUtils.saveNotificationOption
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.notificationManager
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
 
@@ -101,18 +103,18 @@ class NotificationViewDialog(
 
         btnOk.setOnClickListener {
             it.blinkThen {
-            val selectedOption = when {
-                check1.isChecked -> 0
-                check2.isChecked -> 1
-                check3.isChecked -> 2
-                else -> 0
-            }
-            viewModel.updatePreviewOption(threadId, selectedOption)
-            saveNotificationOption(context, selectedOption)
-            onOptionSelected(selectedOption)
-            dismiss()
+                val selectedOption = when {
+                    check1.isChecked -> 0
+                    check2.isChecked -> 1
+                    check3.isChecked -> 2
+                    else -> 0
+                }
+                viewModel.updatePreviewOption(threadId, selectedOption)
+                saveNotificationOption(context, selectedOption)
+                onOptionSelected(selectedOption)
+                dismiss()
 
-        }
+            }
         }
     }
 }

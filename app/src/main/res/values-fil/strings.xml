@@ -100,7 +100,7 @@
     <string name="contacts">Mga Contact</string>
     <string name="your_conversation_will_apper_here">Ang iyong pag-uusap ay lalabas dito</string>
     <string name="scheduled_messages">Mga Naka-iskedyul na Mensahe</string>
-    <string name="automatically_send">Awtomatikong magpadala ng mensahe, sa eksaktong oras\nna nais mo</string>
+    <string name="automatically_send">Awtomatikong magpadala ng mensahe, sa eksaktong oras na nais mo</string>
     <string name="cannot_select_past_time">Hindi maaaring pumili ng nakaraang oras</string>
     <string name="please_enter">Pakilagay ang mensahe at pumili ng oras</string>
     <string name="message_scheduled">Naka-iskedyul ang Mensahe!</string>

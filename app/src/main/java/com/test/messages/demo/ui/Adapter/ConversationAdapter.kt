@@ -35,6 +35,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.util.query
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CustomLinkMovementMethod
@@ -73,7 +74,7 @@ class ConversationAdapter(
     var isMultiSelectionEnabled = false
     private val expandedMessages = mutableSetOf<Long>()
     private var lastMessagePosition: Int? = null
-    private var searchQuery: String? = null
+    private  var searchQuery: String=""
 
 
     interface OnMessageRetryListener {
@@ -94,7 +95,6 @@ class ConversationAdapter(
             else -> VIEW_TYPE_OUTGOING
         }
     }
-
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val messageBody: TextView = view.findViewById(R.id.messageBody)
@@ -135,12 +135,9 @@ class ConversationAdapter(
 
                 headerText?.visibility = View.GONE
                 messageBody.visibility = View.VISIBLE
+                messageBody.text = message.body
 
-                if (!searchQuery.isNullOrEmpty()) {
-                    messageBody.text = highlightText(message.body, searchQuery!!, itemView.context)
-                } else {
-                    messageBody.text = message.body
-                }
+
                 messageDate.text =
                     SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
 
@@ -237,7 +234,13 @@ class ConversationAdapter(
                       true
                   }*/
 
-
+                itemView.setOnClickListener {
+                    if (isMultiSelectionEnabled) {
+                        toggleSelection(message, 1)
+                    } else {
+                        toggleTimeVisibility(message)
+                    }
+                }
                 messageBody.setOnClickListener {
                     if (isMultiSelectionEnabled) {
                         toggleSelection(message, 1)
@@ -246,73 +249,25 @@ class ConversationAdapter(
                     }
                 }
 
+                if (!searchQuery.isNotEmpty()) {
+                    message.body
+                }
                 formatMessageWithLinks(
                     messageBody,
-                    type = message.type,
                     message,
-                    message = message.body,
-                    query = searchQuery ?: "",
-                    isOpenPopup = false
+                    message = message.body, searchQuery
                 )
-
-                /*  val link = message.extractLink()
-                  if (link != null) {
-                      val spannable = SpannableString(message.body)
-                      val matcher = Patterns.WEB_URL.matcher(message.body)
-
-                      while (matcher.find()) {
-                          val start = matcher.start()
-                          val end = matcher.end()
-                          val clickableSpan = object : ClickableSpan() {
-                              override fun onClick(widget: View) {
-                                  ExternalLinkDialog(itemView.context, link).show()
-                              }
-
-                              override fun updateDrawState(ds: TextPaint) {
-                                  super.updateDrawState(ds)
-                                  ds.color =
-                                      ContextCompat.getColor(itemView.context, R.color.textcolor)
-                                  ds.isUnderlineText = true
-                                  val typeface = ResourcesCompat.getFont(
-                                      itemView.context,
-                                      R.font.product_sans_medium
-                                  )
-                                  ds.typeface = typeface
-                              }
-                          }
-                          spannable.setSpan(
-                              clickableSpan,
-                              start,
-                              end,
-                              Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                          )
-                          spannable.setSpan(
-                              UnderlineSpan(),
-                              start,
-                              end,
-                              Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                          )
-                      }
-                      messageBody.text = spannable
-  //                    messageBody.movementMethod = LinkMovementMethod.getInstance()
-                      messageBody.movementMethod = CustomLinkMovementMethod()
-                      messageBody.setLongClickable(false)
-                      messageBody.isClickable = true
-
-                  }*/
-
             }
         }
 
 
         private fun formatMessageWithLinks(
             textView: TextView,
-            type: Int,
             conversationItem: ConversationItem,
             message: String,
-            query: String,
-            isOpenPopup: Boolean,
+            query: String
         ) {
+            val isSelected = selectedItems.contains(conversationItem)
             val spannableString = SpannableString(message)
 
             val emailPattern = Pattern.compile(
@@ -342,40 +297,29 @@ class ConversationAdapter(
                 msg: String,
                 onClick: (String) -> Unit,
             ) {
+
                 val matcher = pattern.matcher(message)
                 while (matcher.find()) {
                     val matchedText = matcher.group()
                     spannableString.setSpan(object : ClickableSpan() {
                         override fun onClick(widget: View) {
-                            /*if (actionMode == null) {
-                                if (isOpenPopup) {
-                                    baseActivity.openInfoMessageDialog {
-                                        onClick(matchedText)
-                                    }
-                                } else {
-                                    baseActivity.openMessageDialog(msgType, msg, matchedText) {
-                                        when (it) {
-                                            1 -> baseActivity.copyToClipboard(matchedText)
-                                            2 -> onClick(matchedText)
-                                        }
-                                    }
-                                }
-                            }*/
-
                             if (!isContactSaved && conversationItem.isIncoming()) {
 
                                 ExternalLinkDialog(widget.context, matchedText).show()
                             } else {
                                 onClick(matchedText)
                             }
-
-//                            ExternalLinkDialog(textView.context, matchedText).show()
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
                             super.updateDrawState(ds)
-                            ds.color =
-                                ContextCompat.getColor(itemView.context, R.color.textcolor)
+
+                            val colorRes = if (isSelected) {
+                                R.color.white
+                            } else {
+                                R.color.textcolor
+                            }
+                            ds.color = ContextCompat.getColor(itemView.context, colorRes)
                             ds.isUnderlineText = true
                             val typeface = ResourcesCompat.getFont(
                                 itemView.context,
@@ -447,8 +391,13 @@ class ConversationAdapter(
 
                     override fun updateDrawState(ds: TextPaint) {
                         super.updateDrawState(ds)
-                        ds.color =
-                            ContextCompat.getColor(itemView.context, R.color.textcolor)
+                        val colorRes = if (isSelected) {
+                            R.color.white
+                        } else {
+                            R.color.textcolor
+                        }
+                        ds.color = ContextCompat.getColor(itemView.context, colorRes)
+
                         ds.isUnderlineText = false
                         val typeface = ResourcesCompat.getFont(
                             itemView.context,
@@ -460,11 +409,42 @@ class ConversationAdapter(
 
                 }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
+
+            if (query.isNotEmpty()) {
+                var startIndex = message.indexOf(query, ignoreCase = true)
+                while (startIndex != -1) {
+                    val endIndex = startIndex + query.length
+
+                    val highlightColor = ContextCompat.getColor(context, R.color.yellow)
+                    val textColor = ContextCompat.getColor(context, R.color.serach_highlight_color)
+
+                    spannableString.setSpan(
+                        ForegroundColorSpan(textColor),
+                        startIndex,
+                        endIndex,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    spannableString.setSpan(
+                        BackgroundColorSpan(highlightColor),
+                        startIndex,
+                        endIndex,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    startIndex = message.indexOf(
+                        query,
+                        startIndex + 1,
+                        ignoreCase = true
+                    )
+                }
+            }
+
             textView.text = spannableString
+
             textView.movementMethod = CustomLinkMovementMethod {
                 enableMultiSelection(conversationItem)
             }
         }
+
 
         private fun copyToClipboard(otp: String) {
             val clipboard =
@@ -476,6 +456,7 @@ class ConversationAdapter(
                 itemView.context.getString(R.string.otp_copied), Toast.LENGTH_SHORT
             ).show()
         }
+
 
     }
 
@@ -561,45 +542,14 @@ class ConversationAdapter(
         return selectedItems.toList()
     }
 
-    fun setSearchQuery(query: String?) {
-        searchQuery = query
-        notifyDataSetChanged()
-    }
-
-    private fun highlightText(
-        fullText: String,
-        searchText: String,
-        context: Context
-    ): SpannableString {
-        val spannable = SpannableString(fullText)
-        if (searchText.isNotEmpty()) {
-            val start = fullText.lowercase(Locale.getDefault())
-                .indexOf(searchText.lowercase(Locale.getDefault()))
-            if (start >= 0) {
-                val end = start + searchText.length
-                val highlightColor = ContextCompat.getColor(context, R.color.yellow)
-                val textColor = ContextCompat.getColor(context, R.color.serach_highlight_color)
-                spannable.setSpan(
-                    BackgroundColorSpan(highlightColor),
-                    start,
-                    end,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                spannable.setSpan(
-                    ForegroundColorSpan(textColor),
-                    start,
-                    end,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                spannable.setSpan(
-                    StyleSpan(Typeface.BOLD),
-                    start,
-                    end,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+    fun setSearchQuery(query: String) {
+        if(query.isNotEmpty()){
+            searchQuery = query!!
+            notifyDataSetChanged()
+        }else{
+            searchQuery = ""
+            notifyDataSetChanged()
         }
-        return spannable
     }
 
 

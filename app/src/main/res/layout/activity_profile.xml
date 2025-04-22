@@ -61,6 +61,7 @@
             android:layout_height="match_parent"
             android:src="@drawable/user_icon"
             app:riv_corner_radius="80dp"
+            android:scaleType="centerCrop"
             android:visibility="visible"/>
 
         <RelativeLayout
@@ -137,7 +138,7 @@
             android:layout_marginHorizontal="10dp"
             android:adjustViewBounds="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/profile_contact" />
+         />
 
         <ImageView
             android:id="@+id/profileBlock"

@@ -1,17 +1,28 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.provider.ContactsContract
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
+import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.TimeUtils
+import com.test.messages.demo.Util.ViewUtils.copyToClipboard
+import com.test.messages.demo.Util.ViewUtils.extractOtp
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -30,6 +41,10 @@ class RecycleBinAdapter(
         val senderName: TextView = itemView.findViewById(R.id.senderName)
         val messageBody: TextView = itemView.findViewById(R.id.messageContent)
         val date: TextView = itemView.findViewById(R.id.date)
+        val icUser: RoundedImageView = itemView.findViewById(R.id.icUser)
+        val profileContainer: RelativeLayout = itemView.findViewById(R.id.profileContainer)
+        val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
+        val otpTextView: TextView = itemView.findViewById(R.id.otpTextView)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
 
         val container: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
@@ -44,17 +59,72 @@ class RecycleBinAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = messages[position]
-        val contactName = getContactName(holder.itemView.context, message.address)
-        holder.senderName.text = contactName ?: message.address
-//        holder.senderName.text = message.address
+
+        val name = getContactName(holder.itemView.context, message.address)
+        if (!name.isNullOrEmpty() && name != message.address) {
+            message.address = name
+        }
+
+        holder.senderName.text = message.address
         holder.messageBody.text = message.body
-        holder.date.text = TimeUtils.formatTimestamp(message.date)
+            holder.date.text = TimeUtils.formatTimestamp(message.date)
 
         val isSelected = selectedMessages.contains(message)
         holder.icSelect.visibility = if (isSelected) View.VISIBLE else View.GONE
         holder.container.setBackgroundColor(
             holder.itemView.context.getColor(if (isSelected) R.color.select_bg else R.color.transparant)
         )
+
+        if (message.isGroupChat) {
+            holder.icUser.visibility = View.VISIBLE
+            holder.initialsTextView.visibility = View.GONE
+
+            Glide.with(holder.itemView.context)
+                .load(R.drawable.ic_group)
+                .apply(RequestOptions.bitmapTransform(MultiTransformation(CenterCrop(), RoundedCorners(50))))
+                .into(holder.icUser)
+        }else {
+            val firstChar = message.address.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+
+            if (startsWithSpecialChar || message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+                holder.icUser.visibility = View.VISIBLE
+                holder.initialsTextView.visibility = View.GONE
+                Glide.with(holder.itemView.context)
+                    .load(message.profileImageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .into(holder.icUser)
+            } else {
+                holder.icUser.visibility = View.GONE
+                holder.initialsTextView.visibility = View.VISIBLE
+                holder.initialsTextView.text = TimeUtils.getInitials(message.address)
+                holder.profileContainer.backgroundTintList =
+                    ColorStateList.valueOf(TimeUtils.getRandomColor(message.address))
+            }
+        }
+
+        val otp = message.body.extractOtp()
+        if (!otp.isNullOrEmpty()) {
+            holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_otp)
+            holder.otpTextView.visibility = View.VISIBLE
+
+            holder.otpTextView.setOnClickListener {
+                copyToClipboard(holder.itemView.context, otp)
+                holder.otpTextView.animate()
+                    .alpha(0.5f)
+                    .setDuration(100)
+                    .withEndAction {
+                        holder.otpTextView.animate()
+                            .alpha(1f)
+                            .setDuration(100)
+                            .start()
+                    }
+                    .start()
+            }
+        } else {
+            holder.otpTextView.visibility = View.GONE
+        }
+
 
         holder.itemView.setOnClickListener {
             if (isMultiSelectionMode) {
