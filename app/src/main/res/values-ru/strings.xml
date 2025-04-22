@@ -120,7 +120,6 @@
     <string name="intro_subtxt1">Оставайтесь на связи с чистым, организованным почтовым ящиком. Общайтесь без усилий в любое время!</string>
     <string name="intro_subtxt2">Запланируйте автоматическую отправку текстовых сообщений — никогда не забывайте о сообщении!</string>
     <string name="intro_subtxt3">Легко блокируйте спам и нежелательные контакты, чтобы поддерживать чистоту почтового ящика.</string>
-    <string name="select_language">Выберите язык</string>
     <string name="flag">flag</string>
     <string name="chinese">Китайский (упрощенный)</string>
     <string name="vietnamese">Вьетнамский</string>
@@ -156,18 +155,13 @@
     <string name="permissions_denied">Отказано в доступе</string>
 
     <string name="appearance">Внешний вид</string>
-    <string name="theme_mode">Режим темы</string>
     <string name="system_mode">Системный режим</string>
-    <string name="app_languages">Языки приложения</string>
-    <string name="conversation_categories">Категории разговоров</string>
-    <string name="call_end_screen">Экран завершения вызова</string>
     <string name="font_size">Размер шрифта</string>
     <string name="normal">Обычный</string>
     <string name="swipe_actions">Действия смахивания</string>
     <string name="general">Общие</string>
     <string name="notification">Уведомления</string>
     <string name="privacy_plicy">Политика конфиденциальности</string>
-    <string name="rate_on_google_play">Оценить в Google Play</string>
     <string name="share_app">Поделиться приложением</string>
     <string name="about_messages">О сообщениях</string>
     <string name="light">Светлый</string>
@@ -227,5 +221,50 @@
     <string name="call_string"><![CDATA[Разрешения на вызовы и отображение поверх других приложений предоставляют мгновенный доступ к информации о входящем звонке. Это помогает избежать спама и быстро получить доступ к последним SMS-перепискам.]]></string>
     <string name="this_step_may_contains_ads">Этот шаг может содержать рекламу</string>
 
+    <string name="language">Язык</string>
+    <string name="copy_otp">Копировать OTP</string>
+    <string name="move_to_recycle_bin">Переместить в корзину</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Переместить эту беседу в корзину?</string>
+    <string name="share">Поделиться</string>
+    <string name="forward">Переслать</string>
+    <string name="no_messages_selected_to_share">Не выбрано ни одного сообщения для отправки</string>
+    <string name="message_details">Сведения о сообщении</string>
+    <string name="type">Тип</string>
+    <string name="to">Кому</string>
+    <string name="sent">Отправлено</string>
+    <string name="unknown">Неизвестно</string>
+    <string name="web_type">Тип веб-сайта</string>
+    <string name="phone_type">Тип телефона</string>
+    <string name="sms_received">SMS (получено)</string>
+    <string name="sms_sent">SMS (отправлено)</string>
+    <string name="sms_outbox">SMS (исходящие)</string>
+    <string name="sms_failed">SMS (не удалось)</string>
+    <string name="sms_queued">SMS (в очереди)</string>
+    <string name="schedule_sms">Запланировать SMS</string>
+    <string name="share_contact">Поделиться контактом</string>
+    <string name="recyclebin_note">Сообщения в корзине будут навсегда\nудалены через 30 дней.</string>
+    <string name="email_type">Электронная почта</string>
+    <string name="map_type">Карта</string>
+    <string name="select_language">Выбрать язык</string>
+    <string name="permanently_delete_conversation">Удалить беседу навсегда?</string>
+    <string name="no_data">Нет данных</string>
+    <string name="please_select_a_language">Выберите язык</string>
+    <string name="theme_mode">Режим темы</string>
+    <string name="app_languages">Языки приложения</string>
+    <string name="conversation_categories">Категории разговора</string>
+    <string name="call_end_screen">Экран завершения вызова</string>
+    <string name="rate_on_google_play">Оценить в Google Play</string>
+    <string name="show_categories">Показать категории</string>
+    <string name="moving_messages_to_recycle_bin">Перемещение сообщений в корзину...</string>
+    <string name="system_default">Системные настройки по умолчанию</string>
+    <string name="organize_category">Упорядочить категории с помощью перетаскивания</string>
+    <string name="me">Я</string>
+    <string name="channel_received_sms">Получено SMS</string>
+    <string name="reply">Ответить</string>
+    <string name="message_not_sent_short">Сообщение не отправлено</string>
+    <string name="message_sending_error">Ваше сообщение для \'%s\' не было отправлено</string>
+    <string name="clear">Очистить</string>
+    <string name="see_all">Посмотреть все</string>
+    <string name="matches_found">Найдено %1$s совпадений</string>
 
 </resources>

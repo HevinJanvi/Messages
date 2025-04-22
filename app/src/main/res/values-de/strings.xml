@@ -121,7 +121,6 @@
     <string name="intro_subtxt1">Bleiben Sie verbunden mit einem übersichtlichen, organisierten Posteingang. Chatten Sie jederzeit mühelos!</string>
     <string name="intro_subtxt2">Planen Sie Nachrichten zum automatischen Senden – nie wieder eine Nachricht vergessen!</string>
     <string name="intro_subtxt3">Blockieren Sie ganz einfach Spam und unerwünschte Kontakte, um Ihren Posteingang sauber zu halten.</string>
-    <string name="select_language">Sprache auswählen</string>
     <string name="flag">Flagge</string>
     <string name="chinese">Chinesisch (Vereinfacht)</string>
     <string name="vietnamese">Vietnamesisch</string>
@@ -157,18 +156,13 @@
     <string name="permissions_denied">Berechtigungen verweigert</string>
 
     <string name="appearance">Erscheinungsbild</string>
-    <string name="theme_mode">Designmodus</string>
     <string name="system_mode">Systemmodus</string>
-    <string name="app_languages">App-Sprachen</string>
-    <string name="conversation_categories">Konversationskategorien</string>
-    <string name="call_end_screen">Bildschirm bei Anrufende</string>
     <string name="font_size">Schriftgröße</string>
     <string name="normal">Normal</string>
     <string name="swipe_actions">Wischaktionen</string>
     <string name="general">Allgemein</string>
     <string name="notification">Benachrichtigungen</string>
     <string name="privacy_plicy">Datenschutzrichtlinie</string>
-    <string name="rate_on_google_play">Bei Google Play bewerten</string>
     <string name="share_app">App teilen</string>
     <string name="about_messages">Über Nachrichten</string>
     <string name="light">Hell</string>
@@ -228,5 +222,50 @@
     <string name="call_string"><![CDATA[Die Telefonberechtigung & Anzeige über anderen Apps gibt dir sofortigen Zugriff darauf, wer dich anruft. Sie hilft, Spam-Anrufe zu vermeiden, und bietet schnellen Zugriff auf kürzliche SMS-Konversationen.]]></string>
     <string name="this_step_may_contains_ads">Dieser Schritt kann Werbung enthalten</string>
 
+    <string name="language">Sprache</string>
+    <string name="copy_otp">Einmalpasswort kopieren</string>
+    <string name="move_to_recycle_bin">In den Papierkorb verschieben</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Diese Konversation in den Papierkorb verschieben?</string>
+    <string name="share">Teilen</string>
+    <string name="forward">Weiterleiten</string>
+    <string name="no_messages_selected_to_share">Keine Nachrichten zum Teilen ausgewählt</string>
+    <string name="message_details">Nachrichtendetails</string>
+    <string name="type">Typ</string>
+    <string name="to">An</string>
+    <string name="sent">Gesendet</string>
+    <string name="unknown">Unbekannt</string>
+    <string name="web_type">Webtyp</string>
+    <string name="phone_type">Telefontyp</string>
+    <string name="sms_received">SMS (Empfangen)</string>
+    <string name="sms_sent">SMS (Gesendet)</string>
+    <string name="sms_outbox">SMS (Postausgang)</string>
+    <string name="sms_failed">SMS (Fehlgeschlagen)</string>
+    <string name="sms_queued">SMS (Warteschlange)</string>
+    <string name="schedule_sms">SMS planen</string>
+    <string name="share_contact">Kontakt teilen</string>
+    <string name="recyclebin_note">Nachrichten im Papierkorb werden nach 30 Tagen endgültig gelöscht.</string>
+    <string name="email_type">E-Mail</string>
+    <string name="map_type">Karte</string>
+    <string name="select_language">Sprache auswählen</string>
+    <string name="permanently_delete_conversation">Konversation endgültig löschen?</string>
+    <string name="no_data">Keine Daten</string>
+    <string name="please_select_a_language">Bitte wählen Sie eine Sprache</string>
+    <string name="theme_mode">Designmodus</string>
+    <string name="app_languages">App-Sprachen</string>
+    <string name="conversation_categories">Konversationskategorien</string>
+    <string name="call_end_screen">Bildschirm bei Anrufende</string>
+    <string name="rate_on_google_play">Bei Google Play bewerten</string>
+    <string name="show_categories">Kategorien anzeigen</string>
+    <string name="moving_messages_to_recycle_bin">Nachrichten in den Papierkorb verschieben...</string>
+    <string name="system_default">Systemstandard</string>
+    <string name="organize_category">Kategorien per Drag &amp; Drop sortieren</string>
+    <string name="me">Ich</string>
+    <string name="channel_received_sms">Empfangene SMS</string>
+    <string name="reply">Antworten</string>
+    <string name="message_not_sent_short">Nachricht nicht gesendet</string>
+    <string name="message_sending_error">Ihre Nachricht an „%s“ wurde nicht gesendet.</string>
+    <string name="clear">Löschen</string>
+    <string name="see_all">Alle anzeigen</string>
+    <string name="matches_found">%1$s Übereinstimmungen gefunden</string>
 
 </resources>

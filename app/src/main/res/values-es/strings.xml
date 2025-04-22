@@ -120,7 +120,6 @@
     <string name="intro_subtxt1">Mantente conectado con una bandeja de entrada limpia y organizada. ¡Chatea sin esfuerzo en cualquier momento!</string>
     <string name="intro_subtxt2">Programa mensajes para enviarlos automáticamente y nunca olvides un mensaje.</string>
     <string name="intro_subtxt3">Bloquea fácilmente mensajes no deseados y contactos no deseados para mantener tu bandeja de entrada limpia.</string>
-    <string name="select_language">Seleccionar idioma</string>
     <string name="flag">Bandera</string>
     <string name="chinese">Chino (Simplificado)</string>
     <string name="vietnamese">Vietnamita</string>
@@ -156,18 +155,13 @@
     <string name="permissions_denied">Permisos denegados</string>
 
     <string name="appearance">Apariencia</string>
-    <string name="theme_mode">Modo de tema</string>
     <string name="system_mode">Modo del sistema</string>
-    <string name="app_languages">Idiomas de la aplicación</string>
-    <string name="conversation_categories">Categorías de conversación</string>
-    <string name="call_end_screen">Pantalla de fin de llamada</string>
     <string name="font_size">Tamaño de fuente</string>
     <string name="normal">Normal</string>
     <string name="swipe_actions">Acciones de deslizamiento</string>
     <string name="general">General</string>
     <string name="notification">Notificación</string>
     <string name="privacy_plicy">Política de privacidad</string>
-    <string name="rate_on_google_play">Calificar en Google Play</string>
     <string name="share_app">Compartir aplicación</string>
     <string name="about_messages">Acerca de los mensajes</string>
     <string name="light">Claro</string>
@@ -227,5 +221,50 @@
     <string name="call_string"><![CDATA[El permiso de teléfono y la visualización sobre otras apps te da acceso instantáneo a quién te está llamando. Ayuda a evitar llamadas spam y brinda acceso rápido a las conversaciones SMS recientes.]]></string>
     <string name="this_step_may_contains_ads">Este paso puede contener anuncios</string>
 
+    <string name="language">Idioma</string>
+    <string name="copy_otp">Copiar OTP</string>
+    <string name="move_to_recycle_bin">Mover a la papelera de reciclaje</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">¿Mover esta conversación a la papelera de reciclaje?</string>
+    <string name="share">Compartir</string>
+    <string name="forward">Reenviar</string>
+    <string name="no_messages_selected_to_share">No hay mensajes seleccionados para compartir</string>
+    <string name="message_details">Detalles del mensaje</string>
+    <string name="type">Tipo</string>
+    <string name="to">Para</string>
+    <string name="sent">Enviado</string>
+    <string name="unknown">Desconocido</string>
+    <string name="web_type">Tipo web</string>
+    <string name="phone_type">Tipo de teléfono</string>
+    <string name="sms_received">SMS (Recibido)</string>
+    <string name="sms_sent">SMS (Enviado)</string>
+    <string name="sms_outbox">SMS (Bandeja de salida)</string>
+    <string name="sms_failed">SMS (Error)</string>
+    <string name="sms_queued">SMS (En cola)</string>
+    <string name="schedule_sms">Programar SMS</string>
+    <string name="share_contact">Compartir contacto</string>
+    <string name="recyclebin_note">Los mensajes en la papelera de reciclaje se eliminarán permanentemente después de 30 días.</string>
+    <string name="email_type">Correo electrónico</string>
+    <string name="map_type">Mapa</string>
+    <string name="select_language">Seleccionar idioma</string>
+    <string name="permanently_delete_conversation">¿Eliminar conversación permanentemente?</string>
+    <string name="no_data">Sin datos</string>
+    <string name="please_select_a_language">Selecciona un idioma</string>
+    <string name="theme_mode">Modo de tema</string>
+    <string name="app_languages">Idiomas de la aplicación</string>
+    <string name="conversation_categories">Categorías de conversación</string>
+    <string name="call_end_screen">Pantalla de fin de llamada</string>
+    <string name="rate_on_google_play">Calificar en Google Play</string>
+    <string name="show_categories">Mostrar categorías</string>
+    <string name="moving_messages_to_recycle_bin">Trasladando mensajes a la papelera...</string>
+    <string name="system_default">Predeterminado del sistema</string>
+    <string name="organize_category">Organizar el orden de las categorías con arrastrar y soltar</string>
+    <string name="me">Yo</string>
+    <string name="channel_received_sms">SMS recibido</string>
+    <string name="reply">Responder</string>
+    <string name="message_not_sent_short">Mensaje no enviado</string>
+    <string name="message_sending_error">Tu mensaje a \'%s\' no se ha enviado</string>
+    <string name="clear">Borrar</string>
+    <string name="see_all">Ver todo</string>
+    <string name="matches_found">Se encontraron %1$s coincidencias</string>
 
 </resources>

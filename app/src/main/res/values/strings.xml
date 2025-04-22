@@ -266,7 +266,7 @@
     <string name="sms_queued">SMS (Queued)</string>
     <string name="schedule_sms">Schedule SMS</string>
     <string name="share_contact">Share Contact</string>
-    <string name="recyclebin_note">Messages in the recycle bin will be permanently\ndeleted after 30 Days.</string>
+    <string name="recyclebin_note">Messages in the recycle bin will be permanently deleted after 30 Days.</string>
     <string name="email_type">Email</string>
     <string name="map_type">Map</string>
     <string name="select_language">Select language</string>

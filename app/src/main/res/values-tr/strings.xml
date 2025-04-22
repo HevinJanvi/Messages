@@ -120,7 +120,6 @@
     <string name="intro_subtxt1">Temiz, düzenli bir gelen kutusuyla bağlantıda kalın. İstediğiniz zaman zahmetsizce sohbet edin!</string>
     <string name="intro_subtxt2">Mesajları otomatik olarak gönderilecek şekilde planlayın; hiçbir mesajı unutmayın!</string>
     <string name="intro_subtxt3">Gelen kutunuzu temiz tutmak için spam ve istenmeyen kişileri kolayca engelleyin.</string>
-    <string name="select_language">Dil Seçin</string>
     <string name="flag">bayrak</string>
     <string name="chinese">Çince (Basitleştirilmiş)</string>
     <string name="vietnamese">Vietnamca</string>
@@ -156,18 +155,13 @@
     <string name="permissions_denied">İzinler reddedildi</string>
 
     <string name="appearance">Görünüm</string>
-    <string name="theme_mode">Tema Modu</string>
     <string name="system_mode">Sistem modu</string>
-    <string name="app_languages">Uygulama Dilleri</string>
-    <string name="conversation_categories">Konuşma Kategorileri</string>
-    <string name="call_end_screen">Arama Son Ekranı</string>
     <string name="font_size">Yazı tipi boyutu</string>
     <string name="normal">Normal</string>
     <string name="swipe_actions">Kaydırma eylemleri</string>
     <string name="general">Genel</string>
     <string name="notification">Bildirim</string>
     <string name="privacy_plicy">Gizlilik Politikası</string>
-    <string name="rate_on_google_play">Google Play\'de Puanla</string>
     <string name="share_app">Uygulamayı Paylaş</string>
     <string name="about_messages">Mesajlar Hakkında</string>
     <string name="light">Açık</string>
@@ -227,5 +221,50 @@
     <string name="call_string"><![CDATA[Arama izni ve diğer uygulamaların üzerinde gösterme izni, kimin aradığını anında görmenizi sağlar. Bu, spam aramalardan kaçınmanıza ve en son SMS konuşmalarına hızlı erişim sağlamanıza yardımcı olur.]]></string>
     <string name="this_step_may_contains_ads">Bu adım reklamlar içerebilir</string>
 
+    <string name="language">Dil</string>
+    <string name="copy_otp">OTP\'yi kopyala</string>
+    <string name="move_to_recycle_bin">Geri dönüşüm kutusuna taşı</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Bu konuşmayı Geri Dönüşüm Kutusu\'na taşı?</string>
+    <string name="share">Paylaş</string>
+    <string name="forward">İlet</string>
+    <string name="no_messages_selected_to_share">Paylaşmak için mesaj seçilmedi</string>
+    <string name="message_details">Mesaj Ayrıntıları</string>
+    <string name="type">Tür</string>
+    <string name="to">Kime</string>
+    <string name="sent">Gönderildi</string>
+    <string name="unknown">Bilinmiyor</string>
+    <string name="web_type">Web türü</string>
+    <string name="phone_type">telefon türü</string>
+    <string name="sms_received">SMS (Alındı)</string>
+    <string name="sms_sent">SMS (Gönderildi)</string>
+    <string name="sms_outbox">SMS (Giden Kutusu)</string>
+    <string name="sms_failed">SMS (Başarısız)</string>
+    <string name="sms_queued">SMS (Sırada)</string>
+    <string name="schedule_sms">SMS Planla</string>
+    <string name="share_contact">Kişiyi Paylaş</string>
+    <string name="recyclebin_note">Geri dönüşüm kutusundaki mesajlar 30 Gün sonra kalıcı olarak silinecektir.</string>
+    <string name="email_type">E-posta</string>
+    <string name="map_type">Harita</string>
+    <string name="select_language">Dil seç</string>
+    <string name="permanently_delete_conversation">Konuşmayı kalıcı olarak sil?</string>
+    <string name="no_data">Veri yok</string>
+    <string name="please_select_a_language">Lütfen bir dil seçin</string>
+    <string name="theme_mode">Tema modu</string>
+    <string name="app_languages">Uygulama dilleri</string>
+    <string name="conversation_categories">Sohbet kategorileri</string>
+    <string name="call_end_screen">Arama bitiş ekranı</string>
+    <string name="rate_on_google_play">Google Play\'de puanla</string>
+    <string name="show_categories">Kategorileri göster</string>
+    <string name="moving_messages_to_recycle_bin">Mesajlar geri dönüşüm kutusuna taşınıyor...</string>
+    <string name="system_default">Sistem Varsayılanı</string>
+    <string name="organize_category">Sürükle ve bırak ile kategori sırasını düzenle</string>
+    <string name="me">Ben</string>
+    <string name="channel_received_sms">Alınan SMS</string>
+    <string name="reply">Yanıtla</string>
+    <string name="message_not_sent_short">Mesaj gönderilmedi</string>
+    <string name="message_sending_error">\'%s\' adlı kişiye gönderdiğiniz mesaj gönderilmedi</string>
+    <string name="clear">Temizle</string>
+    <string name="see_all">Tümünü gör</string>
+    <string name="matches_found">%1$s eşleşme bulundu</string>
 
 </resources>

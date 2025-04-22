@@ -120,7 +120,6 @@
     <string name="intro_subtxt1">เชื่อมต่อตลอดเวลาด้วยกล่องจดหมายที่สะอาดและเป็นระเบียบ แชทได้อย่างง่ายดายทุกเวลา!</string>
     <string name="intro_subtxt2">กำหนดเวลาส่งข้อความโดยอัตโนมัติ ไม่ลืมข้อความ!</string>
     <string name="intro_subtxt3">บล็อกสแปมและผู้ติดต่อที่ไม่ต้องการได้อย่างง่ายดายเพื่อให้กล่องจดหมายของคุณสะอาด</string>
-    <string name="select_language">เลือกภาษา</string>
     <string name="flag">ธง</string>
     <string name="chinese">จีน ( ตัวย่อ )</string>
     <string name="vietnamese">เวียดนาม</string>
@@ -156,18 +155,13 @@
     <string name="permissions_denied">ปฏิเสธการอนุญาต</string>
 
     <string name="appearance">รูปลักษณ์</string>
-    <string name="theme_mode">โหมดธีม</string>
     <string name="system_mode">โหมดระบบ</string>
-    <string name="app_languages">ภาษาของแอป</string>
-    <string name="conversation_categories">หมวดหมู่การสนทนา</string>
-    <string name="call_end_screen">หน้าจอสิ้นสุดการโทร</string>
     <string name="font_size">ขนาดตัวอักษร</string>
     <string name="normal">ปกติ</string>
     <string name="swipe_actions">การปัดหน้าจอ</string>
     <string name="general">ทั่วไป</string>
     <string name="notification">การแจ้งเตือน</string>
     <string name="privacy_plicy">นโยบายความเป็นส่วนตัว</string>
-    <string name="rate_on_google_play">ให้คะแนนบน Google Play</string>
     <string name="share_app">แชร์แอป</string>
     <string name="about_messages">เกี่ยวกับข้อความ</string>
     <string name="light">สว่าง</string>
@@ -227,5 +221,50 @@
     <string name="call_string"><![CDATA[การอนุญาตการโทรและแสดงเหนือแอปอื่นจะให้การเข้าถึงทันทีว่าใครโทรมา ช่วยหลีกเลี่ยงการโทรสแปมและเข้าถึงการสนทนา SMS ล่าสุดได้อย่างรวดเร็ว]]></string>
     <string name="this_step_may_contains_ads">ขั้นตอนนี้อาจมีโฆษณา</string>
 
+    <string name="language">ภาษา</string>
+    <string name="copy_otp">คัดลอก OTP</string>
+    <string name="move_to_recycle_bin">ย้ายไปที่ถังขยะรีไซเคิล</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">ย้ายการสนทนานี้ไปที่ถังขยะรีไซเคิลหรือไม่</string>
+    <string name="share">แชร์</string>
+    <string name="forward">ส่งต่อ</string>
+    <string name="no_messages_selected_to_share">ไม่มีข้อความที่เลือกเพื่อแชร์</string>
+    <string name="message_details">รายละเอียดข้อความ</string>
+    <string name="type">ประเภท</string>
+    <string name="to">ถึง</string>
+    <string name="sent">ส่งแล้ว</string>
+    <string name="unknown">ไม่ทราบ</string>
+    <string name="web_type">ประเภทเว็บ</string>
+    <string name="phone_type">ประเภทโทรศัพท์</string>
+    <string name="sms_received">SMS (ได้รับ)</string>
+    <string name="sms_sent">SMS (ส่งแล้ว)</string>
+    <string name="sms_outbox">SMS (กล่องขาออก)</string>
+    <string name="sms_failed">SMS (ล้มเหลว)</string>
+    <string name="sms_queued">SMS (อยู่ในคิว)</string>
+    <string name="schedule_sms">กำหนดเวลาส่ง SMS</string>
+    <string name="share_contact">แชร์รายชื่อติดต่อ</string>
+    <string name="recyclebin_note">ข้อความในถังขยะจะถูกลบถาวรหลังจาก 30 วัน</string>
+    <string name="email_type">อีเมล</string>
+    <string name="map_type">แผนที่</string>
+    <string name="select_language">เลือกภาษา</string>
+    <string name="permanently_delete_conversation">ลบการสนทนาอย่างถาวรหรือไม่</string>
+    <string name="no_data">ไม่มีข้อมูล</string>
+    <string name="please_select_a_language">กรุณาเลือกภาษา</string>
+    <string name="theme_mode">โหมดธีม</string>
+    <string name="app_languages">ภาษาแอป</string>
+    <string name="conversation_categories">หมวดหมู่การสนทนา</string>
+    <string name="call_end_screen">หน้าจอสิ้นสุดการโทร</string>
+    <string name="rate_on_google_play">ให้คะแนนบน Google Play</string>
+    <string name="show_categories">แสดงหมวดหมู่</string>
+    <string name="moving_messages_to_recycle_bin">ย้ายข้อความไปยังถังขยะ...</string>
+    <string name="system_default">ค่าเริ่มต้นของระบบ</string>
+    <string name="organize_category">จัดลำดับหมวดหมู่ด้วยการลากและวาง</string>
+    <string name="me">ฉัน</string>
+    <string name="channel_received_sms">ได้รับ SMS</string>
+    <string name="reply">ตอบกลับ</string>
+    <string name="message_not_sent_short">ข้อความไม่ได้ถูกส่ง</string>
+    <string name="message_sending_error">ข้อความของคุณถึง \'%s\' ยังไม่ได้ถูกส่ง</string>
+    <string name="clear">ล้าง</string>
+    <string name="see_all">ดูผลลัพธ์ทั้งหมด</string>
+    <string name="matches_found">พบ %1$s รายการ</string>
 
 </resources>

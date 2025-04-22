@@ -120,7 +120,6 @@
     <string name="intro_subtxt1">Resta connesso con una posta in arrivo pulita e organizzata.Chatta senza sforzo in qualsiasi momento!</string>
     <string name="intro_subtxt2">Pianifica l\'invio automatico di messaggi: non dimenticare mai un messaggio!</string>
     <string name="intro_subtxt3">Blocca facilmente lo spam e i contatti indesiderati per mantenere pulita la tua posta in arrivo.</string>
-    <string name="select_language">Seleziona lingua</string>
     <string name="flag">flag</string>
     <string name="chinese">Cinese (semplificato)</string>
     <string name="vietnamese">Vietnamita</string>
@@ -156,18 +155,13 @@
     <string name="permissions_denied">Autorizzazioni negate</string>
 
     <string name="appearance">Aspetto</string>
-    <string name="theme_mode">Modalità tema</string>
     <string name="system_mode">Modalità sistema</string>
-    <string name="app_languages">Lingue app</string>
-    <string name="conversation_categories">Categorie conversazione</string>
-    <string name="call_end_screen">Schermata di fine chiamata</string>
     <string name="font_size">Dimensione carattere</string>
     <string name="normal">Normale</string>
     <string name="swipe_actions">Azioni di scorrimento</string>
     <string name="general">Generale</string>
     <string name="notification">Notifica</string>
     <string name="privacy_plicy">Informativa sulla privacy</string>
-    <string name="rate_on_google_play">Valuta su Google Play</string>
     <string name="share_app">Condividi app</string>
     <string name="about_messages">Informazioni sui messaggi</string>
     <string name="light">Chiaro</string>
@@ -226,5 +220,52 @@
     <string name="messages_can_be_backed">I messaggi possono essere salvati sul tuo dispositivo e ripristinati in qualsiasi momento</string>
     <string name="call_string"><![CDATA[Il permesso per le chiamate e la visualizzazione sopra le altre app ti dà accesso immediato a chi ti sta chiamando. Aiuta a evitare le chiamate spam e fornisce accesso rapido alle conversazioni SMS recenti.]]></string>
     <string name="this_step_may_contains_ads">Questo passaggio potrebbe contenere annunci</string>
+
+    <string name="language">Lingua</string>
+    <string name="copy_otp">Copia OTP</string>
+    <string name="move_to_recycle_bin">Sposta nel cestino</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Spostare questa conversazione nel cestino?</string>
+    <string name="share">Condividi</string>
+    <string name="forward">Inoltra</string>
+    <string name="no_messages_selected_to_share">Nessun messaggio selezionato da condividere</string>
+    <string name="message_details">Dettagli del messaggio</string>
+    <string name="type">Tipo</string>
+    <string name="to">A</string>
+    <string name="sent">Inviato</string>
+    <string name="unknown">Sconosciuto</string>
+    <string name="web_type">Tipo di sito web</string>
+    <string name="phone_type">Tipo di telefono</string>
+    <string name="sms_received">SMS (Ricevuto)</string>
+    <string name="sms_sent">SMS (Inviato)</string>
+    <string name="sms_outbox">SMS (In uscita)</string>
+    <string name="sms_failed">SMS (Non riuscito)</string>
+    <string name="sms_queued">SMS (In coda)</string>
+    <string name="schedule_sms">SMS pianificato</string>
+    <string name="share_contact">Condividi contatto</string>
+    <string name="recyclebin_note">I messaggi nel cestino verranno eliminati definitivamente dopo 30 giorni.</string>
+    <string name="email_type">Email</string>
+    <string name="map_type">Mappa</string>
+    <string name="select_language">Seleziona lingua</string>
+    <string name="permanently_delete_conversation">Eliminare definitivamente la conversazione?</string>
+    <string name="no_data">Nessun dato</string>
+    <string name="please_select_a_language">Seleziona una lingua</string>
+    <string name="theme_mode">Modalità tema</string>
+    <string name="app_languages">Lingue dell\'app</string>
+    <string name="conversation_categories">Categorie di conversazione</string>
+    <string name="call_end_screen">Schermata di fine chiamata</string>
+    <string name="rate_on_google_play">Valuta su Google Play</string>
+    <string name="show_categories">Mostra categorie</string>
+    <string name="moving_messages_to_recycle_bin">Spostamento messaggi nel cestino...</string>
+    <string name="system_default">Impostazioni predefinite di sistema</string>
+    <string name="organize_category">Organizza l\'ordine delle categorie con il trascinamento della selezione</string>
+    <string name="me">Io</string>
+    <string name="channel_received_sms">SMS ricevuto</string>
+    <string name="reply">Rispondi</string>
+    <string name="message_not_sent_short">Messaggio non inviato</string>
+    <string name="message_sending_error">Il tuo messaggio a \'%s\' non è stato inviato</string>
+    <string name="clear">Cancella</string>
+    <string name="see_all">Vedi tutto</string>
+    <string name="matches_found">Sono state trovate %1$s corrispondenze</string>
+
 
 </resources>

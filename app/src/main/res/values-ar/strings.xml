@@ -120,7 +120,6 @@
     <string name="intro_subtxt1">ابق على اتصال مع صندوق بريد نظيف ومنظم. قم بالدردشة بسهولة في أي وقت!</string>
     <string name="intro_subtxt2">جدولة الرسائل النصية لإرسالها تلقائيًا - لا تنسَ رسالة أبدًا!</string>
     <string name="intro_subtxt3">يمكنك بسهولة حظر الرسائل غير المرغوب فيها وجهات الاتصال للحفاظ على صندوق الوارد الخاص بك نظيفًا.</string>
-    <string name="select_language">اختر اللغة</string>
     <string name="flag">العلم</string>
     <string name="chinese">الصينية (المبسطة)</string>
     <string name="vietnamese">الفيتنامية</string>
@@ -156,18 +155,13 @@
     <string name="permissions_denied">تم رفض الأذونات.</string>
 
     <string name="appearance">المظهر</string>
-    <string name="theme_mode">وضع السمة</string>
     <string name="system_mode">وضع النظام</string>
-    <string name="app_languages">لغات التطبيق</string>
-    <string name="conversation_categories">فئات المحادثة</string>
-    <string name="call_end_screen">شاشة إنهاء المكالمة</string>
     <string name="font_size">حجم الخط</string>
     <string name="normal">عادي</string>
     <string name="swipe_actions">إجراءات التمرير</string>
     <string name="general">عام</string>
     <string name="notification">إشعارات</string>
     <string name="privacy_plicy">سياسة الخصوصية</string>
-    <string name="rate_on_google_play">التقييم على جوجل بلاي</string>
     <string name="share_app">مشاركة التطبيق</string>
     <string name="about_messages">حول الرسائل</string>
     <string name="light">فاتح</string>
@@ -227,5 +221,50 @@
     <string name="call_string"><![CDATA[يمنحك إذن الهاتف والعرض فوق التطبيقات الأخرى وصولاً فورياً إلى من يتصل بك. يساعد في تجنب المكالمات المزعجة ويوفر وصولاً سريعاً إلى محادثات الرسائل القصيرة الأخيرة.]]></string>
     <string name="this_step_may_contains_ads">قد تحتوي هذه الخطوة على إعلانات</string>
 
+    <string name="language">اللغة</string>
+    <string name="copy_otp">نسخ كلمة المرور لمرة واحدة (OTP)</string>
+    <string name="move_to_recycle_bin">نقل إلى سلة المهملات</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">هل تريد نقل هذه المحادثة إلى سلة المهملات؟</string>
+    <string name="share">مشاركة</string>
+    <string name="forward">إعادة توجيه</string>
+    <string name="no_messages_selected_to_share">لم يتم تحديد أي رسائل للمشاركة</string>
+    <string name="message_details">تفاصيل الرسالة</string>
+    <string name="type">النوع</string>
+    <string name="to">إلى</string>
+    <string name="sent">مُرسلة</string>
+    <string name="unknown">غير معروف</string>
+    <string name="web_type">نوع الويب</string>
+    <string name="phone_type">نوع الهاتف</string>
+    <string name="sms_received">رسالة نصية قصيرة (مستلمة)</string>
+    <string name="sms_sent">رسالة نصية قصيرة (مُرسلة)</string>
+    <string name="sms_outbox">رسالة نصية قصيرة (الصادر)</string>
+    <string name="sms_failed">رسالة نصية قصيرة (فشلت)</string>
+    <string name="sms_queued">رسالة نصية قصيرة (في قائمة الانتظار)</string>
+    <string name="schedule_sms">جدولة رسالة نصية قصيرة</string>
+    <string name="share_contact">مشاركة جهة اتصال</string>
+    <string name="recyclebin_note">سيتم حذف الرسائل الموجودة في سلة المهملات نهائيًا بعد 30 يومًا.</string>
+    <string name="email_type">البريد الإلكتروني</string>
+    <string name="map_type">الخريطة</string>
+    <string name="select_language">اختيار اللغة</string>
+    <string name="permanently_delete_conversation">هل تريد حذف المحادثة نهائيًا؟</string>
+    <string name="no_data">لا توجد بيانات</string>
+    <string name="please_select_a_language">يرجى اختيار لغة</string>
+    <string name="theme_mode">وضع السمة</string>
+    <string name="app_languages">لغات التطبيق</string>
+    <string name="conversation_categories">فئات المحادثة</string>
+    <string name="call_end_screen">شاشة إنهاء المكالمة</string>
+    <string name="rate_on_google_play">التقييم على جوجل بلاي</string>
+    <string name="show_categories">إظهار الفئات</string>
+    <string name="moving_messages_to_recycle_bin">جارٍ نقل الرسائل إلى سلة المهملات...</string>
+    <string name="system_default">إعدادات النظام الافتراضية</string>
+    <string name="organize_category">تنظيم الفئات بالسحب والإفلات</string>
+    <string name="me">أنا</string>
+    <string name="channel_received_sms">الرسائل النصية المستلمة</string>
+    <string name="reply">رد</string>
+    <string name="message_not_sent_short">لم تُرسل الرسالة</string>
+    <string name="message_sending_error">لم تُرسل رسالتك إلى \'%s\'</string>
+    <string name="clear">مسح</string>
+    <string name="see_all">عرض الكل</string>
+    <string name="matches_found">تم العثور على تطابقات %1$s</string>
 
 </resources>

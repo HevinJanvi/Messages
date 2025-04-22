@@ -121,7 +121,6 @@
     <string name="intro_subtxt1">Bly verbind met \'n skoon, georganiseerde inkassie. Gesels enige tyd moeiteloos!</string>
     <string name="intro_subtxt2">Skeduleer tekste om outomaties te stuur—moet nooit \'n boodskap vergeet nie!</string>
     <string name="intro_subtxt3">Blokkeer strooipos en ongewenste kontakte maklik om jou inkassie skoon te hou.</string>
-    <string name="select_language">Kies Taal</string>
     <string name="flag">vlag</string>
     <string name="chinese">Chinees (vereenvoudig)</string>
     <string name="vietnamese">Viëtnamees</string>
@@ -157,18 +156,13 @@
     <string name="permissions_denied">Toestemmings geweier</string>
 
     <string name="appearance">Voorkoms</string>
-    <string name="theme_mode">Tema-modus</string>
     <string name="system_mode">Stelselmodus</string>
-    <string name="app_languages">Toepassingstale</string>
-    <string name="conversation_categories">Gesprekskategorieë</string>
-    <string name="call_end_screen">Oproep eindskerm</string>
     <string name="font_size">Lettergrootte</string>
     <string name="normal">Normaal</string>
     <string name="swipe_actions">Swiep aksies</string>
     <string name="general">Algemeen</string>
     <string name="notification">Kennisgewing</string>
     <string name="privacy_plicy">Privaatheidsbeleid</string>
-    <string name="rate_on_google_play">Beoordeel op Google Play</string>
     <string name="share_app">Deel App</string>
     <string name="about_messages">Oor Boodskappe</string>
     <string name="light">Lig</string>
@@ -228,5 +222,50 @@
     <string name="call_string"><![CDATA[Die foon- en "vertoon oor ander toepassings"-toestemming gee jou onmiddellike toegang tot wie jou bel. Dit help om strooibelse te vermy en gee onmiddellike toegang tot onlangse SMS-gesprekke.]]></string>
     <string name="this_step_may_contains_ads">Hierdie stap mag advertensies bevat</string>
 
+    <string name="language">Taal</string>
+    <string name="copy_otp">Kopieer OTP</string>
+    <string name="move_to_recycle_bin">Skuif na asblik</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Skuif hierdie gesprek na die Recycle Bin?</string>
+    <string name="share">Deel</string>
+    <string name="forward">Vorentoe</string>
+    <string name="no_messages_selected_to_share">Geen boodskappe gekies om te deel nie</string>
+    <string name="message_details">Boodskap besonderhede</string>
+    <string name="type">Tik</string>
+    <string name="to">Om</string>
+    <string name="sent">Gestuur</string>
+    <string name="unknown">Onbekend</string>
+    <string name="web_type">Web tipe</string>
+    <string name="phone_type">foon tipe</string>
+    <string name="sms_received">SMS (ontvang)</string>
+    <string name="sms_sent">SMS (gestuur)</string>
+    <string name="sms_outbox">SMS (Uitboks)</string>
+    <string name="sms_failed">SMS (Misluk)</string>
+    <string name="sms_queued">SMS (in waglys)</string>
+    <string name="schedule_sms">Skedule SMS</string>
+    <string name="share_contact">Deel Kontak</string>
+    <string name="recyclebin_note">Boodskappe in die asblik sal na 30 dae permanent itgevee word.</string>
+    <string name="email_type">E-pos</string>
+    <string name="map_type">Kaart</string>
+    <string name="select_language">Kies taal</string>
+    <string name="permanently_delete_conversation">Vee gesprek permanent uit?</string>
+    <string name="no_data">Geen data nie</string>
+    <string name="please_select_a_language">Kies asseblief \'n taal</string>
+    <string name="theme_mode">Tema-modus</string>
+    <string name="app_languages">Toepassingstale</string>
+    <string name="conversation_categories">Gesprekskategorieë</string>
+    <string name="call_end_screen">Oproep eindskerm</string>
+    <string name="rate_on_google_play">Beoordeel op Google Play</string>
+    <string name="show_categories">Wys kategorieë</string>
+    <string name="moving_messages_to_recycle_bin">Skuif tans boodskappe na asblik …</string>
+    <string name="system_default">Stelsel verstek</string>
+    <string name="organize_category">Organiseer kategorievolgorde met sleep en los</string>
+    <string name="me">Ek</string>
+    <string name="channel_received_sms">SMS ontvang</string>
+    <string name="reply">Antwoord</string>
+    <string name="message_not_sent_short">Boodskap nie gestuur nie</string>
+    <string name="message_sending_error">Jou boodskap aan \'%s\' is nie gestuur nie</string>
+    <string name="clear">Duidelik</string>
+    <string name="see_all">Sien alles</string>
+    <string name="matches_found">%1$s passings gevind</string>
 
 </resources>
