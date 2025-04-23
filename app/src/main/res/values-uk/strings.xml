@@ -191,7 +191,7 @@
     <string name="backup">Резервне копіювання</string>
     <string name="restore_now">Відновити зараз</string>
     <string name="restore_success">Успішне відновлення</string>
-    <string name="last_backup">Остання резервна копія: %1$s</string>
+    <string name="last_backup">Остання резервна копія:</string>
     <string name="backing_up">Резервне копіювання...</string>
     <string name="small">Маленький</string>
     <string name="large">Великий</string>

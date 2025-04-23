@@ -80,10 +80,12 @@ import com.test.messages.demo.Util.ViewUtils.resetMessageCount
 import com.test.messages.demo.data.reciever.MessageScheduler
 import com.test.messages.demo.Util.MessageUnstarredEvent
 import com.test.messages.demo.Util.RefreshMessagesEvent
+import com.test.messages.demo.Util.SmsPermissionUtils.isDefaultSmsApp
 import com.test.messages.demo.Util.SmsUtils
 import com.test.messages.demo.Util.SmsUtils.markThreadAsRead
 import com.test.messages.demo.Util.UpdateGroupNameEvent
 import com.test.messages.demo.Util.ViewUtils.blinkThen
+import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
@@ -195,6 +197,7 @@ class ConversationActivity : BaseActivity() {
         } else {
             threadId = getThreadId(setOf(number))
         }
+
         SmsUtils.markThreadAsRead(this@ConversationActivity, threadId) {
             viewModel.loadMessages()
         }
@@ -303,7 +306,7 @@ class ConversationActivity : BaseActivity() {
             }
         }
         binding.buttonSend.setOnClickListener {
-            if (!isDefaultSmsApp()) {
+            if (!isDefaultSmsApp(this)) {
                 requestDefaultSmsApp()
             } else {
                 proceedWithMessageSending()
@@ -493,9 +496,12 @@ class ConversationActivity : BaseActivity() {
 
     private fun observeViewModel() {
         viewModel.conversation.observe(this) { conversationList ->
-            val sortedList = conversationList.sortedBy { it.date }
+            val filteredList = conversationList.filter { it.type !=  Telephony.Sms.MESSAGE_TYPE_DRAFT }
+            val sortedList = filteredList.sortedBy { it.date }
             val groupedList = mutableListOf<ConversationItem>()
             val addedHeaders = mutableSetOf<Long>()
+
+
             for (message in sortedList) {
                 val headerTimestamp = getStartOfDayTimestamp(message.date)
                 if (!addedHeaders.contains(headerTimestamp)) {
@@ -515,7 +521,6 @@ class ConversationActivity : BaseActivity() {
 
             if (groupedList.isNotEmpty()) {
                 Log.d("TAG", "observeViewModel: if ")
-
                 binding.emptyText.visibility = View.GONE
                 CoroutineScope(Dispatchers.IO).launch {
                     val sharedPreferences =
@@ -544,13 +549,10 @@ class ConversationActivity : BaseActivity() {
                 if (hasForwardedText) {
                     binding.emptyText.visibility = View.GONE
                 } else {
-                    Handler(Looper.getMainLooper()).postDelayed({
                         binding.emptyText.visibility = View.VISIBLE
-                    }, 150)
-
                 }
                 binding.address.text = name
-                updateLyouts(ViewUtils.isOfferSender(name),isGroup)
+                updateLyouts(ViewUtils.isOfferSender(number),isGroup)
             }
         }
     }
@@ -793,11 +795,8 @@ class ConversationActivity : BaseActivity() {
                 )
             }
 
-// 1. Insert all messages into Recycle Bin
-                db.insertMessages(deletedMessages) // Use insertMessages(List<DeletedMessage>)
-
-// 2. Delete all messages in one query
-                if (messageIds.isNotEmpty()) {
+                db.insertMessages(deletedMessages)
+             if (messageIds.isNotEmpty()) {
                     val placeholders = messageIds.joinToString(",") { "?" }
                     val selectionArgs = messageIds.map { it.toString() }.toTypedArray()
 
@@ -1097,9 +1096,7 @@ class ConversationActivity : BaseActivity() {
         }.start()
     }
 
-    private fun isDefaultSmsApp(): Boolean {
-        return Telephony.Sms.getDefaultSmsPackage(this) == packageName
-    }
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     private fun requestDefaultSmsApp() {
@@ -1110,7 +1107,7 @@ class ConversationActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     private val smsPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (isDefaultSmsApp()) {
+            if (isDefaultSmsApp(this)) {
                 proceedWithMessageSending()
             } else {
                 Toast.makeText(

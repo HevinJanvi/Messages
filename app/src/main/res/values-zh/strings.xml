@@ -191,7 +191,7 @@
     <string name="backup">备份</string>
     <string name="restore_now">立即恢复</string>
     <string name="restore_success">恢复成功</string>
-    <string name="last_backup">上次备份：%1$s</string>
+    <string name="last_backup">上次备份：</string>
     <string name="backing_up">备份中...</string>
     <string name="small">小</string>
     <string name="large">大</string>

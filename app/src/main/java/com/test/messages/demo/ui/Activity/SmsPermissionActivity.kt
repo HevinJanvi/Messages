@@ -60,13 +60,23 @@ class SmsPermissionActivity : BaseActivity() {
     }
 
     private fun isDefaultSmsApp(): Boolean {
-        return Telephony.Sms.getDefaultSmsPackage(this) == packageName
+       return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            if (roleManager!!.isRoleAvailable(RoleManager.ROLE_SMS)) {
+                roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+
+            } else {
+                false
+            }
+        } else {
+            Telephony.Sms.getDefaultSmsPackage(this) == packageName
+        }
+
     }
 
 
     private fun prepareIntentLauncher() {
         intentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
             if (isDefaultSmsApp()) {
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()

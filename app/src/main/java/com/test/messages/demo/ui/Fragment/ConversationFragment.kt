@@ -78,6 +78,7 @@ import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.ViewUtils.autoScrollToStart
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 
@@ -206,6 +207,7 @@ class ConversationFragment : Fragment() {
             }
         }*/
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
+            (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
             CoroutineScope(Dispatchers.IO).launch {
                 val filteredMessages = prepareFilteredMessages(messageList)
                 val unreadMessagesCount = filteredMessages.count { !it.isRead }
@@ -223,7 +225,9 @@ class ConversationFragment : Fragment() {
         draftViewModel.draftsLiveData.observe(viewLifecycleOwner) { draftMap ->
             adapter.updateDrafts(draftMap)
         }
-        draftViewModel.loadAllDrafts()
+        if (requireContext().hasReadSmsPermission()) {
+            draftViewModel.loadAllDrafts()
+        }
 
         binding.newConversation.setOnClickListener {
             val intent = Intent(requireContext(), NewConversationActivtiy::class.java)
@@ -231,8 +235,11 @@ class ConversationFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val threadIds = fetchAllThreadIds()
-            viewModel.insertMissingThreadIds(threadIds)
+            if(requireContext().hasReadSmsPermission()){
+                val threadIds = fetchAllThreadIds()
+                viewModel.insertMissingThreadIds(threadIds)
+            }
+
         }
         return binding.getRoot();
     }

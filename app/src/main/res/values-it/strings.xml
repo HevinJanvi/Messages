@@ -191,7 +191,7 @@
     <string name="backup">Backup</string>
     <string name="restore_now">Ripristina ora</string>
     <string name="restore_success">Ripristino riuscito</string>
-    <string name="last_backup">Ultimo backup: %1$s</string>
+    <string name="last_backup">Ultimo backup:</string>
     <string name="backing_up">Backup in corso...</string>
     <string name="small">Piccolo</string>
     <string name="large">Grande</string>

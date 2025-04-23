@@ -39,6 +39,7 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,9 +81,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-        if (Telephony.Sms.getDefaultSmsPackage(this) != packageName) {
-            startActivity(Intent(this, SmsPermissionActivity::class.java))
-        }
+
         EventBus.getDefault().register(this)
 
         val drawerWasOpen = savedInstanceState?.getBoolean("drawer_open_state", false) ?: false
@@ -108,6 +107,9 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
     private fun fetchAllThreadIds(): List<Long> {
+        if (!hasReadSmsPermission()) {
+            return emptyList()
+        }
         val threadIds = mutableListOf<Long>()
         val uri = Telephony.Sms.CONTENT_URI
         val projection = arrayOf(Telephony.Sms.THREAD_ID)

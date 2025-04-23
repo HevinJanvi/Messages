@@ -123,9 +123,13 @@ object ViewUtils {
     }*/
 
     fun isOfferSender(sender: String): Boolean {
-        val cleanedSender = sender.replace("[^\\d+]".toRegex(), "")
-        return !cleanedSender.matches(Regex("^\\+?\\d{10,15}$"))
+        val cleanedSender = sender.replace("[^\\d]".toRegex(), "") // Remove everything except digits
+        // Check if the cleaned sender matches a phone number pattern (10-15 digits, optional + at the start)
+        val isPhoneNumber = cleanedSender.matches(Regex("^\\+?\\d{10,15}$"))
+        return !isPhoneNumber
     }
+
+
 
     fun isServiceNumber(number: String): Boolean {
         return number.any { it.isLetter() }

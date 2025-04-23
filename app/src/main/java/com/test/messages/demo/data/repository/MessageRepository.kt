@@ -23,6 +23,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Block.BlockConversation
 import com.test.messages.demo.data.Database.Notification.NotificationSetting
@@ -31,6 +32,8 @@ import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.qualifiers.ApplicationContext
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -159,6 +162,11 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getConversations(): List<MessageItem> {
         val conversations = mutableListOf<MessageItem>()
 
+        if (!context.hasReadContactsPermission()
+        ) {
+            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
+            return conversations
+        }
         val threadProjection = arrayOf(
             Telephony.Threads._ID,
             Telephony.Threads.SNIPPET,
@@ -225,6 +233,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getRecipientAddresses(): HashMap<String, String> {
         val recipientList = mutableListOf<String>()
 
+        if (!context.hasReadSmsPermission()
+        ) {
+            return hashMapOf()
+        }
         val threadProjection = arrayOf(
             Telephony.Threads._ID,
             Telephony.Threads.RECIPIENT_IDS
@@ -270,10 +282,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val recipientId = it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr._ID))
                 val recipientPhoneNumber =
                     it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr.ADDRESS))
-               /* Log.d(
-                    "DEBUG",
-                    "getRecipientAddressesFor:---" + recipientId + "-------number-------" + recipientPhoneNumber
-                )*/
+                /* Log.d(
+                     "DEBUG",
+                     "getRecipientAddressesFor:---" + recipientId + "-------number-------" + recipientPhoneNumber
+                 )*/
 
                 recipientMap[recipientId] = recipientPhoneNumber
 
@@ -285,7 +297,11 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     fun getContactDetails(): List<ContactItem> {
         val contactList = mutableListOf<ContactItem>()
-
+        if (!context.hasReadContactsPermission()
+        ) {
+            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
+            return contactList
+        }
         val projection = arrayOf(
             ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
@@ -316,10 +332,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI))
                         ?: ""
                 if (phoneNumber != null) {
-                    var number =phoneNumber.replace(
+                    var number = phoneNumber.replace(
                         " ",
                         ""
-                    ).replace("(","").replace(")","").replace("-","")
+                    ).replace("(", "").replace(")", "").replace("-", "")
 //                    Log.d("DEBUG", "getContactDetails: "+phoneNumber+"-----name----"+displayName+"-----normalize numbr----"+normalizePhoneNumber )
                     contactList.add(
                         ContactItem(
@@ -339,6 +355,11 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getConversationDetails(threadId: Long): List<ConversationItem> {
         val conversationList = mutableListOf<ConversationItem>()
 
+        if (!context.hasReadContactsPermission()
+        ) {
+            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
+            return conversationList
+        }
         val projection = arrayOf(
             Telephony.Sms._ID,
             Telephony.Sms.THREAD_ID,
@@ -666,6 +687,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getBlockedNumbers(): List<String> {
         val blockedNumbers = mutableListOf<String>()
         val uri = BlockedNumberContract.BlockedNumbers.CONTENT_URI
+        if (!context.hasReadSmsPermission() || context.hasReadContactsPermission()) {
+           return blockedNumbers
+        }
 
         val cursor: Cursor? = context.contentResolver.query(
             uri,
@@ -821,8 +845,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
 
-
-
     private val notificationDao = AppDatabase.getDatabase(context).notificationDao()
     suspend fun updateOrInsertThread(threadId: Long) {
         if (threadId == -1L) return
@@ -842,6 +864,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
     suspend fun insertMissingThreadIds(newThreadIds: List<Long>) {
+        if (!context.hasReadSmsPermission()) {
+            return
+        }
         val existingThreadIds = notificationDao.getAllThreadIds()
         val missingThreadIds = newThreadIds.filter { it !in existingThreadIds }
 
@@ -905,8 +930,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
 
-    fun getNotificationBitmap(context: Context,photoUri: String): Bitmap? {
-        val size =context.resources.getDimension(R.dimen.notification_large_icon_size).toInt()
+    fun getNotificationBitmap(context: Context, photoUri: String): Bitmap? {
+        val size = context.resources.getDimension(R.dimen.notification_large_icon_size).toInt()
         if (photoUri.isEmpty()) {
             return null
         }
@@ -972,24 +997,25 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val selection = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} = ?"
         val selectionArgs = arrayOf(address)
 
-        context.contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val contactId = cursor.getString(0)
+        context.contentResolver.query(uri, projection, selection, selectionArgs, null)
+            ?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val contactId = cursor.getString(0)
 
-                val phoneCursor = context.contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-                    "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
-                    arrayOf(contactId),
-                    null
-                )
-                phoneCursor?.use {
-                    if (it.moveToFirst()) {
-                        return it.getString(0)
+                    val phoneCursor = context.contentResolver.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                        "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                        arrayOf(contactId),
+                        null
+                    )
+                    phoneCursor?.use {
+                        if (it.moveToFirst()) {
+                            return it.getString(0)
+                        }
                     }
                 }
             }
-        }
 
         // fallback to original if not found
         return address

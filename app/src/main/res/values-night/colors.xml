@@ -33,5 +33,6 @@
     <color name="snackbar_bg">#18181A</color>
     <color name="snackbar_text">#FCFCFE</color>
     <color name="serach_highlight_color">#010101</color>
+    <color name="ripple_color">#18181A</color>
 
 </resources>

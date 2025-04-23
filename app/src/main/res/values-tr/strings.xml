@@ -191,7 +191,7 @@
     <string name="backup">Yedekle</string>
     <string name="restore_now">Şimdi Geri Yükle</string>
     <string name="restore_success">Geri Yükleme Başarılı</string>
-    <string name="last_backup">Son Yedekleme: %1$s</string>
+    <string name="last_backup">Son Yedekleme:</string>
     <string name="backing_up">Yedekleniyor...</string>
     <string name="small">Küçük</string>
     <string name="large">Büyük</string>

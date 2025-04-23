@@ -192,7 +192,7 @@
     <string name="backup">Backup</string>
     <string name="restore_now">Ibalik Ngayon</string>
     <string name="restore_success">Ibalik ang Matagumpay</string>
-    <string name="last_backup">Huling Backup: %1$s</string>
+    <string name="last_backup">Huling Backup:</string>
     <string name="backing_up">Bina-back up...</string>
     <string name="small">Maliit</string>
     <string name="large">Malaki</string>

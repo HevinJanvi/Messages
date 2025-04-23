@@ -1,12 +1,9 @@
 package com.test.messages.demo.ui.Activity
 
 import android.app.Activity
-import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Intent
-import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -14,9 +11,11 @@ import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.MessagesRestoredEvent
-import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.viewmodel.BackupViewModel
 import com.test.messages.demo.databinding.ActivityBakupRestoreBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -110,10 +109,16 @@ class BakupRestoreActivity : BaseActivity() {
                 text = getString(R.string.messages_can_be_backed)
                 setTextColor(ContextCompat.getColor(context, R.color.gray_txtcolor))
             } else {
-                text = getString(R.string.last_backup, lastBackupTime)
+                text = getString(R.string.last_backup) + lastBackupTime
                 setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
             }
         }
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        backupViewModel.clearRestoreProgress()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -123,37 +128,86 @@ class BakupRestoreActivity : BaseActivity() {
                 when (requestCode) {
                     IMPORT_JSON_REQUEST_CODE -> {
 
-                        backupViewModel.restoreMessages(uri) { restoredList ->
-                            if (restoredList.isNotEmpty()) {
-                                Toast.makeText(
-                                    this,
-                                    getString(R.string.restore_success),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                        binding.txtviw.setText(getString(R.string.restoring))
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            try {
+                                showProgress()
+                                backupViewModel.restoreMessages(uri, { progress ->
+                                    Log.d("TAG", "onActivityResult:p " + progress)
+                                    binding.progressBar.progress = progress
+
+                                }) { restoredList ->
+                                    // Handle completion on the main thread
+                                    hideProgress()
+                                    if (restoredList.isNotEmpty()) {
+                                        Toast.makeText(
+                                            this@BakupRestoreActivity,
+                                            getString(R.string.restore_success),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        EventBus.getDefault().post(MessagesRestoredEvent(true))
+                                    } else {
+                                        Toast.makeText(
+                                            this@BakupRestoreActivity,
+                                            getString(R.string.no_new_messages_restored),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                // Handle any errors that occur during the restore process
                                 hideProgress()
-                                EventBus.getDefault().post(MessagesRestoredEvent(true))
-                            } else {
-                                hideProgress()
                                 Toast.makeText(
-                                    this,
-                                    getString(R.string.no_new_messages_restored),
-                                    Toast.LENGTH_SHORT
+                                    this@BakupRestoreActivity,
+                                    "Restore failed: ${e.message}",
+                                    Toast.LENGTH_LONG
                                 ).show()
                             }
                         }
+
                     }
 
                     EXPORT_JSON_REQUEST_CODE -> {
-                        binding.lybackup.visibility = View.VISIBLE
-                        binding.lyRestore.visibility = View.GONE
-                        backupViewModel.backupMessages(uri)
-                        saveLastBackupTime()
-                        loadLastBackupTime()
+                        binding.txtviw.setText(getString(R.string.backing_up))
+                        showProgress()
+                        backupViewModel.backupMessages(uri,
+                            onProgress = { progress ->
+                                runOnUiThread {
+                                    binding.progressBar.progress = progress
+                                }
+                            },
+                            onComplete = { success ->
+                                runOnUiThread {
+
+                                    if (success) {
+                                        saveLastBackupTime()
+                                        loadLastBackupTime()
+                                        Toast.makeText(
+                                            this,
+                                            getString(R.string.backup_saved_successfully),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        hideProgress()
+                                    } else {
+                                        Toast.makeText(
+                                            this,
+                                            getString(R.string.failed_to_save_backup),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                        )
+
                     }
+
+                    else -> {}
                 }
             }
         }
     }
+
 
     private fun showProgress() {
         binding.lyRestore.visibility = View.VISIBLE

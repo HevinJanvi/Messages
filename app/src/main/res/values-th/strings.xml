@@ -191,7 +191,7 @@
     <string name="backup">สำรองข้อมูล</string>
     <string name="restore_now">คืนค่าทันที</string>
     <string name="restore_success">คืนค่าสำเร็จ</string>
-    <string name="last_backup">สำรองข้อมูลครั้งล่าสุด: %1$s</string>
+    <string name="last_backup">สำรองข้อมูลครั้งล่าสุด:</string>
     <string name="backing_up">กำลังสำรองข้อมูล...</string>
     <string name="small">ขนาดเล็ก</string>
     <string name="large">ขนาดใหญ่</string>

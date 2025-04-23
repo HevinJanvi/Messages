@@ -8,8 +8,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.repository.BackupRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -20,16 +20,44 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
     private val _restoreProgress = MutableLiveData<Int>()
     val restoreProgress: LiveData<Int> get() = _restoreProgress
 
-    fun backupMessages(uri: Uri) {
-        repository.backupMessages(uri)
-    }
-    fun restoreMessages(uri: Uri, onComplete: (List<ConversationItem>) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.restoreMessages(uri, { progress ->
-                _restoreProgress.postValue(progress)
+
+    fun backupMessages(uri: Uri, onProgress: (Int) -> Unit, onComplete: (Boolean) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.backupMessages(uri, { progress ->
+                onProgress.invoke(progress)
             }, onComplete)
         }
     }
 
+    fun restoreMessages(
+        uri: Uri,
+        onProgressUpdate: (Int) -> Unit,
+        onComplete: (List<ConversationItem>) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.restoreMessages(uri, { progress ->
+                onProgressUpdate.invoke(progress)
+            }, onComplete)
+        }
+    }
+
+//    fun restoreMessages(
+//        uri: Uri,
+//        onComplete: (List<ConversationItem>) -> Unit,
+//        param: (Any) -> Unit
+//    ) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            repository.restoreMessages(uri, { progress ->
+//                _restoreProgress.postValue(progress)
+//            }, onComplete)
+//        }
+//    }
+
+    // In BackupViewModel
+
+
+    fun clearRestoreProgress() {
+        _restoreProgress.value = 0
+    }
 
 }

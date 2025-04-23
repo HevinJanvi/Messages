@@ -214,7 +214,7 @@
     <string name="backup">Backup</string>
     <string name="restore_now">Restore Now</string>
     <string name="restore_success">Restore Successful</string>
-    <string name="last_backup">Last Backup: %1$s</string>
+    <string name="last_backup">Last Backup: </string>
     <string name="backing_up">Backing up...</string>
     <string name="small">Small</string>
     <string name="large">Large</string>
@@ -290,5 +290,6 @@
     <string name="clear">Clear</string>
     <string name="see_all">See all</string>
     <string name="matches_found">%1$s matches found</string>
+    <string name="restoring">Restoring...</string>
 
 </resources>

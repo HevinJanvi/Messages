@@ -191,7 +191,7 @@
     <string name="backup">Sao lưu</string>
     <string name="restore_now">Khôi phục ngay</string>
     <string name="restore_success">Khôi phục thành công</string>
-    <string name="last_backup">Sao lưu gần đây nhất: %1$s</string>
+    <string name="last_backup">Sao lưu gần đây nhất:</string>
     <string name="backing_up">Đang sao lưu...</string>
     <string name="small">Nhỏ</string>
     <string name="large">Lớn</string>

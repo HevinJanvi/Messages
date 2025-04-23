@@ -1,14 +1,27 @@
 package com.test.messages.demo.Util
 
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.provider.Telephony
+import android.util.Log
 import com.test.messages.demo.ui.Activity.SmsPermissionActivity
 
 object SmsPermissionUtils {
 
     fun isDefaultSmsApp(context: Context): Boolean {
-        return Telephony.Sms.getDefaultSmsPackage(context) == context.packageName
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = context.getSystemService(RoleManager::class.java)
+            if (roleManager!!.isRoleAvailable(RoleManager.ROLE_SMS)) {
+                roleManager.isRoleHeld(RoleManager.ROLE_SMS)
+
+            } else {
+                false
+            }
+        } else {
+            Telephony.Sms.getDefaultSmsPackage(context) == context.packageName
+        }
     }
 
     fun checkAndRedirectIfNotDefault(context: Context): Boolean {

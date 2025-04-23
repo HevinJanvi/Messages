@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.provider.Telephony
+import android.util.JsonWriter
 import android.util.Log
 import android.widget.Toast
 import com.google.gson.Gson
@@ -11,10 +12,16 @@ import com.google.gson.reflect.TypeToken
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ViewUtils.getThreadId
 import com.test.messages.demo.data.Model.ConversationItem
+import com.test.messages.demo.data.Model.MessageItem
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.BufferedOutputStream
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
 
 class BackupRepository(private val context: Context) {
 
@@ -70,22 +77,106 @@ class BackupRepository(private val context: Context) {
         return messageList
     }
 
-    fun backupMessages(uri: Uri) {
+
+//  suspend  fun backupMessages(uri: Uri, onProgress: (Int) -> Unit, onComplete: (Boolean) -> Unit) {
+//        try {
+//            val messages = fetchMessagesFromCursor()
+//            if (messages.isEmpty()) {
+//                onComplete(false)
+//                return
+//            }
+//
+//            val json = Gson().toJson(messages)
+//            val totalBytes = json.length
+//            val bufferSize = 1024
+//            var bytesWritten = 0
+//            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+//                val writer = BufferedWriter(OutputStreamWriter(outputStream))
+//                while (bytesWritten < totalBytes) {
+//                    val end = (bytesWritten + bufferSize).coerceAtMost(totalBytes)
+//                    val chunk = json.substring(bytesWritten, end)
+//                    writer.write(chunk)
+//                    writer.flush()
+//
+//                    bytesWritten = end
+//                    val progress = (bytesWritten * 100) / totalBytes
+//                    withContext(Dispatchers.Main){
+//                        onProgress(progress)
+//                    }
+//
+//                }
+//                writer.close()
+//            }
+//
+//            onComplete(true)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            onComplete(false)
+//        }
+//    }
+
+    suspend fun backupMessages(
+        uri: Uri,
+        onProgress: (Int) -> Unit,
+        onComplete: (Boolean) -> Unit
+    ) {
         try {
             val messages = fetchMessagesFromCursor()
             if (messages.isEmpty()) {
-                Toast.makeText(context,
-                    context.getString(R.string.no_messages_found_to_backup), Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) { onComplete(false) }
                 return
             }
-            val json = Gson().toJson(messages)
-            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                outputStream.write(json.toByteArray())
+
+            val outputStream = context.contentResolver.openOutputStream(uri)
+            if (outputStream == null) {
+                withContext(Dispatchers.Main) { onComplete(false) }
+                return
             }
+
+            // Using BufferedWriter instead of JsonWriter
+            val writer = BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
+
+            // Start writing the JSON array directly
+            writer.write("[\n")
+
+            val gson = Gson()
+
+            // Serialize each message as JSON and write it to the BufferedWriter
+            for ((index, message) in messages.withIndex()) {
+                val jsonMessage = gson.toJson(message)  // Direct JSON string serialization
+                writer.write("  $jsonMessage")
+
+                if (index < messages.size - 1) {
+                    writer.write(",\n")  // Add comma between JSON objects
+                }
+
+                val progress = ((index + 1) * 100) / messages.size
+                withContext(Dispatchers.Main) {
+                    onProgress(progress)
+                }
+            }
+
+            // End of JSON array
+            writer.write("\n]")
+
+            writer.flush()
+            writer.close()
+
+            withContext(Dispatchers.Main) {
+                onComplete(true)
+            }
+
         } catch (e: Exception) {
             e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                onComplete(false)
+            }
         }
     }
+
+
+
+
 
 
     suspend fun restoreMessages(
@@ -93,24 +184,27 @@ class BackupRepository(private val context: Context) {
         onProgressUpdate: (Int) -> Unit,
         onComplete: (List<ConversationItem>) -> Unit
     ) {
+        withContext(Dispatchers.Main) {
+            onProgressUpdate.invoke(0)
+        }
+
         val inputStream = context.contentResolver.openInputStream(uri)
         val json = inputStream?.bufferedReader().use { it?.readText() }
 
         val restoredList: List<ConversationItem> =
             Gson().fromJson(json, object : TypeToken<List<ConversationItem>>() {}.type)
-
+        onProgressUpdate.invoke(10)
         val sortedList = restoredList.sortedBy { it.date }
 
         val existingIds = getExistingMessageIds()
         val existingThreadIds = getExistingThreadIds()
-
+        onProgressUpdate.invoke(15)
         val insertedMessages = mutableListOf<ConversationItem>()
-        val totalMessages = sortedList.size.coerceAtLeast(1) // Avoid division by zero
-
+        val totalMessages = sortedList.size.coerceAtLeast(1)
 
         try {
             for ((index, conversation) in sortedList.withIndex()) {
-                val originalThreadId = conversation.threadId // OLD threadId from backup
+                val originalThreadId = conversation.threadId
 
                 if (!existingIds.contains(conversation.id)) {
                     var threadId = originalThreadId
@@ -146,12 +240,18 @@ class BackupRepository(private val context: Context) {
                     }
                 }
             }
+            withContext(Dispatchers.Main) {
+                onProgressUpdate(100)
+            }
         } finally {
             withContext(Dispatchers.Main) {
+                onProgressUpdate(100)
                 onComplete(insertedMessages)
             }
         }
     }
+
+
 
     private fun insertThreadIfNotExist(conversation: ConversationItem): Long {
         val threadId = getThreadId(context,conversation.address)
