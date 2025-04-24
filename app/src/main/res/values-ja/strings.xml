@@ -266,5 +266,6 @@
     <string name="clear">クリア</string>
     <string name="see_all">すべて表示</string>
     <string name="matches_found">%1$s件の一致が見つかりました</string>
+    <string name="restoring">復元しています...</string>
 
 </resources>

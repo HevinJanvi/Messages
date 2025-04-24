@@ -266,5 +266,6 @@
     <string name="clear">Xóa</string>
     <string name="see_all">Xem tất cả</string>
     <string name="matches_found">%1$s kết quả phù hợp đã tìm thấy</string>
+    <string name="restoring">Đang khôi phục...</string>
 
 </resources>

@@ -67,7 +67,7 @@ class RecycleBinAdapter(
 
         holder.senderName.text = message.address
         holder.messageBody.text = message.body
-            holder.date.text = TimeUtils.formatTimestamp(message.date)
+            holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context,message.date)
 
         val isSelected = selectedMessages.contains(message)
         holder.icSelect.visibility = if (isSelected) View.VISIBLE else View.GONE

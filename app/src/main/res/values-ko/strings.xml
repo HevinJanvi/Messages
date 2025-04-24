@@ -266,5 +266,6 @@
     <string name="clear">지우기</string>
     <string name="see_all">모두 보기</string>
     <string name="matches_found">%1$s개의 일치 항목이 검색되었습니다.</string>
+    <string name="restoring">복원 중...</string>
 
 </resources>

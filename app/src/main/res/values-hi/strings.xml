@@ -173,7 +173,7 @@
     <string name="draft">📝 ड्राफ्ट:</string>
     <string name="personal">व्यक्तिगत</string>
     <string name="transactions">लेनदेन</string>
-    <string name="otps">OTPs</string>
+    <string name="otps">ओटीपी</string>
     <string name="offers">ऑफ़र</string>
     <string name="categories">श्रेणियाँ</string>
     <string name="categories_show">श्रेणियाँ दिखाएँ</string>
@@ -266,5 +266,6 @@
     <string name="clear">साफ़ करें</string>
     <string name="see_all">सभी देखें</string>
     <string name="matches_found">%1$s मिलान मिले</string>
+    <string name="restoring">पुनर्स्थापित किया जा रहा है...</string>
 
 </resources>

@@ -40,7 +40,7 @@ class BlockedMessagesAdapter(
         val message = messages[position]
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
-        holder.date.text = TimeUtils.formatTimestamp(message.timestamp)
+        holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context,message.timestamp)
 
         if (!message.isRead) {
             holder.senderName.setTypeface(null, Typeface.BOLD)

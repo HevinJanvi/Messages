@@ -266,5 +266,6 @@
     <string name="clear">Wyczyść</string>
     <string name="see_all">Zobacz wszystkie</string>
     <string name="matches_found">Znaleziono %1$s dopasowań</string>
+    <string name="restoring">Przywracanie...</string>
 
 </resources>

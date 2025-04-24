@@ -173,7 +173,7 @@
     <string name="draft">📝 Borrador:</string>
     <string name="personal">Personal</string>
     <string name="transactions">Transacciones</string>
-    <string name="otps">Contraseñas de un solo uso (OTP)</string>
+    <string name="otps">OTP</string>
     <string name="offers">Ofertas</string>
     <string name="categories">Categorías</string>
     <string name="categories_show">Mostrar categorías</string>
@@ -266,5 +266,6 @@
     <string name="clear">Borrar</string>
     <string name="see_all">Ver todo</string>
     <string name="matches_found">Se encontraron %1$s coincidencias</string>
+    <string name="restoring">Restaurando...</string>
 
 </resources>

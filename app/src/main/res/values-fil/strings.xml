@@ -267,5 +267,6 @@
     <string name="clear">Maaliwalas</string>
     <string name="see_all">Tingnan lahat</string>
     <string name="matches_found">%1$s mga tugma ang nakita</string>
+    <string name="restoring">Ine-restore...</string>
 
 </resources>

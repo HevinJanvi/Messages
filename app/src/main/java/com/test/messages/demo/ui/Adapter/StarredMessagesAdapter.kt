@@ -56,7 +56,7 @@ class StarredMessagesAdapter :
         holder.senderName.text = message.sender
         val lastStarredMessage = lastStarredMessages[message.threadId] ?: message.body
         holder.messageBody.text = lastStarredMessage ?: message.body
-        holder.date.text = formatTimestamp(message.timestamp)
+        holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
         if (message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
@@ -83,8 +83,12 @@ class StarredMessagesAdapter :
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(message)
         }
-
     }
+
+    fun getAllMessages(): List<MessageItem> {
+        return messages.toList()
+    }
+
     override fun getItemCount(): Int = messages.size
     fun submitList(newMessages: List<MessageItem>) {
         val diffCallback = MessageDiffCallback(messages, newMessages)

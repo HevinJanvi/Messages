@@ -54,7 +54,8 @@ import java.util.regex.Pattern
 class ConversationAdapter(
     private val context: Context,
     private val isContactSaved: Boolean,
-    private val onSelectionChanged: (Int) -> Unit
+    private val onSelectionChanged: (Int) -> Unit,
+    private val onStarClicked: (ConversationItem) -> Unit
 ) : ListAdapter<ConversationItem, ConversationAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<ConversationItem>() {
         override fun areItemsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
@@ -214,8 +215,16 @@ class ConversationAdapter(
                     }
                 }
 
+//                starIcon.setOnClickListener {
+//                    toggleStarred(message.id)
+//                }
+                starIcon.setOnClickListener {
+                    onStarClicked(message)
+                }
+
                 val isStarred = starredMessageIds.contains(message.id)
                 if (isStarred) {
+
                     starIcon.visibility = View.VISIBLE
                 } else {
                     starIcon.visibility = View.GONE
@@ -457,7 +466,6 @@ class ConversationAdapter(
         return ViewHolder(view)
     }
 
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = getItem(position)
 
@@ -499,6 +507,16 @@ class ConversationAdapter(
 
     fun setStarredMessages(starredIds: Set<Long>) {
         starredMessageIds = starredIds
+        notifyDataSetChanged()
+    }
+
+    fun toggleStarred(messageId: Long) {
+        if (starredMessageIds.contains(messageId)) {
+            starredMessageIds = starredMessageIds - messageId
+
+        } else {
+            starredMessageIds = starredMessageIds + messageId
+        }
         notifyDataSetChanged()
     }
 

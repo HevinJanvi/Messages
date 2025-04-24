@@ -266,5 +266,6 @@
     <string name="clear">Hapus</string>
     <string name="see_all">Lihat semua</string>
     <string name="matches_found">%1$s kecocokan ditemukan</string>
+    <string name="restoring">Memulihkan...</string>
 
 </resources>

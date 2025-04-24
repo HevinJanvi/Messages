@@ -408,6 +408,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         read,
                         subscriptionId,
                         "",
+                        false,
                         false
                     )
                 )
@@ -715,6 +716,27 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getAllStarredMessages(): List<StarredMessage> {
         return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessages()
     }
+
+     suspend fun getAllStarredMessagesNew(): Set<Long> {
+        return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessages().map { it.message_id }.toSet()
+    }
+
+    suspend fun insertStarredMessage(messageId: Long, threadId: Long, messageBody: String) {
+        val starredMessage = StarredMessage(
+            message_id = messageId,
+            thread_id = threadId,
+            message = messageBody
+        )
+        AppDatabase.getDatabase(context).starredMessageDao().insertStarredMessage(starredMessage)
+    }
+
+    // Delete starred message
+    suspend fun deleteStarredMessageById(messageId: Long) {
+        AppDatabase.getDatabase(context).starredMessageDao().deleteStarredMessageById(messageId)
+    }
+
+
+
 
 
     fun getAllSearchConversation(): List<ConversationItem> {

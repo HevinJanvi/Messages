@@ -58,7 +58,7 @@ class SearchMessageAdapter(
         val message = messages[position]
         holder.sender.text = highlightText(message.address, query, holder.itemView.context)
         holder.message.text = highlightText(message.body, query, holder.itemView.context)
-        holder.date.text = TimeUtils.formatTimestamp(message.date)
+        holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context,message.date)
 
         holder.itemView.setOnClickListener {
             onItemClick(message, query)

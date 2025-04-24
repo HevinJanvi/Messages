@@ -174,7 +174,7 @@
     <string name="draft">📝 Entwurf:</string>
     <string name="personal">Persönlich</string>
     <string name="transactions">Transaktionen</string>
-    <string name="otps">Einmalcodes</string>
+    <string name="otps">OTPs</string>
     <string name="offers">Angebote</string>
     <string name="categories">Kategorien</string>
     <string name="categories_show">Kategorien anzeigen</string>
@@ -267,5 +267,6 @@
     <string name="clear">Löschen</string>
     <string name="see_all">Alle anzeigen</string>
     <string name="matches_found">%1$s Übereinstimmungen gefunden</string>
+    <string name="restoring">Wird wiederhergestellt...</string>
 
 </resources>

@@ -173,7 +173,7 @@
     <string name="draft">📝 ร่าง :</string>
     <string name="personal">ส่วนตัว</string>
     <string name="transactions">ธุรกรรม</string>
-    <string name="otps">OTP</string>
+    <string name="otps">รหัส OTP</string>
     <string name="offers">ข้อเสนอ</string>
     <string name="categories">หมวดหมู่</string>
     <string name="categories_show">หมวดหมู่ แสดง</string>
@@ -266,5 +266,6 @@
     <string name="clear">ล้าง</string>
     <string name="see_all">ดูผลลัพธ์ทั้งหมด</string>
     <string name="matches_found">พบ %1$s รายการ</string>
+    <string name="restoring">กำลังคืนค่า...</string>
 
 </resources>

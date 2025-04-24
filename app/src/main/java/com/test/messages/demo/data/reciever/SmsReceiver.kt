@@ -14,6 +14,8 @@ import androidx.annotation.RequiresApi
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.DROPMSG
 import com.test.messages.demo.Util.ConversationOpenedEvent
+import com.test.messages.demo.Util.NewSmsEvent
+import com.test.messages.demo.Util.RefreshMessagesEvent
 import com.test.messages.demo.Util.ViewUtils.getThreadId
 import com.test.messages.demo.data.repository.MessageRepository
 import com.test.messages.demo.ui.send.notificationHelper
@@ -105,8 +107,8 @@ class SmsReceiver : BroadcastReceiver() {
                             if (cursor.moveToFirst()) cursor.getLong(0) else 0L
                         }
                     } ?: 0L
+                    EventBus.getDefault().post(NewSmsEvent(threadId))
                 }
-
 
                 val database = AppDatabase.getDatabase(context)
                 val notificationDao = database.notificationDao()

@@ -59,7 +59,7 @@ class ScheduledMessageAdapter(private val onItemClick: (ScheduledMessage) -> Uni
         fun bind(message: ScheduledMessage) {
             recipientView.text = message.recipient
             messageView.text = message.message
-            timeView.text = formatTimestamp(message.scheduledTime)
+            timeView.text = formatTimestamp(itemView.context,message.scheduledTime)
             val firstChar = message.recipient.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
             if (message.profileUrl != null && message.profileUrl.isNotEmpty() || startsWithSpecialChar) {

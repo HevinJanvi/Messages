@@ -266,5 +266,6 @@
     <string name="clear">Temizle</string>
     <string name="see_all">Tümünü gör</string>
     <string name="matches_found">%1$s eşleşme bulundu</string>
+    <string name="restoring">Geri yükleniyor...</string>
 
 </resources>

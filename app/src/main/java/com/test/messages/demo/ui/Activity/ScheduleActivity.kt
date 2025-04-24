@@ -95,7 +95,10 @@ class ScheduleActivity : BaseActivity() {
         Thread {
             val message =
                 AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
+//            val scheduledMsg = AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
+
             message?.let {
+                Log.d("TAG", "sendMessageImmediately:- ")
                 val subId = SmsManager.getDefaultSmsSubscriptionId()
                 val personalThreadId = it.threadId.toLongOrNull() ?: -1L
 
@@ -116,8 +119,14 @@ class ScheduleActivity : BaseActivity() {
                         requireDeliveryReport = false,
                         messageUri = messageUri
                     )
-                    AppDatabase.getDatabase(this).scheduledMessageDao().delete(it)
-                    viewModel.loadMessages()
+                    val threadId = message.threadId
+                    Log.d("TAG", "Deleting scheduled message for threadId: ${threadId}")
+
+                    AppDatabase.getDatabase(this).scheduledMessageDao().deleteByThreadId(it.threadId.toLong())
+                    runOnUiThread {
+                        viewModel.loadMessages()
+                        loadScheduledMessages() // refresh list
+                    }
 
                 } catch (e: Exception) {
                 }

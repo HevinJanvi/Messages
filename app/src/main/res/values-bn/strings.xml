@@ -268,5 +268,6 @@
     <string name="clear">সাফ করুন</string>
     <string name="see_all">সব দেখুন</string>
     <string name="matches_found">%1$s মিল পাওয়া গেছে</string>
+    <string name="restoring">পুনরুদ্ধার করা হচ্ছে...</string>
 
 </resources>

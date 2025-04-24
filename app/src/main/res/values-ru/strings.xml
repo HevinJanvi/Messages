@@ -266,5 +266,6 @@
     <string name="clear">Очистить</string>
     <string name="see_all">Посмотреть все</string>
     <string name="matches_found">Найдено %1$s совпадений</string>
+    <string name="restoring">Восстановление...</string>
 
 </resources>

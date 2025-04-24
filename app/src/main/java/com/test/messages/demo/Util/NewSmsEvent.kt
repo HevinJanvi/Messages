@@ -1,7 +1,11 @@
 package com.test.messages.demo.Util
 
 data class RefreshMessagesEvent(val timestamp: Long = System.currentTimeMillis())
-data class MessageUnstarredEvent(val threadId: Long)
+data class MessageUnstarredEvent(
+    val threadId: Long, val lastMessage: String?,
+    val lastMessageTime: Long?
+)
+
 data class UpdateGroupNameEvent(val threadId: Long, val newName: String)
 data class MessageDeletedEvent(
     val threadId: Long,
@@ -30,5 +34,6 @@ data class ConversationOpenedEvent(val threadId: Long)
 data class DraftChangedEvent(val threadId: Long, val isDraft: Boolean)
 
 data class DeleteSearchMessageEvent(val deletedMessageIds: List<Long>)
+data class NewSmsEvent(val threadId: Long)
 
 

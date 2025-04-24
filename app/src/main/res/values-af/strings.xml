@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Geen kontakte gekies nie</string>
     <string name="this_is_the_start_of_your_conversation">This is the start of your conversation, Say \nsomething nice!</string>
     <string name="messages_copied">Boodskappe gekopieer</string>
-    <string name="copy">Copy \"%1$s\"</string>
+    <string name="copy">Copy"</string>
     <string name="can_t_replay">Kan nie op hierdie kortkode antwoord nie.</string>
     <string name="learn_more"><u>Learn More</u></string>
     <string name="this_sms_is_100_secure">Hierdie SMS is 100% veilig. Boodskappe versamel nooit data sonder jou toestemming nie. Alles word verwerk en gestoor op jou foon.</string>
@@ -267,5 +267,6 @@
     <string name="clear">Duidelik</string>
     <string name="see_all">Sien alles</string>
     <string name="matches_found">%1$s passings gevind</string>
+    <string name="restoring">Herstel tans...</string>
 
 </resources>

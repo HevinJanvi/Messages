@@ -173,7 +173,7 @@
     <string name="draft">📝 草稿：</string>
     <string name="personal">个人</string>
     <string name="transactions">交易</string>
-    <string name="otps">OTP</string>
+    <string name="otps">一次性密码</string>
     <string name="offers">优惠</string>
     <string name="categories">类别</string>
     <string name="categories_show">类别显示</string>
@@ -266,5 +266,6 @@
     <string name="clear">清除</string>
     <string name="see_all">查看全部</string>
     <string name="matches_found">找到 %1$s 条匹配结果</string>
+    <string name="restoring">正在恢复...</string>
 
 </resources>

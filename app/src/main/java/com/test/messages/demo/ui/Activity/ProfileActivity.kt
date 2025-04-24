@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Activity
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -64,6 +65,7 @@ class ProfileActivity : BaseActivity() {
     private var fromArchive: Boolean = false
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var addContactLauncher: ActivityResultLauncher<Intent>
+    private var contactId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +76,11 @@ class ProfileActivity : BaseActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
                     Handler(Looper.getMainLooper()).postDelayed({
+                        val newContactId = getContactIdFromNumber(this, number)
+                        if (newContactId != null) {
+                            this.contactId = newContactId  // Store it for later use
+                            Log.d("TAG", "onCreate:new contactb id "+contactId)
+                        }
                         loadContactDetails()
                     }, 500)
 
@@ -96,27 +103,115 @@ class ProfileActivity : BaseActivity() {
         }
     }
 
+    fun getContactDetailsById(context: Context, contactId: String?): Pair<String?, Uri?> {
+        if (contactId.isNullOrBlank()) return Pair(null, null) // Prevent crash
+
+        return try {
+            val contentResolver = context.contentResolver
+            val uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId.toLong())
+
+            contentResolver.query(uri, arrayOf(
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.PHOTO_URI
+            ), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME))
+                    val photoUri = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_URI))?.let { Uri.parse(it) }
+                    return Pair(name, photoUri)
+                }
+            }
+            Pair(null, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Pair(null, null)
+        }
+    }
+
+
+    fun getContactUriFromNumber(context: Context, phoneNumber: String): String? {
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
+        context.contentResolver.query(
+            uri,
+            arrayOf(ContactsContract.PhoneLookup.PHOTO_URI),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI))
+            }
+        }
+        return null
+    }
+
+    fun getContactIdFromNumber(context: Context, number: String): String? {
+        val contentResolver = context.contentResolver
+        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number))
+
+        contentResolver.query(uri, arrayOf(ContactsContract.PhoneLookup._ID), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
+            }
+        }
+        return null
+    }
+
+
     private fun loadContactDetails() {
         viewModel.getContactNameOrNumberLive(number).observe(this) { contactName ->
 
             binding.adreesUser.text = contactName
             binding.number.text = number
 
-            val firstChar = contactName.trim().firstOrNull()
-            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+            contactId?.let { cid ->
+                val (updatedName, updatedPhotoUri) = getContactDetailsById(this, cid)
+                binding.adreesUser.text = updatedName
 
-            if (startsWithSpecialChar || profileUrl.isNotEmpty() && profileUrl != null) {
+                Log.d("TAG", "loadContactDetails:updatedProfileUri- $updatedPhotoUri")
+                Log.d("TAG", "loadContactDetails:profileUrl- $profileUrl")
+
+                val firstChar = updatedName?.trim()?.firstOrNull()
+                val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+
+                if (startsWithSpecialChar || updatedPhotoUri != null) {
+                    Glide.with(this)
+                        .load(updatedPhotoUri)
+                        .skipMemoryCache(true)
+                        .placeholder(R.drawable.user_icon)
+                        .into(binding.imgProfile)
+
+                    binding.imgProfile.visibility = View.VISIBLE
+                    binding.profileContainer.visibility = View.GONE
+                } else {
+                    binding.imgProfile.visibility = View.GONE
+                    binding.profileContainer.visibility = View.VISIBLE
+                    binding.initialsTextView.text = TimeUtils.getInitials(updatedName ?: "")
+                }
+            }
+
+            /*val (updatedName, updatedPhotoUri) = getContactDetailsById(this, contactId)
+            binding.adreesUser.text = updatedName
+            Log.d("TAG", "loadContactDetails:updatedProfileUri- "+updatedProfileUri)
+            Log.d("TAG", "loadContactDetails:profileUrl- "+profileUrl)
+
+            if (startsWithSpecialChar ||  updatedProfileUri != null) {
+                Log.d("TAG", "loadContactDetails: "+updatedProfileUri)
                 Glide.with(this)
-                    .load(profileUrl)
+                    .load(updatedProfileUri)
+                    .skipMemoryCache(true)
                     .placeholder(R.drawable.user_icon)
                     .into(binding.imgProfile)
+
                 binding.imgProfile.visibility = View.VISIBLE
                 binding.profileContainer.visibility = View.GONE
             } else {
                 binding.imgProfile.visibility = View.GONE
                 binding.profileContainer.visibility = View.VISIBLE
                 binding.initialsTextView.text = TimeUtils.getInitials(contactName)
-            }
+            }*/
 
             if (isServiceNumber(number)) {
                 binding.profileCall.isEnabled = false
@@ -130,11 +225,13 @@ class ProfileActivity : BaseActivity() {
                 binding.profileContact.setImageResource(R.drawable.profile_contact)
                 binding.profileCall.setImageResource(R.drawable.profile_call)
 
-                checkIfContactExists(number) { exists, contactId ->
+                checkIfContactExists(number) { exists, id ->
+                    contactId = id
                     if (exists) {
                         binding.profileContact.setImageResource(R.drawable.profile_edit)
                         binding.profileContact.setOnClickListener {
-                            openEditContact(contactId)
+                            Log.d("TAG", "onCreate:old contactb id "+id)
+                            openEditContact(id)
                         }
                     } else {
                         binding.profileContact.setImageResource(R.drawable.profile_contact)
@@ -202,23 +299,6 @@ class ProfileActivity : BaseActivity() {
             finish()
             overridePendingTransition(0, 0)
         }
-
-        /*val (exists, _) = contactExists(number)
-        if (exists) {
-            binding.profileContact.setImageResource(R.drawable.profile_edit)
-        } else {
-            binding.profileContact.setImageResource(R.drawable.profile_contact)
-        }
-
-        binding.profileContact.setOnClickListener {
-            val (exists, contactId) = contactExists(number)
-            if (exists && contactId != null) {
-                openEditContact(contactId)
-            } else {
-                openAddContact()
-            }
-        }*/
-
         binding.deleteLy.setOnClickListener {
             val deleteDialog = DeleteDialog(this, false) {
                 deleteMessagesForCurrentThread(threadId)
@@ -234,6 +314,7 @@ class ProfileActivity : BaseActivity() {
         }
     }
     private fun openEditContact(contactId: String) {
+
         val intent = Intent(Intent.ACTION_EDIT).apply {
             data = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId)
         }
@@ -457,29 +538,6 @@ class ProfileActivity : BaseActivity() {
             PorterDuff.Mode.SRC_IN
         )
         binding.icArchiveText.setTextColor(ContextCompat.getColor(this, R.color.textcolor))
-    }
-
-    private fun contactExists(number: String): Pair<Boolean, String?> {
-        val uri = Uri.withAppendedPath(
-            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
-            Uri.encode(number)
-        )
-
-        val cursor = contentResolver.query(
-            uri,
-            arrayOf(ContactsContract.PhoneLookup._ID),
-            null,
-            null,
-            null
-        )
-
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val contactId = it.getString(it.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID))
-                return Pair(true, contactId)
-            }
-        }
-        return Pair(false, null)
     }
 
     override fun onResume() {

@@ -285,7 +285,7 @@
         android:layout_marginTop="6dp"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        android:scrollbars="vertical"
+        android:overScrollMode="never"
         app:layout_constraintBottom_toTopOf="@+id/secureLy"
         app:layout_constraintTop_toBottomOf="@+id/blockLy"
         tools:listitem="@layout/item_message_incoming" />

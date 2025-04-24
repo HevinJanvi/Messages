@@ -287,6 +287,8 @@ class ConversationFragment : Fragment() {
     }
 
     private fun filterByCategory(message: MessageItem, category: String): Boolean {
+        val isPersonal = message.number.startsWith("+") ||
+                (message.number.length == 10 && message.number.all { it.isDigit() })
         return when (category) {
             getString(R.string.inbox) -> true
             getString(R.string.personal) -> {
@@ -300,8 +302,9 @@ class ConversationFragment : Fragment() {
                         body.contains("debit") ||
                         body.contains("credit")
             }
-
-            getString(R.string.otps) -> message.body.contains("OTP", ignoreCase = true)
+            getString(R.string.otps) -> {
+                !isPersonal && message.body.contains("OTP", ignoreCase = true)
+            }
             getString(R.string.offers) -> message.body.contains("offer", ignoreCase = true)
             else -> true
         }
@@ -324,19 +327,6 @@ class ConversationFragment : Fragment() {
             }
         }
     }
-
-
-    /*  private fun applyCategoryFilter(messageList: List<MessageItem>) {
-          val filteredList = messageList.filter { filterByCategory(it, selectedCategory) }
-          binding.emptyList.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
-
-          binding.conversationList.scrollToPosition(0)
-
-          adapter.submitList(filteredList)
-          binding.conversationList.doOnPreDraw {
-              binding.conversationList.scrollToPosition(0)
-          }
-      }*/
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupRecyclerView() {
@@ -364,7 +354,6 @@ class ConversationFragment : Fragment() {
             val intent = Intent(requireContext(), ConversationActivity::class.java).apply {
                 putExtra(EXTRA_THREAD_ID, message.threadId)
                 putExtra(NUMBER, message.number)
-                Log.d("TAG", "setupRecyclerView:name-- " + message.sender)
                 putExtra(NAME, message.sender)
                 putExtra(ISGROUP, message.isGroupChat)
                 putExtra(PROFILEURL, message.profileImageUrl)

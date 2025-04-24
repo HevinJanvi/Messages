@@ -51,7 +51,7 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         val message = messages[position]
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
-        holder.date.text = formatTimestamp(message.timestamp)
+        holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
         val firstChar = message.sender.trim().firstOrNull()
         val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
         if (startsWithSpecialChar|| message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {

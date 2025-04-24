@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object TimeUtils {
 
-    fun formatTimestamp(timestamp: Long): String {
+    fun formatTimestamp(cntxt: Context,timestamp: Long): String {
         val context = Locale.getDefault()
         val now = Calendar.getInstance()
         val messageTime = Calendar.getInstance().apply { timeInMillis = timestamp }
@@ -20,7 +20,7 @@ object TimeUtils {
                 SimpleDateFormat("h:mm a", context).format(messageTime.time)
             }
             isYesterday(now, messageTime) -> {
-                "Yesterday"
+                cntxt.getString(R.string.yesterday)
             }
             isSameYear(now, messageTime) -> {
                 SimpleDateFormat("d MMM", context).format(messageTime.time)

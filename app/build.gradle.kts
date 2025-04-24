@@ -4,18 +4,19 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
     id("kotlin-android")
+    id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
 
 android {
-    signingConfigs {
-        create("release") {
-            storeFile = file("D:\\JanviAndroidProjects\\Messages\\app\\demo_jks.jks")
-            storePassword = "demo_jks"
-            keyAlias = "demo_jks"
-            keyPassword = "demo_jks"
-        }
-    }
+//    signingConfigs {
+//        create("release") {
+//            storeFile = file("D:\\JanviAndroidProjects\\Messages\\app\\demo_jks.jks")
+//            storePassword = "demo_jks"
+//            keyAlias = "demo_jks"
+//            keyPassword = "demo_jks"
+//        }
+//    }
     namespace = "com.test.messages.demo"
     compileSdk = 34
 
@@ -30,18 +31,24 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        signingConfig = signingConfigs.getByName("release")
+//        signingConfig = signingConfigs.getByName("release")
     }
 
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
-            isDebuggable =true
+            isDebuggable =false
+            isShrinkResources= false
+        }
+        release {
+            isMinifyEnabled = true
+            isDebuggable =false
+            isShrinkResources= true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+//            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -67,6 +74,12 @@ android {
     viewBinding {
         enable = true
     }
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
 }
 
 dependencies {

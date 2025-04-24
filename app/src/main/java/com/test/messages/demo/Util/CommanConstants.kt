@@ -51,6 +51,7 @@ object CommanConstants {
     const val QUERY = "QUERY"
     const val ISSCHEDULED = "isScheduled"
     const val ISGROUP = "isGroup"
+    const val ISSTARRED= "isStareed"
     const val ISDELETED = "isDeletedThread"
     const val GROUP_NAME = "GROUP_NAME"
     const val GROUP_MEMBERS = "GROUP_MEMBERS"

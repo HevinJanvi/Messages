@@ -19,4 +19,7 @@ interface ScheduledMessageDao {
 
     @Delete
     fun delete(message: ScheduledMessage)
+
+    @Query("DELETE FROM scheduled_messages WHERE threadId = :threadId")
+    fun deleteByThreadId(threadId: Long)
 }

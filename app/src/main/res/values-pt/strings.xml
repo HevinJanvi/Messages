@@ -266,5 +266,6 @@
     <string name="clear">Limpar</string>
     <string name="see_all">Ver todas</string>
     <string name="matches_found">%1$s correspondências encontradas</string>
+    <string name="restoring">Restaurando...</string>
 
 </resources>

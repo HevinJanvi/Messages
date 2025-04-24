@@ -173,7 +173,7 @@
     <string name="draft">📝 مسودة:</string>
     <string name="personal">شخصي</string>
     <string name="transactions">المعاملات</string>
-    <string name="otps">كلمات المرور لمرة واحدة (OTP)</string>
+    <string name="otps">كلمات المرور لمرة واحدة</string>
     <string name="offers">العروض</string>
     <string name="categories">الفئات</string>
     <string name="categories_show">عرض الفئات</string>
@@ -266,5 +266,6 @@
     <string name="clear">مسح</string>
     <string name="see_all">عرض الكل</string>
     <string name="matches_found">تم العثور على تطابقات %1$s</string>
+    <string name="restoring">جارٍ الاستعادة...</string>
 
 </resources>

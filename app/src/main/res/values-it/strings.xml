@@ -266,6 +266,7 @@
     <string name="clear">Cancella</string>
     <string name="see_all">Vedi tutto</string>
     <string name="matches_found">Sono state trovate %1$s corrispondenze</string>
+    <string name="restoring">Ripristino...</string>
 
 
 </resources>

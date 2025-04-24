@@ -81,6 +81,7 @@ class MessageViewModel @Inject constructor(
     fun getContactNameOrNumber(phoneNumber: String): String {
         return repository.getContactNameOrNumber(phoneNumber)
     }
+
     fun getContactNameOrNumberLive(phoneNumber: String): LiveData<String> {
         val liveData = MutableLiveData<String>()
 
@@ -260,48 +261,93 @@ class MessageViewModel @Inject constructor(
     val lastStarredMessages: LiveData<Map<Long, String>> get() = _lastStarredMessages
 
 
+    //starred
     fun loadLastStarredMessages() {
         viewModelScope.launch(Dispatchers.IO) {
             val starredMessages = repository.getAllStarredMessages()
             val lastStarredMessagesMap = starredMessages
                 .groupBy { it.thread_id }
-                .mapValues { (_, messages) -> messages.maxByOrNull { it.message_id }?.message ?: "" }
+                .mapValues { (_, messages) ->
+                    messages.maxByOrNull { it.message_id }?.message ?: ""
+                }
             _lastStarredMessages.postValue(lastStarredMessagesMap)
-
         }
     }
+
+    private val _starredMessageIds = MutableLiveData<Set<Long>>()
+    val starredMessageIds: LiveData<Set<Long>> get() = _starredMessageIds
+
+     fun loadStarredMessages() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val starredMessages = repository.getAllStarredMessagesNew()
+            withContext(Dispatchers.Main) {
+                _starredMessageIds.value = starredMessages
+            }
+        }
+    }
+
+    // Star or unstar selected messages
+    fun toggleStarredMessage(messageId: Long, threadId: Long, messageBody: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (_starredMessageIds.value?.contains(messageId) == true) {
+               repository.deleteStarredMessageById(messageId)
+            } else {
+               repository.insertStarredMessage(messageId, threadId, messageBody)
+            }
+            loadStarredMessages()
+        }
+    }
+
+    // Star multiple selected messages
+    fun starSelectedMessages(selectedItems: List<ConversationItem>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            selectedItems.forEach { message ->
+                if (_starredMessageIds.value?.contains(message.id) == true) {
+                    repository.deleteStarredMessageById(message.id)
+                } else {
+                    repository.insertStarredMessage(
+                        message.id,
+                        message.threadId,
+                        message.body
+                    )
+                }
+            }
+            loadStarredMessages()
+        }
+    }
+
 
     //search
 
-   /* private val _fmessages = MutableLiveData<List<MessageItem>>()
-    val Filetrmessages: LiveData<List<MessageItem>> get() = _fmessages
+    /* private val _fmessages = MutableLiveData<List<MessageItem>>()
+     val Filetrmessages: LiveData<List<MessageItem>> get() = _fmessages
 
 
-    fun setFilteredMessages(newList: List<MessageItem>) {
-        _fmessages.value = newList
-    }
+     fun setFilteredMessages(newList: List<MessageItem>) {
+         _fmessages.value = newList
+     }
 
-    fun searchMessages(context: Context,query: String, threadId: String?) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val filteredMessages = repository.getAllSearchConversation()
-            // Group by number (or threadId if needed), but only include groups where ANY message matches the query
-            val groupedMessages = filteredMessages
-                .filter { it.number != null }
-                .groupBy { it.number }
-                .mapNotNull { (_, messages) ->
-                    // Only pick last message IF it also contains the keyword
-                    val lastMatchingMessage = messages.lastOrNull { it.body.contains(query, ignoreCase = true) }
-                    lastMatchingMessage
-                }
+     fun searchMessages(context: Context,query: String, threadId: String?) {
+         viewModelScope.launch(Dispatchers.IO) {
+             val filteredMessages = repository.getAllSearchConversation()
+             // Group by number (or threadId if needed), but only include groups where ANY message matches the query
+             val groupedMessages = filteredMessages
+                 .filter { it.number != null }
+                 .groupBy { it.number }
+                 .mapNotNull { (_, messages) ->
+                     // Only pick last message IF it also contains the keyword
+                     val lastMatchingMessage = messages.lastOrNull { it.body.contains(query, ignoreCase = true) }
+                     lastMatchingMessage
+                 }
 
-            withContext(Dispatchers.Main) {
-                _fmessages.value = groupedMessages
-            }
-        }
-    }*/
+             withContext(Dispatchers.Main) {
+                 _fmessages.value = groupedMessages
+             }
+         }
+     }*/
 
 
-  //working
+    //working
     private val _fmessages = MutableLiveData<List<ConversationItem>>()
     val Filetrmessages: LiveData<List<ConversationItem>> get() = _fmessages
 
@@ -366,44 +412,44 @@ class MessageViewModel @Inject constructor(
 //    }
 
 
-   /* fun searchMessages(context: Context, query: String, threadId: String?) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (query.isBlank()) {
-                withContext(Dispatchers.Main) {
-                    _fmessages.value = emptyList()
-                }
-                return@launch
-            }
+    /* fun searchMessages(context: Context, query: String, threadId: String?) {
+         viewModelScope.launch(Dispatchers.IO) {
+             if (query.isBlank()) {
+                 withContext(Dispatchers.Main) {
+                     _fmessages.value = emptyList()
+                 }
+                 return@launch
+             }
 
-            val allMessages = repository.getAllSearchConversation(threadId)
+             val allMessages = repository.getAllSearchConversation(threadId)
 
-            // Filter messages by query and non-empty address
-            val filtered = allMessages
-                .asSequence()
-                .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
-                .groupBy { it.address }
-                .mapNotNull { (_, messages) ->
-                    messages.maxByOrNull { it.date } // Get latest message per address
-                }.toList()
+             // Filter messages by query and non-empty address
+             val filtered = allMessages
+                 .asSequence()
+                 .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
+                 .groupBy { it.address }
+                 .mapNotNull { (_, messages) ->
+                     messages.maxByOrNull { it.date } // Get latest message per address
+                 }.toList()
 
-            // Fetch contacts
-            val contactMap = repository.getContactDetails()
-                .associateBy { it.phoneNumber.replace(" ", "") }
+             // Fetch contacts
+             val contactMap = repository.getContactDetails()
+                 .associateBy { it.phoneNumber.replace(" ", "") }
 
-            // Enrich messages with contact name (fallback if not found)
-            val enriched = filtered.map { msg ->
-                val normalized = msg.address.replace(" ", "")
-                val contact = contactMap[normalized]
-                    ?: contactMap[normalized.removePrefix("+91")]
-                    ?: contactMap[normalized.removePrefix("+")]
-                msg.copy(address = contact?.name ?: msg.address)
-            }
+             // Enrich messages with contact name (fallback if not found)
+             val enriched = filtered.map { msg ->
+                 val normalized = msg.address.replace(" ", "")
+                 val contact = contactMap[normalized]
+                     ?: contactMap[normalized.removePrefix("+91")]
+                     ?: contactMap[normalized.removePrefix("+")]
+                 msg.copy(address = contact?.name ?: msg.address)
+             }
 
-            withContext(Dispatchers.Main) {
-                _fmessages.value = enriched
-            }
-        }
-    }*/
+             withContext(Dispatchers.Main) {
+                 _fmessages.value = enriched
+             }
+         }
+     }*/
 
 
     private val _filteredContacts = MutableLiveData<List<ContactItem>>()
@@ -412,9 +458,11 @@ class MessageViewModel @Inject constructor(
     fun setFilteredContacts(filtered: List<ContactItem>) {
         _filteredContacts.postValue(filtered)
     }
+
     fun getAllContacts(context: Context): List<ContactItem> {
         return repository.getAllContacts(context)
     }
+
     fun searchContacts(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val allContacts = repository.getContactDetails()
@@ -429,9 +477,6 @@ class MessageViewModel @Inject constructor(
     }
 
 
-
-
-
     /*fun searchContacts(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val allContacts = repository.getContactDetails()
@@ -444,7 +489,6 @@ class MessageViewModel @Inject constructor(
             }
         }
     }*/
-
 
 
     fun insertMissingThreadIds(threadIds: List<Long>) {
@@ -486,13 +530,12 @@ class MessageViewModel @Inject constructor(
     }
 
     fun getContactName(context: Context, phoneNumber: String): String {
-        return repository.getContactName(context,phoneNumber)
+        return repository.getContactName(context, phoneNumber)
     }
 
-     fun getContactNumber(context: Context, address: String): String {
-        return repository.getPhoneNumber(context,address)
+    fun getContactNumber(context: Context, address: String): String {
+        return repository.getPhoneNumber(context, address)
     }
-
 
 
 }
