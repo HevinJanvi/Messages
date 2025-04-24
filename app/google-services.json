@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "625948636689",
+    "project_id": "messages-23fdf",
+    "storage_bucket": "messages-23fdf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:625948636689:android:e6ddeef080da72be1023b0",
+        "android_client_info": {
+          "package_name": "com.test.messages.demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBLh4N4kaRfnWP9_t45ktEs2u-1fbx6YY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
