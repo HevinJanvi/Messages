@@ -28,8 +28,7 @@
             android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:visibility="visible"
-           />
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/messageStatus"

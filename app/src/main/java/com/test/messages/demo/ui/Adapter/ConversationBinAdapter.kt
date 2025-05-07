@@ -230,18 +230,6 @@ class ConversationBinAdapter(
                     starIcon.visibility = View.GONE
                 }
 
-                /*  messageBody.setOnClickListener {
-                      if (isMultiSelectionEnabled) {
-                          toggleSelection(message,1)
-                      } else {
-                          toggleTimeVisibility(message)
-                      }
-                  }
-                  messageBody.setOnLongClickListener {
-                      Log.d("TAG", "bind:setlongpress ")
-                      enableMultiSelection(message)
-                      true
-                  }*/
 
                 itemView.setOnClickListener {
                     if (isMultiSelectionEnabled) {
@@ -514,9 +502,7 @@ class ConversationBinAdapter(
     }
 
     fun getSelectedItems(): List<ConversationItem> {
-//            return selectedItems.toList()
         return selectedItems.filterNot { it.isHeader }
-
     }
 
 

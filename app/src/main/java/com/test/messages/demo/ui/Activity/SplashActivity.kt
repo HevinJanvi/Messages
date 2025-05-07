@@ -22,7 +22,7 @@ class SplashActivity : BaseActivity() {
         setContentView(binding.root)
 
         lifecycleScope.launch {
-            delay(2500)
+            delay(1000)
 
             when {
                 !ViewUtils.isLanguageSelected(this@SplashActivity) -> {

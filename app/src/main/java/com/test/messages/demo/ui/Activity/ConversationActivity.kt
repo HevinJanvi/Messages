@@ -117,7 +117,6 @@ import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -1173,6 +1172,78 @@ class ConversationActivity : BaseActivity() {
                     set(Calendar.MONTH, month)
                     set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 }
+
+               /* val timePicker = MaterialTimePicker.Builder()
+                    .setTheme(R.style.BaseTheme_TimePicker)
+                    .setHour(currentHour)
+                    .setMinute(currentMinute)
+                    .setTimeFormat(TimeFormat.CLOCK_24H)
+                    .build()
+
+                timePicker.addOnPositiveButtonClickListener {
+                    val selectedCalendar = Calendar.getInstance().apply {
+                        set(Calendar.YEAR, year)
+                        set(Calendar.MONTH, month)
+                        set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                        set(Calendar.HOUR_OF_DAY, timePicker.hour)
+                        set(Calendar.MINUTE, timePicker.minute)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+
+                    if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.cannot_select_past_time),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        showDateTimePickerDialog()
+                    } else {
+                        selectedTimeInMillis = selectedCalendar.timeInMillis
+                        binding.schedulLy.visibility = View.VISIBLE
+
+                        val formattedTime = SimpleDateFormat(
+                            "dd MMM yyyy " *//* +if (is24HourFormat) "HH:mm" else "hh:mm a"*//*,
+                            Locale.getDefault()
+                        ).format(selectedCalendar.time)
+
+                        val spannable = SpannableStringBuilder().apply {
+                            append(getString(R.string.schedule_at) + " ")
+                            setSpan(
+                                ForegroundColorSpan(
+                                    ContextCompat.getColor(
+                                        this@ConversationActivity,
+                                        R.color.colorPrimary
+                                    )
+                                ),
+                                0,
+                                getString(R.string.schedule_at).length,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                            val timeSpan = SpannableString(formattedTime)
+                            timeSpan.setSpan(
+                                ForegroundColorSpan(
+                                    ContextCompat.getColor(
+                                        this@ConversationActivity,
+                                        R.color.colorPrimary
+                                    )
+                                ),
+                                0,
+                                timeSpan.length,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                            append(timeSpan)
+                        }
+
+                        binding.selectedTimeTextView.text = spannable
+                    }
+                }
+
+                timePicker.show(supportFragmentManager, "time_picker")*/
+
+
+
+
 
                 val timePickerDialog = TimePickerDialog(
                     this, R.style.CustomTimePicker,
