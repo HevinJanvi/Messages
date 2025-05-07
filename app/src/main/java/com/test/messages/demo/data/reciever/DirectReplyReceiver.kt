@@ -14,8 +14,10 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.RemoteInput
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.MESSAGE_ID
+import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.Util.CommanConstants.REPLY
+import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.SmsUtils
 import com.test.messages.demo.Util.ViewUtils.getUseSIMIdAtNumber
 import com.test.messages.demo.data.repository.MessageRepository
@@ -28,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -40,6 +43,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent) {
         val address = intent.getStringExtra(NUMBER)
+        val senderName = intent.getStringExtra(NAME)
         val threadId = intent.getLongExtra(EXTRA_THREAD_ID, 0L)
         val messageId = intent.getLongExtra(MESSAGE_ID, 0L)
         var body =
@@ -71,7 +75,6 @@ class DirectReplyReceiver : BroadcastReceiver() {
                         requireDeliveryReport = false
                     )
 
-                    // Refresh messages after short delay
                     delay(300)
                     repository.getMessages()
 
@@ -82,51 +85,17 @@ class DirectReplyReceiver : BroadcastReceiver() {
                             body,
                             threadId,
                             null,
-                            sender = null,
+                            senderName,
                             alertOnlyOnce = true
                         )
                     }
-
                     SmsUtils.markThreadAsRead(context, threadId)
+                    EventBus.getDefault().post(MarkasreadEvent(true))
 
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
-
-
-           /* Thread {
-                try {
-                    val sender = SmsSend(context, MessageUtils(context))
-                    sender.sendSmsMessage(
-                        text = body,
-                        addresses = setOf(address),
-                        subId = subscriptionId ?: SmsManager.getDefaultSmsSubscriptionId(),
-                        requireDeliveryReport = false
-                    )
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        repository.getMessages()
-                    }, 300)
-
-                    Handler(Looper.getMainLooper()).post {
-                        context.notificationHelper.showMessageNotification(
-                            messageId,
-                            address,
-                            body,
-                            threadId,
-                            null,
-                            sender = null,
-                            alertOnlyOnce = true
-                        )
-                    }
-                    SmsUtils.markThreadAsRead(context, threadId)
-
-
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }.start()*/
         }
 
     }

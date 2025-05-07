@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">لم يتم تحديد أي جهات اتصال.</string>
     <string name="this_is_the_start_of_your_conversation">هذه بداية محادثتك، قل شيئًا لطيفًا!</string>
     <string name="messages_copied">تم نسخ الرسائل.</string>
-    <string name="copy">نسخ "%1$s"</string>
+    <string name="copy">نسخ </string>
     <string name="can_t_replay">لا يمكن إعادة تشغيل هذا الرمز القصير. |</string>
     <string name="learn_more">&#160;&#160;<u>مزيد من المعلومات</u></string>
     <string name="this_sms_is_100_secure">هذه الرسالة النصية القصيرة آمنة تمامًا. لا تجمع الرسائل أي بيانات دون موافقة مسبقة. تتم معالجة كل شيء وتخزينه على هاتفك.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">تم التسليم</string>
     <string name="sending">جارٍ الإرسال...</string>
     <string name="failed_to_send">فشل الإرسال</string>
-    <string name="today">اليوم، %1$s</string>
-    <string name="yesterday">أمس، %1$s</string>
+    <string name="today">اليوم</string>
+    <string name="yesterday">أمس</string>
     <string name="continues">متابعة</string>
     <string name="this_sender_isnot_your_contacts">هذا المُرسِل ليس من جهات اتصالك</string>
     <string name="link_from_people">قد يؤدي رابط من أشخاص لا تعرفهم إلى فتح محتوى غير مرغوب فيه أو ضار</string>
@@ -267,5 +267,6 @@
     <string name="see_all">عرض الكل</string>
     <string name="matches_found">تم العثور على تطابقات %1$s</string>
     <string name="restoring">جارٍ الاستعادة...</string>
+    <string name="exit_text">يرجى النقر فوق "رجوع" مرة أخرى للخروج</string>
 
 </resources>

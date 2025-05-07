@@ -78,7 +78,7 @@
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="5dp">
 
-                <TextView
+                <com.test.messages.demo.Util.MarqueeTextView
                     android:id="@+id/txtLight"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -130,7 +130,7 @@
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="5dp">
 
-                <TextView
+                <com.test.messages.demo.Util.MarqueeTextView
                     android:id="@+id/txtDark"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -183,7 +183,7 @@
                 android:paddingVertical="5dp"
                 android:layout_marginTop="5dp">
 
-                <TextView
+                <com.test.messages.demo.Util.MarqueeTextView
                     android:id="@+id/txtsystem"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

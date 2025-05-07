@@ -1,12 +1,17 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.graphics.Typeface
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
@@ -21,6 +26,7 @@ class BlockedMessagesAdapter(
     var onBlockItemClickListener: ((MessageItem) -> Unit)? = null
     private var messages: MutableList<MessageItem> = mutableListOf()
     val selectedMessages = mutableSetOf<MessageItem>()
+    private var draftMessages: MutableMap<Long, Pair<String, Long>> = mutableMapOf()
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderName: TextView = itemView.findViewById(R.id.senderName)
@@ -29,6 +35,7 @@ class BlockedMessagesAdapter(
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
         val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -72,6 +79,42 @@ class BlockedMessagesAdapter(
             toggleSelection(message, holder)
             true
         }
+
+        if (draftMessages.containsKey(message.threadId)) {
+            val (draftText, _) = draftMessages[message.threadId]!!
+            Log.d("TAG", "onBindViewHolder:draft")
+            val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
+            val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
+                setSpan(
+                    ForegroundColorSpan(
+                        ContextCompat.getColor(
+                            holder.itemView.context,
+                            R.color.colorPrimary
+                        )
+                    ),
+                    0, draftLabel.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                append(draftText)
+                setSpan(
+                    ForegroundColorSpan(
+                        ContextCompat.getColor(
+                            holder.itemView.context,
+                            R.color.gray_txtcolor
+                        )
+                    ),
+                    draftLabel.length, draftLabel.length + draftText.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+            holder.messageBody.text = draftTextSpannable
+
+        } else {
+            Log.d("TAG", "onBindViewHolder:draft else")
+
+            holder.messageBody.text = message.body
+        }
+
     }
 
     override fun getItemCount() = messages.size
@@ -130,6 +173,12 @@ class BlockedMessagesAdapter(
         }
 
         onSelectionChanged(selectedMessages.size)
+        notifyDataSetChanged()
+    }
+
+    fun updateDrafts(drafts: Map<Long, Pair<String, Long>>) {
+        this.draftMessages.clear()
+        this.draftMessages.putAll(drafts)
         notifyDataSetChanged()
     }
 }

@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">কোনো যোগাযোগ নির্বাচন করা হয়নি</string>
     <string name="this_is_the_start_of_your_conversation">এটি আপনার কথোপকথনের শুরু, কিছু সুন্দর লিখুন!</string>
     <string name="messages_copied">মেসেজ কপি করা হয়েছে</string>
-    <string name="copy">"%1$s" কপি করুন</string>
+    <string name="copy">কপি করুন</string>
     <string name="can_t_replay">এই শর্ট কোডে উত্তর দেওয়া যাবে না। | </string>
     <string name="learn_more">&#160;&#160;<u>আরও জানুন</u></string>
     <string name="this_sms_is_100_secure">এই এসএমএস ১০০% নিরাপদ। মেসেজ আপনার অনুমতি ছাড়া কোনো তথ্য সংগ্রহ করে না। সবকিছু আপনার ফোনে সংরক্ষিত থাকে।</string>
@@ -68,8 +68,8 @@
     <string name="delivered">বিতরণ করা হয়েছে</string>
     <string name="sending">পাঠানো হচ্ছে...</string>
     <string name="failed_to_send">পাঠাতে ব্যর্থ</string>
-    <string name="today">আজ, %1$s</string>
-    <string name="yesterday">গতকাল, %1$s</string>
+    <string name="today">আজ</string>
+    <string name="yesterday">গতকাল</string>
     <string name="continues">চালিয়ে যান</string>
     <string name="this_sender_isnot_your_contacts">এই প্রেরক আপনার\nযোগাযোগ তালিকায় নেই</string>
     <string name="link_from_people">অপরিচিত ব্যক্তিদের লিংকে ক্লিক করলে\nঅপ্রয়োজনীয় বা ক্ষতিকর কন্টেন্ট খুলতে পারে</string>
@@ -269,5 +269,6 @@
     <string name="see_all">সব দেখুন</string>
     <string name="matches_found">%1$s মিল পাওয়া গেছে</string>
     <string name="restoring">পুনরুদ্ধার করা হচ্ছে...</string>
+    <string name="exit_text">প্রস্থান করতে আবার পিছনে ক্লিক করুন।</string>
 
 </resources>

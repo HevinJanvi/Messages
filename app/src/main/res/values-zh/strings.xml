@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">未选择联系人</string>
     <string name="this_is_the_start_of_your_conversation">这是您对话的开始，说些好话吧！</string>
     <string name="messages_copied">消息已复制</string>
-    <string name="copy">复制“%1$s”</string>
+    <string name="copy">复制</string>
     <string name="can_t_replay">无法重播此短代码。|</string>
     <string name="learn_more">&#160;&#160;<u>了解更多</u></string>
     <string name="this_sms_is_100_secure">此短信 100% 安全。未经事先同意，消息绝不会收集数据。所有内容都经过处理并存储在您的手机上。</string>
@@ -68,8 +68,8 @@
     <string name="delivered">已送达</string>
     <string name="sending">正在发送...</string>
     <string name="failed_to_send">发送失败</string>
-    <string name="today">今天，%1$s</string>
-    <string name="yesterday">昨天，%1$s</string>
+    <string name="today">今天</string>
+    <string name="yesterday">昨天</string>
     <string name="continues">继续</string>
     <string name="this_sender_isnot_your_contacts">此发件人不是您的联系人之一\n</string>
     <string name="link_from_people">来自您不认识的人的链接可能会打开\n不需要的或有害的内容</string>
@@ -115,7 +115,7 @@
     <string name="set_as_default">设置为默认</string>
     <string name="skip">跳过</string>
     <string name="intro_txt1">轻松发送消息</string>
-    <string name="intro_txt2"><![CDATA[Schedule & Relax]]></string>
+    <string name="intro_txt2">安排和放松</string>
     <string name="intro_txt3">避免垃圾邮件</string>
     <string name="intro_subtxt1">通过干净、有序的收件箱保持联系。随时轻松聊天！</string>
     <string name="intro_subtxt2">安排文本自动发送 - 永远不会忘记消息！</string>
@@ -267,5 +267,6 @@
     <string name="see_all">查看全部</string>
     <string name="matches_found">找到 %1$s 条匹配结果</string>
     <string name="restoring">正在恢复...</string>
+    <string name="exit_text">请再次单击“返回”退出</string>
 
 </resources>

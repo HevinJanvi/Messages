@@ -23,6 +23,7 @@ import com.test.messages.demo.Util.DebouncedOnClickListener
 import com.test.messages.demo.Util.LanguageChangeEvent
 import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.ViewUtils.getLanguageName
 import org.greenrobot.eventbus.EventBus
 import java.util.Locale
 
@@ -170,7 +171,6 @@ class LanguageActivity : BaseActivity() {
         }
     }
 
-
     internal inner class LanguageAdapter(
         private val context: Context,
         private val languageFlag: IntArray,
@@ -230,99 +230,7 @@ class LanguageActivity : BaseActivity() {
             }
 
             fun bind(language: String?, flag: Int) {
-                val mainText: String
-                when (language) {
-                    "en" -> {
-                        mainText = resources.getString(R.string.subtext_english)
-                    }
-
-                    "af" -> {
-                        mainText = resources.getString(R.string.subtext_afrikaans)
-                    }
-
-                    "ar" -> {
-                        mainText = resources.getString(R.string.subtext_arabic)
-                    }
-
-                    "bn" -> {
-                        mainText = resources.getString(R.string.subtext_bangla)
-                    }
-
-                    "fil" -> {
-                        mainText = resources.getString(R.string.subtext_fillipino)
-                    }
-
-                    "fr" -> {
-                        mainText = resources.getString(R.string.subtext_French)
-                    }
-
-                    "de" -> {
-                        mainText = resources.getString(R.string.subtext_German)
-                    }
-
-                    "hi" -> {
-                        mainText = resources.getString(R.string.subtext_Indian)
-                    }
-
-                    "in" -> {
-                        mainText = resources.getString(R.string.subtext_Indonesia)
-                    }
-
-                    "it" -> {
-                        mainText = resources.getString(R.string.subtext_italian)
-                    }
-
-                    "ja" -> {
-                        mainText = resources.getString(R.string.subtext_Japanese)
-                    }
-
-                    "ko" -> {
-                        mainText = resources.getString(R.string.subtext_Korean)
-                    }
-
-                    "pl" -> {
-                        mainText = resources.getString(R.string.subtext_polish)
-                    }
-
-                    "pt" -> {
-                        mainText = resources.getString(R.string.subtext_portugal)
-                    }
-
-                    "ru" -> {
-                        mainText = resources.getString(R.string.subtext_Russian)
-                    }
-
-                    "es" -> {
-                        mainText = resources.getString(R.string.subtext_Spanish)
-                    }
-
-                    "th" -> {
-                        mainText = resources.getString(R.string.subtext_thai)
-                    }
-
-                    "tr" -> {
-                        mainText = resources.getString(R.string.subtext_turkish)
-                    }
-
-                    "uk" -> {
-                        mainText = resources.getString(R.string.subtext_ukrainian)
-                    }
-
-                    "vi" -> {
-                        mainText = resources.getString(R.string.subtext_Vietnamese)
-                    }
-
-                    "zh" -> {
-                        mainText = resources.getString(R.string.subtext_chinese)
-                    }
-
-                    else -> {
-                        mainText = language ?: ""
-                    }
-                }
-
-
-                languageTextView.text = mainText
+                languageTextView.text = getLanguageName(itemView.context,language)
                 imgFlag.setImageResource(flag)
 
             }

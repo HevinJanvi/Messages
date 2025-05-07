@@ -27,7 +27,7 @@
     <string name="cancel">Cancel</string>
     <string name="unpin">Unpin</string>
     <string name="edit_categories">Edit categories</string>
-    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy">Privacy policy</string>
     <string name="no_conversation_found">No conversation found.</string>
     <string name="blocked_messages">Blocked messages</string>
     <string name="no_messages_selected">No messages selected</string>
@@ -50,7 +50,7 @@
     <string name="no_contacts_selected">No contacts selected</string>
     <string name="this_is_the_start_of_your_conversation">This is the start of your conversation, Say \nsomething nice!</string>
     <string name="messages_copied">Messages copied</string>
-    <string name="copy">Copy \"%1$s\"</string>
+    <string name="copy">Copy</string>
     <string name="can_t_replay">Can’t replay to this short code. | </string>
     <string name="learn_more">&#160;&#160;<u>Learn More</u></string>
     <string name="this_sms_is_100_secure">This SMS is 100% secure. Messages never collect data without prior consent. Everything is processed and stored on your phone.</string>
@@ -67,8 +67,8 @@
     <string name="delivered">Delivered</string>
     <string name="sending">Sending...</string>
     <string name="failed_to_send">Failed to send</string>
-    <string name="today">Today, %1$s</string>
-    <string name="yesterday">Yesterday, %1$s</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
     <string name="continues">Continue</string>
     <string name="this_sender_isnot_your_contacts">This sender isn’t one of your\ncontacts</string>
     <string name="link_from_people">Link from people that you don’t know may open\nunwanted or harmful content</string>
@@ -184,9 +184,9 @@
     <string name="swipe_actions">Swipe actions</string>
     <string name="general">General</string>
     <string name="notification">Notification</string>
-    <string name="privacy_plicy">Privacy Plicy</string>
-    <string name="share_app">Share App</string>
-    <string name="about_messages">About Messages</string>
+    <string name="privacy_plicy">Privacy Policy</string>
+    <string name="share_app">Share app</string>
+    <string name="about_messages">About messages</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="system">System</string>
@@ -291,5 +291,6 @@
     <string name="see_all">See all</string>
     <string name="matches_found">%1$s matches found</string>
     <string name="restoring">Restoring...</string>
+    <string name="exit_text">Please click Back again to exit </string>
 
 </resources>

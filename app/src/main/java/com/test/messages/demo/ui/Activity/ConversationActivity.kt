@@ -20,6 +20,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
@@ -43,10 +44,12 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ActivityFinishEvent
 import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.FORWARD
@@ -68,6 +71,7 @@ import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNAME
 import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNUMBER
 import com.test.messages.demo.Util.CommanConstants.SOURCE
 import com.test.messages.demo.Util.ConversationOpenedEvent
+import com.test.messages.demo.Util.ConversationUpdatedEvent
 import com.test.messages.demo.Util.DeleteSearchMessageEvent
 import com.test.messages.demo.Util.MessageDeletedEvent
 import com.test.messages.demo.Util.NewSmsEvent
@@ -90,20 +94,30 @@ import com.test.messages.demo.Util.UpdateGroupNameEvent
 import com.test.messages.demo.Util.ViewUtils.autoScrollToStart
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.data.Model.SIMCard
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import com.test.messages.demo.ui.Dialogs.MessageDetailsDialog
+import com.test.messages.demo.ui.send.getThreadId
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.send.hasReadStatePermission
+import com.test.messages.demo.ui.send.subscriptionManagerCompat
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -118,7 +132,9 @@ class ConversationActivity : BaseActivity() {
     private lateinit var adapter: ConversationAdapter
     private var threadId: Long = -1
     private var number: String = ""
-    private var name: String = number
+
+    //    private var name: String = number
+    private lateinit var name: String
     private lateinit var profileUrl: String
     private lateinit var groupName: String
     private var subscriptionId: Int = -1
@@ -131,16 +147,19 @@ class ConversationActivity : BaseActivity() {
     var isScheduled: Boolean = false
     var isGroup: Boolean = false
     var isStarred: Boolean = false
-    private val starredMessageIds = mutableSetOf<Long>()
     private var highlightQuery: String = ""
     private var selectedTimeInMillis: Long = 0L
     private lateinit var profileLauncher: ActivityResultLauncher<Intent>
     private var hasDraftPreviously: Boolean = false
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        Log.d("TAG", "onNewIntent: ")
+    }
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
         val threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
@@ -157,10 +176,11 @@ class ConversationActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+//        viewModel.emptyConversation()
         messagingUtils = MessageUtils(this)
         EventBus.getDefault().register(this)
-
+//        setupSimSwitcher()
+        setupSIMSelector()
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
         number = intent.getStringExtra(NUMBER).toString()
         name = intent.getStringExtra(NAME).toString()
@@ -172,16 +192,13 @@ class ConversationActivity : BaseActivity() {
         isScheduled = intent.getBooleanExtra(ISSCHEDULED, false)
         isGroup = intent.getBooleanExtra(ISGROUP, false)
         isStarred = intent.getBooleanExtra(CommanConstants.ISSTARRED, false)
-        Handler(Looper.getMainLooper()).postDelayed({
-            viewModel.loadConversation(threadId)
-        }, 50)
 
-        val forwardedMessage = intent.getStringExtra("forwardedMessage")
+        val forwardedMessage = intent.getStringExtra(FORWARDMSGS)
         if (!forwardedMessage.isNullOrEmpty()) {
+            Log.d("TAG", "onCreate:forwardedMessage " + forwardedMessage.toString())
             binding.editTextMessage.setText(forwardedMessage)
             binding.editTextMessage.setSelection(forwardedMessage.length)
         }
-
 
         if (isScheduled) {
             showDateTimePickerDialog()
@@ -193,23 +210,29 @@ class ConversationActivity : BaseActivity() {
             binding.schedulLy.visibility = View.GONE
         }
         Log.d("TAG", "onCreate: threadId :- " + threadId)
-        Log.d("TAG", "onCreate: isgroup--:- " + isGroup)
+        Log.d("TAG", "onCreate: isGroup :- " + isGroup)
         setupRecyclerView()
+
         if (threadId != -1L) {
             resetMessageCount(this, threadId)
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.cancel(threadId.toInt())
+
             viewModel.loadConversation(threadId)
         } else {
             threadId = getThreadId(setOf(number))
         }
 
-        SmsUtils.markThreadAsRead(this@ConversationActivity, threadId) {
-            viewModel.loadMessages()
+        CoroutineScope(Dispatchers.IO).launch {
+            SmsUtils.markThreadAsRead(this@ConversationActivity, threadId) {
+                runOnUiThread {
+                    viewModel.loadMessages()
+                }
+            }
         }
+
         viewModel.loadStarredMessages()
         observeViewModel()
-
         val cleanedNumber = number.replace("[^+\\d]".toRegex(), "")
         if (cleanedNumber.contains(",") || !cleanedNumber.matches(Regex("^[+]?[0-9]{7,15}$"))) {
             binding.btnCall.visibility = View.GONE
@@ -228,13 +251,14 @@ class ConversationActivity : BaseActivity() {
 
         draftViewModel.getDraft(threadId).observe(this) { draftText ->
             hasDraftPreviously = !draftText.isNullOrEmpty()
-
-            binding.editTextMessage.setText(draftText)
+            if (forwardedMessage.isNullOrEmpty()) {
+                binding.editTextMessage.setText(draftText)
+            }
         }
 
         binding.editTextMessage.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                if (!isScheduled) {
+                if (!isScheduled || threadId.equals("")) {
                     draftViewModel.saveDraft(threadId, s.toString())
                 }
             }
@@ -258,10 +282,23 @@ class ConversationActivity : BaseActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
                     val updatedName = result.data?.getStringExtra("UPDATED_NAME")
-                        ?: return@registerForActivityResult
+                    isfromBlock = result.data?.getBooleanExtra(FROMBLOCK, false) ?: false
+                    var isThreadDelete = result.data?.getBooleanExtra("delete", false) ?: false
+                    if (isThreadDelete) {
+                        finish()
+                    }
+
                     Handler(Looper.getMainLooper()).postDelayed({
                         binding.address.text = updatedName
-                    }, 100)
+                        if (isfromBlock) {
+                            binding.blockLy.visibility = View.VISIBLE
+                            binding.btnUnblock.setOnClickListener {
+                                unblockThread(threadId)
+                            }
+                        } else {
+                            binding.blockLy.visibility = View.GONE
+                        }
+                    }, 80)
                 }
             }
     }
@@ -299,9 +336,9 @@ class ConversationActivity : BaseActivity() {
 
             }
 
-            if (isfromBlock || isfromArchive) {
-                finish()
-            }
+            /* if (isfromBlock || isfromArchive) {
+                 finish()
+             }*/
         }
         binding.buttonSend.setOnClickListener {
             if (!isDefaultSmsApp(this)) {
@@ -341,7 +378,13 @@ class ConversationActivity : BaseActivity() {
         }
 
         binding.icClose.setOnClickListener { adapter.clearSelection() }
-        binding.btnDelete.setOnClickListener { deleteSelectedMessages() }
+        binding.btnDelete.setOnClickListener {
+            val deleteDialog = DeleteDialog(this, false) {
+                deleteSelectedMessages()
+            }
+            deleteDialog.show()
+        }
+
         binding.btnCopy.setOnClickListener { copySelectedMessages() }
         binding.btnStar.setOnClickListener {
             starSelectedMessages()
@@ -371,11 +414,9 @@ class ConversationActivity : BaseActivity() {
 
             binding.editTextMessage.append(newContactText)
 
-            // Move cursor to the end
             binding.editTextMessage.setSelection(binding.editTextMessage.text.length)
         }
     }
-
 
     fun showPopupMore(view: View) {
         val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -431,7 +472,7 @@ class ConversationActivity : BaseActivity() {
                 intent.putExtra(SOURCE, FORWARD)
                 intent.putExtra(FORWARDMSGS, joinedMessage)
                 startActivity(intent)
-                finish()
+//                finish()
                 popupWindow.dismiss()
             }
         }
@@ -463,33 +504,6 @@ class ConversationActivity : BaseActivity() {
         }*/
     }
 
-    var adapterObserver = object :
-        RecyclerView.AdapterDataObserver() {
-
-        override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-            super.onItemRangeChanged(positionStart, itemCount)
-            Log.e("TAG", "onItemRangeChanged:1 " + itemCount)
-
-
-            if (!adapter.isMultiSelectionEnabled) {
-                Log.e("TAG", "onItemRangeChanged:2 " + itemCount)
-
-                if (adapter.itemCount > 1) {
-                    try {
-                        Log.e("TAG", "onItemRangeChanged:3 " + itemCount)
-//                        updateMarkAsRead()
-
-                        binding.recyclerViewConversation.scrollToPosition(adapter.itemCount -1)
-//                                   }
-                    } catch (e: java.lang.Exception) {
-                    }
-                }
-
-            }
-
-
-        }
-    }
     private fun setupRecyclerView() {
 
         val contactName = viewModel.getContactName(this@ConversationActivity, name)
@@ -498,9 +512,12 @@ class ConversationActivity : BaseActivity() {
         adapter = ConversationAdapter(
             this,
             isContactSaved,
+            availableSIMCards,
             onSelectionChanged = { selectedCount ->
                 updateUI(selectedCount)
                 adapter.setSearchQuery(highlightQuery)
+                searchAndScroll(highlightQuery)
+
             },
             onStarClicked = { conversation ->
                 viewModel.toggleStarredMessage(
@@ -510,7 +527,6 @@ class ConversationActivity : BaseActivity() {
                 )
                 adapter.clearSelection()
                 updateSnnipet()
-
             }
         )
         adapter.setOnRetryListener(object : ConversationAdapter.OnMessageRetryListener {
@@ -518,158 +534,134 @@ class ConversationActivity : BaseActivity() {
                 resendMessage(message)
             }
         })
-
-//        adapter.registerAdapterDataObserver(adapterObserver)
-        linearLayoutManager = LinearLayoutManager (this)
+        linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.stackFromEnd = true
         binding.recyclerViewConversation.layoutManager = linearLayoutManager
+        binding.recyclerViewConversation.itemAnimator = null
+//        (binding.recyclerViewConversation.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations =
+        true
         binding.recyclerViewConversation.adapter = adapter
         setKeyboardVisibilityListener()
         binding.learnMoreLy.visibility = View.GONE
         binding.secureLy.visibility = View.GONE
     }
 
+    fun searchAndScroll(query: String) {
+        adapter.setSearchQuery(query)
+        val position = adapter.currentList.indexOfLast {
+            it.body?.contains(query, ignoreCase = true) == true
+        }
+
+        if (position != -1) {
+            binding.recyclerViewConversation.post {
+                binding.recyclerViewConversation.scrollToPosition(position)
+            }
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.emptyConversation()
         EventBus.getDefault().unregister(this)
     }
 
-    /*
-        private fun observeViewModel() {
-            viewModel.conversation.observe(this) { conversationList ->
-                val filteredList = conversationList.filter { it.type !=  Telephony.Sms.MESSAGE_TYPE_DRAFT }
-    //
-                val sortedList = filteredList.sortedBy { it.date }
+    private fun observeViewModel() {
+        var loaderJob: Job? = null
+//        var showLoaderDelayedJob: Job? = null
+
+        // Delay showing loader by 1 second
+//        showLoaderDelayedJob = CoroutineScope(Dispatchers.Main).launch {
+//            delay(1000)
+            binding.loader.visibility = View.VISIBLE
+            binding.emptyText.visibility = View.GONE
+//        }
+
+        viewModel.conversation.observe(this) { conversation ->
+
+            if (conversation == null) {
+                return@observe
+            }
+//            showLoaderDelayedJob?.cancel()
+
+            var conversationList = conversation
+            Log.d("TAG", "observeViewModel:conversationList--- " + conversationList.size)
+            CoroutineScope(Dispatchers.Default).launch {
+                val filteredList =
+                    conversationList.filter { it.type != Telephony.Sms.MESSAGE_TYPE_DRAFT }
+                val starredIds = viewModel.starredMessageIds.value ?: emptySet()
+                filteredList.forEach { it.starred = starredIds.contains(it.id) }
+
+                val visibleMessages = if (isStarred) {
+                    filteredList.filter { it.starred }
+                } else {
+                    filteredList
+                }
+                val sortedList = visibleMessages.sortedBy { it.date }
                 val groupedList = mutableListOf<ConversationItem>()
                 val addedHeaders = mutableSetOf<Long>()
-
-
                 for (message in sortedList) {
                     val headerTimestamp = getStartOfDayTimestamp(message.date)
                     if (!addedHeaders.contains(headerTimestamp)) {
-                        val formattedDate = formatHeaderDate(this@ConversationActivity, message.date)
-                        groupedList.add(ConversationItem.createHeader(formattedDate, headerTimestamp))
+                        val formattedDate =
+                            formatHeaderDate(this@ConversationActivity, message.date)
+                        groupedList.add(
+                            ConversationItem.createHeader(
+                                formattedDate,
+                                headerTimestamp
+                            )
+                        )
                         addedHeaders.add(headerTimestamp)
                     }
                     groupedList.add(message)
                 }
-
-                adapter.submitList(groupedList) {
-                    if (!highlightQuery.isNullOrEmpty()) {
-                        adapter.setSearchQuery(highlightQuery)
-                    }
-                    scrolltoBottom()
-                }
-
-                if (groupedList.isNotEmpty()) {
-                    Log.d("TAG", "observeViewModel: if ")
-                    binding.emptyText.visibility = View.GONE
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val sharedPreferences =
-                            getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
-                        val savedGroupName =
-                            sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
-
-                        val contactName =
-                            savedGroupName ?: name
-                        withContext(Dispatchers.Main) {
-                            binding.address.text = contactName
-                            groupName = contactName
+                Log.d("TAG", "observeViewModel:--- " + groupedList.size)
+                withContext(Dispatchers.Main) {
+                    loaderJob?.cancel()
+                    adapter.submitList(groupedList) {
+                        if (!highlightQuery.isNullOrEmpty()) {
+                            adapter.setSearchQuery(highlightQuery)
+                            searchAndScroll(highlightQuery)
                         }
+                        scrolltoBottom()
                     }
 
-                    updateLyouts(ViewUtils.isOfferSender(number),isGroup)
-                    markThreadAsRead(this@ConversationActivity, threadId) {
-                        viewModel.loadMessages()
-                    }
-
-                } else {
-
-                    Log.d("TAG", "observeViewModel: else ")
-                    val hasForwardedText =
-                        intent.getStringArrayListExtra("forwardedMessages")?.isNotEmpty() == true
-                    if (hasForwardedText) {
+                    if (groupedList.isNotEmpty()) {
                         binding.emptyText.visibility = View.GONE
+                        binding.loader.visibility = View.GONE
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val sharedPreferences = getSharedPreferences(
+                                CommanConstants.PREFS_NAME,
+                                Context.MODE_PRIVATE
+                            )
+                            val savedGroupName =
+                                sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
+                            val contactName = savedGroupName ?: name
+
+                            withContext(Dispatchers.Main) {
+                                binding.address.text = contactName
+                                groupName = contactName
+                            }
+                        }
+
+                        updateLyouts(ViewUtils.isShortCodeWithLetters(number), isGroup)
+                        markThreadAsRead(this@ConversationActivity, threadId) {
+                            viewModel.loadMessages()
+                        }
+
                     } else {
-                            binding.emptyText.visibility = View.VISIBLE
-                    }
-                    binding.address.text = name
-                    updateLyouts(ViewUtils.isOfferSender(number),isGroup)
-                }
-            }
-        }
-    */
-
-    private fun observeViewModel() {
-        viewModel.conversation.observe(this) { conversationList ->
-
-            val filteredList =
-                conversationList.filter { it.type != Telephony.Sms.MESSAGE_TYPE_DRAFT }
-            val starredIds = viewModel.starredMessageIds.value ?: emptySet()
-            val visibleMessages = if (isStarred) {
-                val starredMessages = filteredList.filter { it.id in starredIds }
-                starredMessages
-
-            } else {
-                filteredList
-            }
-
-            val sortedList = visibleMessages.sortedBy { it.date }
-            val groupedList = mutableListOf<ConversationItem>()
-            val addedHeaders = mutableSetOf<Long>()
-
-            for (message in sortedList) {
-                val headerTimestamp = getStartOfDayTimestamp(message.date)
-                if (!addedHeaders.contains(headerTimestamp)) {
-                    val formattedDate = formatHeaderDate(this@ConversationActivity, message.date)
-                    groupedList.add(ConversationItem.createHeader(formattedDate, headerTimestamp))
-                    addedHeaders.add(headerTimestamp)
-                }
-                groupedList.add(message)
-            }
-            adapter.submitList(groupedList) {
-                if (!highlightQuery.isNullOrEmpty()) {
-                    adapter.setSearchQuery(highlightQuery)
-                }
-                scrolltoBottom()
-            }
-
-            if (groupedList.isNotEmpty()) {
-                binding.emptyText.visibility = View.GONE
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    val sharedPreferences =
-                        getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
-                    val savedGroupName =
-                        sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
-                    val contactName = savedGroupName ?: name
-
-                    withContext(Dispatchers.Main) {
-                        binding.address.text = contactName
-                        groupName = contactName
+                        binding.emptyText.visibility = View.VISIBLE
+                        binding.loader.visibility = View.GONE
+                        binding.address.text = name
+                        updateLyouts(ViewUtils.isShortCodeWithLetters(number), isGroup)
                     }
                 }
-
-                updateLyouts(ViewUtils.isOfferSender(number), isGroup)
-
-                markThreadAsRead(this@ConversationActivity, threadId) {
-                    viewModel.loadMessages()
-                }
-
-            } else {
-                val hasForwardedText =
-                    intent.getStringArrayListExtra("forwardedMessages")?.isNotEmpty() == true
-                binding.emptyText.visibility = if (hasForwardedText) View.GONE else View.VISIBLE
-                binding.address.text = name
-                updateLyouts(ViewUtils.isOfferSender(number), isGroup)
             }
         }
 
         viewModel.starredMessageIds.observe(this, Observer { starredMessages ->
+            Log.d("STARRED_UPDATE", "Starred Messages updated: $starredMessages")
             adapter.setStarredMessages(starredMessages)
-            updateStarIcon()
+            updateUI(adapter.selectedItems.size)
         })
     }
 
@@ -708,8 +700,18 @@ class ConversationActivity : BaseActivity() {
     }
 
     private fun scrollToBottom() {
-        val layoutManager = binding.recyclerViewConversation.layoutManager as LinearLayoutManager
-        layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
+        if (!isfromSearch) {
+            val layoutManager =
+                binding.recyclerViewConversation.layoutManager as LinearLayoutManager
+            layoutManager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
+        }
+    }
+
+    fun scrolltoBottom() {
+        if (!isfromSearch)
+            binding.recyclerViewConversation.postDelayed({
+                binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
+            }, 100)
     }
 
     private fun updateLyouts(isServiceNumber: Boolean, isGroup: Boolean) {
@@ -724,14 +726,6 @@ class ConversationActivity : BaseActivity() {
         }
     }
 
-    @SuppressLint("NewApi")
-    fun Context.getThreadId(addresses: Set<String>): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(this, addresses)
-        } catch (e: Exception) {
-            0L
-        }
-    }
 
     private fun sendMessage() {
         highlightQuery = ""
@@ -741,7 +735,12 @@ class ConversationActivity : BaseActivity() {
             return
         }
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
-        val numbersSet = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        val simCard = availableSIMCards.getOrNull((selectedSimIndex - 1).toInt())
+        val subscriptionId = simCard?.subscriptionId ?: SubscriptionManager.getDefaultSmsSubscriptionId()
+//        subscriptionId = simSubscriptionIds.getOrNull(currentSimIndex)
+//            ?: SubscriptionManager.getDefaultSmsSubscriptionId()
+
+        val numbersSet = number.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         threadId = if (threadId == -1L || threadId == 0L) {
             viewModel.findGroupThreadId(numbersSet)
                 ?: getThreadId(numbersSet)
@@ -751,7 +750,8 @@ class ConversationActivity : BaseActivity() {
         if (numbersSet.size > 1) {
             messagingUtils.insertSmsMessage(
                 subId = subscriptionId,
-                dest = numbersSet.joinToString("|"), // Group identifier
+                dest = numbersSet.joinToString(","), // Group identifier
+                /* dest = numbersSet.joinToString("|"),*/ // Group identifier
                 text = text,
                 timestamp = System.currentTimeMillis(),
                 threadId = threadId
@@ -776,7 +776,7 @@ class ConversationActivity : BaseActivity() {
     }
 
     fun resendMessage(message: ConversationItem) {
-        val addresses = number.split(", ").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        val addresses = number.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         val subId = SmsManager.getDefaultSmsSubscriptionId()
 
         sendSmsMessage(
@@ -795,10 +795,11 @@ class ConversationActivity : BaseActivity() {
         requireDeliveryReport: Boolean,
         messageId: Long? = null
     ) {
-        if (addresses.isEmpty()) return
+        if (addresses.isNullOrEmpty()) return
 
         for (address in addresses) {
             val personalThreadId = getThreadId(setOf(address))
+
             val messageUri = messagingUtils.insertSmsMessage(
                 subId = subId,
                 dest = address,
@@ -817,11 +818,92 @@ class ConversationActivity : BaseActivity() {
                     requireDeliveryReport = requireDeliveryReport,
                     messageUri = messageUri
                 )
+
+                if (isfromSearch) {
+                    EventBus.getDefault().post(ConversationUpdatedEvent(threadId))
+                    binding.recyclerViewConversation.postDelayed({
+                        binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
+                    }, 700)
+                }
             } catch (e: Exception) {
                 Log.d("TAG", "Failed to send message to $address", e)
             }
         }
     }
+
+
+    /*private var currentSimIndex = 0
+    private var simSubscriptionIds = listOf<Int>()
+
+    private fun setupSimSwitcher() {
+        val subscriptionManager = getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+
+        val activeSubscriptions = subscriptionManager.activeSubscriptionInfoList
+
+        if (activeSubscriptions != null && activeSubscriptions.size >= 2) {
+            // Dual SIM
+            simSubscriptionIds = activeSubscriptions.map { it.subscriptionId }
+            binding.imageSimSwitch.visibility = View.VISIBLE
+            binding.imageSimSwitch.setImageResource(R.drawable.sim_1) // default
+
+            binding.imageSimSwitch.setOnClickListener {
+                // Toggle SIM
+                currentSimIndex = (currentSimIndex + 1) % simSubscriptionIds.size
+                val simIcon = if (currentSimIndex == 0) R.drawable.sim_1 else R.drawable.sim_2
+                binding.imageSimSwitch.setImageResource(simIcon)
+            }
+        } else if (activeSubscriptions != null && activeSubscriptions.isNotEmpty()) {
+            // Only one SIM, still store its ID
+            simSubscriptionIds = listOf(activeSubscriptions[0].subscriptionId)
+        }
+    }*/
+
+    private val availableSIMCards = mutableListOf<SIMCard>()
+    private var selectedSimIndex: Long = 1L  // Default to SIM 1
+
+    private fun setupSIMSelector() {
+        if (!hasReadStatePermission()) {
+            binding.imageSimSwitch.visibility = View.GONE
+            return
+        }
+        val availableSIMs = subscriptionManagerCompat().activeSubscriptionInfoList ?: return
+
+        availableSIMCards.clear()
+        if (availableSIMs.size > 1) {
+            availableSIMs.forEachIndexed { index, subscriptionInfo ->
+                var label = subscriptionInfo.displayName?.toString() ?: ""
+                var number = ""
+                if (subscriptionInfo.number?.isNotEmpty() == true) {
+                    number = subscriptionInfo.number
+                }
+                val simCard = SIMCard(index + 1, subscriptionInfo.subscriptionId, label, number)
+                availableSIMCards.add(simCard)
+            }
+            updateSimIcon()
+
+            binding.imageSimSwitch.setOnClickListener {
+                toggleSim()
+            }
+
+            binding.imageSimSwitch.visibility = View.VISIBLE
+        } else {
+            binding.imageSimSwitch.visibility = View.GONE
+        }
+
+    }
+
+    private fun toggleSim() {
+        selectedSimIndex = if (selectedSimIndex == 1L) 2L else 1L
+        updateSimIcon()
+    }
+    private fun updateSimIcon() {
+        when (selectedSimIndex) {
+            1L -> binding.imageSimSwitch.setImageResource(R.drawable.sim_1)
+            2L -> binding.imageSimSwitch.setImageResource(R.drawable.sim_2)
+            else -> binding.imageSimSwitch.setImageResource(R.drawable.sim_1)
+        }
+    }
+
 
     private fun unblockThread(threadId: Long) {
         if (threadId == -1L) return
@@ -834,7 +916,6 @@ class ConversationActivity : BaseActivity() {
                 finish()
             }
         }
-
     }
 
     private fun makeCall(phoneNumber: String) {
@@ -864,9 +945,72 @@ class ConversationActivity : BaseActivity() {
         startActivity(chooser)
     }
 
+    /*  private fun deleteSelectedMessages() {
+          val selectedMessages = adapter.getSelectedItems().toList()
+          if (selectedMessages.isEmpty()) return
+          val deleteDialog = DeleteProgressDialog(this)
+          val handler = Handler(Looper.getMainLooper())
+          val showDialogRunnable = Runnable {
+              deleteDialog.show(getString(R.string.moving_messages_to_recycle_bin))
+          }
+          handler.postDelayed(showDialogRunnable, 400)
+
+          Thread {
+              val db = AppDatabase.getDatabase(this).recycleBinDao()
+              val messageIds = selectedMessages.map { it.id }
+              val deletedMessages = selectedMessages.map { message ->
+                  DeletedMessage(
+                      messageId = message.id,
+                      threadId = message.threadId,
+                      address = message.address,
+                      date = message.date,
+                      body = message.body,
+                      type = message.type,
+                      read = message.read,
+                      subscriptionId = message.subscriptionId,
+                      deletedTime = System.currentTimeMillis()
+                  )
+              }
+
+              db.insertMessages(deletedMessages)
+              if (messageIds.isNotEmpty()) {
+                  val placeholders = messageIds.joinToString(",") { "?" }
+                  val selectionArgs = messageIds.map { it.toString() }.toTypedArray()
+
+                  contentResolver.delete(
+                      Telephony.Sms.CONTENT_URI,
+                      "_id IN ($placeholders)",
+                      selectionArgs
+                  )
+              }
+
+              val deletedMessageId = if (isfromSearch && selectedMessages.isNotEmpty()) {
+                  selectedMessages[0].id.toString()
+              } else null
+
+              runOnUiThread {
+                  handler.removeCallbacks(showDialogRunnable)
+                  deleteDialog.dismiss()
+                  adapter.clearSelection()
+                  updateSnnipet()
+                  viewModel.loadConversation(threadId)
+                  if (isfromSearch && deletedMessageId != null) {
+                      val deletedIds = selectedMessages.map { it.id }
+                      EventBus.getDefault().post(DeleteSearchMessageEvent(deletedIds))
+                  }
+                  Handler(Looper.getMainLooper()).postDelayed({
+                      if (adapter.itemCount == 0) {
+                          finish()
+                      }
+                  }, 100)
+              }
+          }.start()
+      }*/
+
     private fun deleteSelectedMessages() {
         val selectedMessages = adapter.getSelectedItems().toList()
         if (selectedMessages.isEmpty()) return
+
         val deleteDialog = DeleteProgressDialog(this)
         val handler = Handler(Looper.getMainLooper())
         val showDialogRunnable = Runnable {
@@ -874,73 +1018,28 @@ class ConversationActivity : BaseActivity() {
         }
         handler.postDelayed(showDialogRunnable, 400)
 
-        Thread {
-            val db = AppDatabase.getDatabase(this).recycleBinDao()
-            /*
-                        for (message in selectedMessages) {
-                            val deletedMessage = DeletedMessage(
-                                messageId = message.id,
-                                threadId = message.threadId,
-                                address = message.address,
-                                date = message.date,
-                                body = message.body,
-                                type = message.type,
-                                read = message.read,
-                                subscriptionId = message.subscriptionId,
-                                deletedTime = System.currentTimeMillis()
-                            )
-
-                            db.insertMessage(deletedMessage)
-
-                            val uri = Uri.parse("content://sms/${message.id}")
-                            contentResolver.delete(uri, null, null)
-                        }*/
-
-            val messageIds = selectedMessages.map { it.id }
-            val deletedMessages = selectedMessages.map { message ->
-                DeletedMessage(
-                    messageId = message.id,
-                    threadId = message.threadId,
-                    address = message.address,
-                    date = message.date,
-                    body = message.body,
-                    type = message.type,
-                    read = message.read,
-                    subscriptionId = message.subscriptionId,
-                    deletedTime = System.currentTimeMillis()
-                )
+        viewModel.deleteSelectedMessages(
+            context = this,
+            selectedMessages = selectedMessages,
+            isFromSearch = isfromSearch
+        ) { deletedIds ->
+            handler.removeCallbacks(showDialogRunnable)
+            deleteDialog.dismiss()
+            adapter.clearSelection()
+            updateSnnipet()
+            viewModel.loadConversation(threadId)
+            if (isfromSearch && deletedIds != null) {
+                EventBus.getDefault().post(DeleteSearchMessageEvent(deletedIds))
             }
 
-            db.insertMessages(deletedMessages)
-            if (messageIds.isNotEmpty()) {
-                val placeholders = messageIds.joinToString(",") { "?" }
-                val selectionArgs = messageIds.map { it.toString() }.toTypedArray()
-
-                contentResolver.delete(
-                    Telephony.Sms.CONTENT_URI,
-                    "_id IN ($placeholders)",
-                    selectionArgs
-                )
-            }
-
-            val deletedMessageId = if (isfromSearch && selectedMessages.isNotEmpty()) {
-                selectedMessages[0].id.toString()
-            } else null
-
-            runOnUiThread {
-                handler.removeCallbacks(showDialogRunnable)
-                deleteDialog.dismiss()
-                adapter.clearSelection()
-                updateSnnipet()
-                viewModel.loadConversation(threadId)
-
-                if (isfromSearch && deletedMessageId != null) {
-                    val deletedIds = selectedMessages.map { it.id }
-                    EventBus.getDefault().post(DeleteSearchMessageEvent(deletedIds))
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (adapter.itemCount == 0) {
+                    finish()
                 }
-            }
-        }.start()
+            }, 50)
+        }
     }
+
 
     private fun copySelectedMessages() {
         if (adapter.selectedItems.isNotEmpty()) {
@@ -964,6 +1063,7 @@ class ConversationActivity : BaseActivity() {
     private fun starSelectedMessages() {
         val selectedMessages = adapter.selectedItems.toList()
         viewModel.starSelectedMessages(selectedMessages)
+        adapter.clearSelection()
         updateSnnipet()
     }
 
@@ -981,68 +1081,43 @@ class ConversationActivity : BaseActivity() {
         )
     }
 
-    private fun updateStarIcon() {
-        val allSelectedAreStarred = adapter.selectedItems.all { starredMessageIds.contains(it.id) }
-        if (allSelectedAreStarred) {
-            binding.btnStar.setImageResource(R.drawable.ic_unstar)
-            adapter.clearSelection()
-
-        } else {
-            binding.btnStar.setImageResource(R.drawable.ic_star)
-            adapter.clearSelection()
-
-//            EventBus.getDefault().post(MessageDeletedEvent(threadId, lastMessageText, lastMessageTime))
-        }
-    }
-
-    private fun loadStarredMessages() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val ids = AppDatabase.getDatabase(this@ConversationActivity).starredMessageDao()
-                .getStarredMessageIds()
-            withContext(Dispatchers.Main) {
-                starredMessageIds.clear()
-                starredMessageIds.addAll(ids)
-                adapter.setStarredMessages(starredMessageIds)
-            }
-        }
-    }
-
     private fun updateUI(selectedCount: Int) {
         if (selectedCount > 0) {
             binding.actionSelectItem.visibility = View.VISIBLE
             binding.actionbar.visibility = View.GONE
             binding.countText.text = "$selectedCount" + " " + getString(R.string.selected)
 
+            val selectedItems = adapter.selectedItems
             if (selectedCount == 1) {
+                val selectedMessage = selectedItems.first()
+                var Starred = adapter.starredMessageIds.contains(selectedMessage.id)
                 binding.btnStar.visibility = View.VISIBLE
-                val selectedMessage = adapter.selectedItems.first()
-                val isStarred = starredMessageIds.contains(selectedMessage.id)
-                binding.btnStar.setImageResource(if (isStarred) R.drawable.ic_star else R.drawable.ic_unstar)
+                binding.btnStar.setImageResource(if (Starred) R.drawable.ic_star else R.drawable.ic_unstar)
             } else {
                 binding.btnStar.visibility = View.GONE
             }
+
         } else {
             binding.actionSelectItem.visibility = View.GONE
             binding.actionbar.visibility = View.VISIBLE
+            binding.btnStar.visibility = View.GONE
         }
-    }
-
-    fun scrolltoBottom() {
-        binding.recyclerViewConversation.postDelayed({
-            binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
-        }, 100)
     }
 
 
     override fun onBackPressed() {
+
         if (adapter.isMultiSelectionEnabled) {
             adapter.clearSelection()
             updateUI(0)
         } else {
             setActivityResult()
+            finish()
+            viewModel.emptyConversation()
             super.onBackPressed()
         }
     }
+
 
     private fun setActivityResult() {
         val resultIntent = Intent().apply {
@@ -1060,8 +1135,15 @@ class ConversationActivity : BaseActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onRecievessagesEvent(event: NewSmsEvent) {
-//        viewModel.loadMessages()
         viewModel.loadConversation(threadId)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onActivtiyfinishEvent(
+        event:
+        ActivityFinishEvent
+    ) {
+        finish()
     }
 
 
@@ -1229,5 +1311,6 @@ class ConversationActivity : BaseActivity() {
             sendMessage()
         }
     }
+
 
 }

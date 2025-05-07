@@ -1,10 +1,12 @@
 package com.test.messages.demo.ui.send
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Application
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.Util.NotificationHelper
@@ -29,5 +31,17 @@ fun Context.hasReadContactsPermission(): Boolean {
         this, Manifest.permission.READ_CONTACTS
     ) == PackageManager.PERMISSION_GRANTED
 }
+fun Context.hasReadStatePermission(): Boolean {
+    return ContextCompat.checkSelfPermission(
+        this, Manifest.permission.READ_PHONE_STATE
+    ) == PackageManager.PERMISSION_GRANTED
+}
 
-
+@SuppressLint("NewApi")
+fun Context.getThreadId(addresses: Set<String>): Long {
+    return try {
+        Telephony.Threads.getOrCreateThreadId(this, addresses)
+    } catch (e: Exception) {
+        0L
+    }
+}

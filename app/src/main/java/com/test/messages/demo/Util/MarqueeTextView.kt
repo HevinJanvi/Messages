@@ -1,4 +1,5 @@
 package com.test.messages.demo.Util
+
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView

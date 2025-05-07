@@ -117,7 +117,7 @@ class SmsReceiver : BroadcastReceiver() {
                 val isWakeScreenEnabled = wakeSetting?.isWakeScreenOn ?: true
 
                 if (!isMuted) {
-                    Log.d("TAG", "Wake Screen DB Value: $isWakeScreenEnabled")
+//                    Log.d("TAG", "Wake Screen DB Value: $isWakeScreenEnabled")
                     if (isWakeScreenEnabled) {
                         wakeUpScreen(context)
                     }
@@ -141,8 +141,8 @@ class SmsReceiver : BroadcastReceiver() {
                     incrementMessageCount(threadId)
                     val contactUri = repository.getPhotoUriFromPhoneNumber(address)
                     val bitmap = repository.getNotificationBitmap(context,contactUri)
-                    Log.d("TAG", "onReceive:bitmap "+bitmap)
-                    context.notificationHelper.showMessageNotification(messageId, address, body, threadId, bitmap, sender = displayName, alertOnlyOnce = true)
+//                    Log.d("TAG", "onReceive:bitmap "+bitmap)
+                    context.notificationHelper.showMessageNotification(messageId, address, body, threadId, bitmap, displayName, alertOnlyOnce = true)
                 }
                 repository.getMessages()
 //                repository.getConversation(threadId)

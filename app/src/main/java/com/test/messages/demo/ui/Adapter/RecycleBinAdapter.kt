@@ -203,7 +203,28 @@ class RecycleBinAdapter(
 
     override fun getItemCount(): Int = messages.size
 
-    private fun getContactName(context: Context, phoneNumber: String): String? {
+    private fun getContactName(context: Context, phoneNumber: String?): String? {
+        if (phoneNumber.isNullOrEmpty()) {
+            return null
+        }
+
+        return try {
+            val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+            val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
+
+            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
+                }
+            }
+            null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /*private fun getContactName(context: Context, phoneNumber: String): String? {
         val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
         val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
 
@@ -214,6 +235,6 @@ class RecycleBinAdapter(
         }
         return null
     }
-
+*/
 
 }

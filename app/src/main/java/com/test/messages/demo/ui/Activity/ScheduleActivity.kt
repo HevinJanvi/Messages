@@ -21,6 +21,8 @@ import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SmsSender
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
@@ -143,7 +145,7 @@ class ScheduleActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
     }

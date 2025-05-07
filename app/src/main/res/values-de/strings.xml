@@ -69,8 +69,8 @@
     <string name="delivered">Zugestellt</string>
     <string name="sending">Senden...</string>
     <string name="failed_to_send">Senden fehlgeschlagen</string>
-    <string name="today">Heute, %1$s</string>
-    <string name="yesterday">Gestern, %1$s</string>
+    <string name="today">Heute</string>
+    <string name="yesterday">Gestern</string>
     <string name="continues">Weiter</string>
     <string name="this_sender_isnot_your_contacts">Dieser Absender ist nicht in Ihren\nKontakten</string>
     <string name="link_from_people">Links von unbekannten Personen können\nunerwünschte oder schädliche Inhalte öffnen</string>
@@ -268,5 +268,6 @@
     <string name="see_all">Alle anzeigen</string>
     <string name="matches_found">%1$s Übereinstimmungen gefunden</string>
     <string name="restoring">Wird wiederhergestellt...</string>
+    <string name="exit_text">Bitte klicken Sie erneut auf Zurück, um zu beenden</string>
 
 </resources>

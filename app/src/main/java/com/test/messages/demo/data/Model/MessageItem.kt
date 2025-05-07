@@ -1,6 +1,8 @@
 package com.test.messages.demo.data.Model
 
+import com.google.errorprone.annotations.Keep
 
+@Keep
 data class MessageItem(
     val threadId: Long,
     val sender: String,
@@ -13,12 +15,13 @@ data class MessageItem(
     val profileImageUrl: String,
     var isPinned: Boolean,
     val isGroupChat: Boolean,
-    val isMuted: Boolean
-){
+    val isMuted: Boolean,
+    val lastMsgDate: Long
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is MessageItem) return false
-        return threadId == other.threadId && body == other.body
+        return threadId == other.threadId && body == other.body && isMuted == other.isMuted && isPinned == other.isPinned
     }
 
     override fun hashCode(): Int {

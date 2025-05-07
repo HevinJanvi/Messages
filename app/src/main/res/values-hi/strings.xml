@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">कोई संपर्क नहीं चुना गया</string>
     <string name="this_is_the_start_of_your_conversation">यह आपकी बातचीत की शुरुआत है, \nकुछ अच्छा बोलें!</string>
     <string name="messages_copied">संदेश कॉपी किए गए</string>
-    <string name="copy">\"%1$s\" कॉपी करें</string>
+    <string name="copy"> कॉपी करें</string>
     <string name="can_t_replay">इस संक्षिप्त कोड को फिर से नहीं चलाया जा सकता। |</string>
     <string name="learn_more">&#160;&#160;<u>अधिक जानें</u></string>
     <string name="this_sms_is_100_secure">यह SMS 100% सुरक्षित है। संदेश बिना पूर्व सहमति के कभी भी डेटा एकत्र नहीं करते हैं। सब कुछ आपके फ़ोन पर संसाधित और संग्रहीत किया जाता है।</string>
@@ -68,8 +68,8 @@
     <string name="delivered">डिलीवर</string>
     <string name="sending">भेजा जा रहा है...</string>
     <string name="failed_to_send">भेजने में विफल</string>
-    <string name="today">आज, %1$s</string>
-    <string name="yesterday">कल, %1$s</string>
+    <string name="today">आज</string>
+    <string name="yesterday">कल</string>
     <string name="continues">जारी रखें</string>
     <string name="this_sender_isnot_your_contacts">यह प्रेषक आपके संपर्कों में से नहीं है</string>
     <string name="link_from_people">ऐसे लोगों से लिंक जिन्हें आप नहीं जानते हैं, अवांछित या हानिकारक सामग्री खोल सकते हैं</string>
@@ -267,5 +267,6 @@
     <string name="see_all">सभी देखें</string>
     <string name="matches_found">%1$s मिलान मिले</string>
     <string name="restoring">पुनर्स्थापित किया जा रहा है...</string>
+    <string name='exit_text'> कृपया बाहर निकलने के लिए वापस क्लिक करें </string>
 
 </resources>

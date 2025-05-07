@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Контакты не выбраны</string>
     <string name="this_is_the_start_of_your_conversation">Это начало вашего разговора, скажите\nчто-нибудь приятное!</string>
     <string name="messages_copied">Сообщения скопированы</string>
-    <string name="copy">Копировать \"%1$s\"</string>
+    <string name="copy">Копировать</string>
     <string name="can_t_replay">Невозможно воспроизвести на этот короткий номер. |</string>
     <string name="learn_more">&#160;&#160;<u>Подробнее</u></string>
     <string name="this_sms_is_100_secure">Это SMS на 100% безопасно. Сообщения никогда не собирают данные без предварительного согласия. Все обрабатывается и хранится на вашем телефоне.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Доставлено</string>
     <string name="sending">Отправка...</string>
     <string name="failed_to_send">Не удалось отправить</string>
-    <string name="today">Сегодня, %1$s</string>
-    <string name="yesterday">Вчера, %1$s</string>
+    <string name="today">Сегодня</string>
+    <string name="yesterday">Вчера</string>
     <string name="continues">Продолжить</string>
     <string name="this_sender_isnot_your_contacts">Этот отправитель не входит в ваши\nконтакты</string>
     <string name="link_from_people">Ссылка от людей, которых вы не знаете, может открыть\nнежелательный или вредоносный контент</string>
@@ -115,7 +115,7 @@
     <string name="set_as_default">Установить по умолчанию</string>
     <string name="skip">Пропустить</string>
     <string name="intro_txt1">Обмен сообщениями стал проще</string>
-    <string name="intro_txt2"><![CDATA[Schedule & Relax]]></string>
+    <string name="intro_txt2">Расписание и отдых></string>
     <string name="intro_txt3">Избегайте спама</string>
     <string name="intro_subtxt1">Оставайтесь на связи с чистым, организованным почтовым ящиком. Общайтесь без усилий в любое время!</string>
     <string name="intro_subtxt2">Запланируйте автоматическую отправку текстовых сообщений — никогда не забывайте о сообщении!</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Посмотреть все</string>
     <string name="matches_found">Найдено %1$s совпадений</string>
     <string name="restoring">Восстановление...</string>
+    <string name="exit_text">Чтобы выйти, нажмите «Назад» еще раз </string>
 
 </resources>

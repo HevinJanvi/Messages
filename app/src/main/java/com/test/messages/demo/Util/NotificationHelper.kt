@@ -6,22 +6,18 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
-import android.provider.ContactsContract
-import android.provider.MediaStore
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.LOCK_SCREEN_SENDER
@@ -37,17 +33,13 @@ import com.test.messages.demo.Util.ViewUtils.getLockScreenVisibilitySetting
 import com.test.messages.demo.Util.ViewUtils.getPreviewOption
 import com.test.messages.demo.Util.ViewUtils.isNougatPlus
 import com.test.messages.demo.Util.ViewUtils.isShortCodeWithLetters
-import com.test.messages.demo.Util.ViewUtils.resetMessageCount
 import com.test.messages.demo.Util.ViewUtils.updateMessageCount
 import com.test.messages.demo.data.reciever.DeleteSmsReceiver
 import com.test.messages.demo.data.reciever.DirectReplyReceiver
 import com.test.messages.demo.data.reciever.MarkAsReadReceiver
-import com.test.messages.demo.data.repository.MessageRepository
 import com.test.messages.demo.ui.Activity.ConversationActivity
+import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.send.notificationManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -138,14 +130,19 @@ class NotificationHelper(private val context: Context) {
             putExtra(NAME, sender)
             putExtra(NUMBER, address)
         }
-        val contentPendingIntent =
+        /*val contentPendingIntent =
             PendingIntent.getActivity(
                 context,
                 notificationId,
                 contentIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
+            )*/
+        val contentPendingIntent = TaskStackBuilder.create(context).run {
+            addParentStack(ConversationActivity::class.java)
+            addNextIntent(contentIntent)
 
+            getPendingIntent(notificationId, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+        }
         val markAsReadIntent = Intent(context, MarkAsReadReceiver::class.java).apply {
             action = MARK_AS_READ
             putExtra(EXTRA_THREAD_ID, threadId)
@@ -184,6 +181,7 @@ class NotificationHelper(private val context: Context) {
                 val replyIntent = Intent(context, DirectReplyReceiver::class.java).apply {
                     putExtra(EXTRA_THREAD_ID, threadId)
                     putExtra(NUMBER, address)
+                    putExtra(NAME, sender)
                     putExtra(MESSAGE_ID, messageId)
                 }
 
@@ -271,7 +269,7 @@ class NotificationHelper(private val context: Context) {
     }
 
     @SuppressLint("NewApi")
-    fun showSendingFailedNotification(recipientName: String, threadId: Long) {
+    /*fun showSendingFailedNotification(recipientName: String, threadId: Long) {
         maybeCreateChannel(name = context.getString(R.string.message_not_sent_short))
 
         val notificationId = generateRandomId().hashCode()
@@ -304,7 +302,7 @@ class NotificationHelper(private val context: Context) {
             .setChannelId(NOTIFICATION_CHANNEL)
 
         notificationManager.notify(notificationId, builder.build())
-    }
+    }*/
 
     fun maybeCreateChannel(name: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

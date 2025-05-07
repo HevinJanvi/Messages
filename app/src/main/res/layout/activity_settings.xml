@@ -192,6 +192,7 @@
                         android:textSize="16sp" />
 
                     <TextView
+                        android:id="@+id/selectLang"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
@@ -676,7 +677,7 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginEnd="7dp"
                     android:fontFamily="@font/product_sans_regular"
-                    android:text="@string/privacy_plicy"
+                    android:text="@string/privacy_policy"
                     android:textColor="@color/textcolor"
                     android:textFontWeight="400"
                     android:textSize="17sp"

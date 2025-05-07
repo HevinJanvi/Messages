@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Tidak ada kontak yang dipilih</string>
     <string name="this_is_the_start_of_your_conversation">Ini adalah awal percakapan Anda, Ucapkan sesuatu yang baik!</string>
     <string name="messages_copied">Pesan disalin</string>
-    <string name="copy">Salin \"%1$s\"</string>
+    <string name="copy">Salin </string>
     <string name="can_t_replay">Tidak dapat memutar ulang ke kode pendek ini. |</string>
     <string name="learn_more">&#160;&#160;<u>Pelajari Lebih Lanjut</u></string>
     <string name="this_sms_is_100_secure">SMS ini 100% aman. Pesan tidak pernah mengumpulkan data tanpa persetujuan sebelumnya. Semuanya diproses dan disimpan di ponsel Anda.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Terkirim</string>
     <string name="sending">Mengirim...</string>
     <string name="failed_to_send">Gagal mengirim</string>
-    <string name="today">Hari ini, %1$s</string>
-    <string name="yesterday">Kemarin, %1$s</string>
+    <string name="today">Hari ini</string>
+    <string name="yesterday">Kemarin</string>
     <string name="continues">Lanjutkan</string>
     <string name="this_sender_isnot_your_contacts">Pengirim ini bukan salah satu kontak Anda</string>
     <string name="link_from_people">Tautan dari orang yang tidak Anda kenal dapat membuka konten yang tidak diinginkan atau berbahaya</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Lihat semua</string>
     <string name="matches_found">%1$s kecocokan ditemukan</string>
     <string name="restoring">Memulihkan...</string>
+    <string name="exit_text">Silakan klik Kembali lagi untuk keluar </string>
 
 </resources>

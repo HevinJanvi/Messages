@@ -1,7 +1,9 @@
 package com.test.messages.demo.data.Model
 
 import android.provider.Telephony
+import com.google.errorprone.annotations.Keep
 
+@Keep
 data class ConversationItem(
     val id: Long,
     val threadId: Long,
@@ -13,7 +15,7 @@ data class ConversationItem(
     val subscriptionId: Int,
     val profileImageUrl: String,
     val isHeader: Boolean,
-    val starred: Boolean = false
+    var starred: Boolean = false
 ) {
     companion object {
         fun createHeader(headerText: String, date: Long): ConversationItem {

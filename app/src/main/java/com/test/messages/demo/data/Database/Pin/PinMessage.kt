@@ -3,7 +3,9 @@ package com.test.messages.demo.data.Database.Pin
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 
+@Keep
 @Entity(tableName = "pinned_messages")
 data class PinMessage(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

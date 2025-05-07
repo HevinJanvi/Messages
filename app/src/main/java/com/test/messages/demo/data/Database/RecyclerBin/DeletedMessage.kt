@@ -3,7 +3,9 @@ package easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databa
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 
+@Keep
 @Entity(tableName = "recycle_bin")
 data class DeletedMessage(
     @PrimaryKey(autoGenerate = true)

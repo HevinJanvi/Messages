@@ -68,8 +68,8 @@
     <string name="delivered">Teslim edildi</string>
     <string name="sending">Gönderiliyor...</string>
     <string name="failed_to_send">Gönderilemedi</string>
-    <string name="today">Bugün, %1$s</string>
-    <string name="yesterday">Dün, %1$s</string>
+    <string name="today">Bugün</string>
+    <string name="yesterday">Dün</string>
     <string name="continues">Devam</string>
     <string name="this_sender_isnot_your_contacts">Bu gönderici sizin kişilerinizden biri değil</string>
     <string name="link_from_people">Tanımadığınız kişilerden gelen bağlantı, istenmeyen veya zararlı içerik açabilir</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Tümünü gör</string>
     <string name="matches_found">%1$s eşleşme bulundu</string>
     <string name="restoring">Geri yükleniyor...</string>
+    <string name="exit_text">Lütfen çıkmak için tekrar Geri\'ye tıklayın</string>
 
 </resources>

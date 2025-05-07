@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Nie wybrano żadnych kontaktów</string>
     <string name="this_is_the_start_of_your_conversation">To początek Twojej konwersacji, powiedz \ncoś miłego!</string>
     <string name="messages_copied">Wiadomości skopiowane</string>
-    <string name="copy">Kopiuj \"%1$s\"</string>
+    <string name="copy">Kopiuj</string>
     <string name="can_t_replay">Nie można odtworzyć tego krótkiego kodu. |</string>
     <string name="learn_more">&#160;&#160;<u>Dowiedz się więcej</u></string>
     <string name="this_sms_is_100_secure">Ten SMS jest w 100% bezpieczny. Wiadomości nigdy nie zbierają danych bez uprzedniej zgody. Wszystko jest przetwarzane i przechowywane na Twoim telefonie.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Dostarczono</string>
     <string name="sending">Wysyłanie...</string>
     <string name="failed_to_send">Nie udało się wysłać</string>
-    <string name="today">Dzisiaj, %1$s</string>
-    <string name="yesterday">Wczoraj, %1$s</string>
+    <string name="today">Dzisiaj</string>
+    <string name="yesterday">Wczoraj</string>
     <string name="continues">Kontynuuj</string>
     <string name="this_sender_isnot_your_contacts">Ten nadawca nie jest jednym z Twoich\nkontaktów</string>
     <string name="link_from_people">Link od osób, których nie znasz, może otwierać\nniechcianą lub szkodliwą treść</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Zobacz wszystkie</string>
     <string name="matches_found">Znaleziono %1$s dopasowań</string>
     <string name="restoring">Przywracanie...</string>
+    <string name="exit_text">Kliknij Wstecz ponownie, aby wyjść</string>
 
 </resources>

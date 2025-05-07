@@ -48,7 +48,6 @@ interface RecycleBinDao {
     @Query("DELETE FROM recycle_bin WHERE thread_id = :threadId")
     fun deleteMessagesByThreadId(threadId: Long)
 
-
     @Delete
     fun deleteMessage(deletedMessage: DeletedMessage)
 

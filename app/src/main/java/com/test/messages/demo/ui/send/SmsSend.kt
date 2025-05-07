@@ -51,7 +51,7 @@ class SmsSend(
     }
 
     fun resendMessage(message: ConversationItem, numbers: String) {
-        val addresses = numbers.split(", ").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        val addresses = numbers.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         val subId = SmsManager.getDefaultSmsSubscriptionId()
 
         sendSmsMessage(

@@ -25,6 +25,8 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.test.messages.demo.R
@@ -41,9 +43,12 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.Model.MessageItem
+import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import com.test.messages.demo.ui.Fragment.ConversationFragment
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -62,10 +67,11 @@ class ArchivedActivity : BaseActivity() {
     private lateinit var adapter: ArchiveMessageAdapter
     private val viewModel: MessageViewModel by viewModels()
     private var pinnedThreadIds: List<Long> = emptyList()
+    private val draftViewModel: DraftViewModel by viewModels()
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
     }
@@ -77,9 +83,12 @@ class ArchivedActivity : BaseActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
             if (data != null) {
-
                 adapter.notifyDataSetChanged()
-                viewModel.loadMessages()
+                draftViewModel.loadAllDrafts()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    viewModel.loadMessages()
+                }, 80)
+
             }
         }
     }
@@ -114,7 +123,7 @@ class ArchivedActivity : BaseActivity() {
                 putExtra(EXTRA_THREAD_ID, message.threadId)
                 putExtra(NUMBER, message.number)
                 putExtra(NAME, message.sender)
-                putExtra(CommanConstants.FROMARCHIVE,true)
+                putExtra(CommanConstants.FROMARCHIVE, true)
             }
             conversationResultLauncher.launch(intent)
         }
@@ -124,9 +133,15 @@ class ArchivedActivity : BaseActivity() {
                 val archivedConversationIds =
                     viewModel.getArchivedConversations().map { it.conversationId }
 
+                val blockedConversationIds =
+                    viewModel.getBlockedConversations().map { it.conversationId }
+
                 pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
                 val archivedMessages = messageList
-                    .filter { archivedConversationIds.contains(it.threadId) }
+                    .filter {
+                        archivedConversationIds.contains(it.threadId) &&
+                        !blockedConversationIds.contains(it.threadId)
+                    }
                     .map { message ->
                         message.copy(isPinned = pinnedThreadIds.contains(message.threadId))
                     }
@@ -148,9 +163,15 @@ class ArchivedActivity : BaseActivity() {
             }
         }
         viewModel.loadArchivedThreads()
-
+        draftViewModel.draftsLiveData.observe(this) { draftMap ->
+            adapter.updateDrafts(draftMap)
+        }
+        if (hasReadSmsPermission()) {
+            draftViewModel.loadAllDrafts()
+        }
         setupClickListeners()
     }
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupClickListeners() {
@@ -167,7 +188,30 @@ class ArchivedActivity : BaseActivity() {
         binding.btnPin.setOnClickListener {
             val selectedIds = adapter.selectedMessages.map { it.threadId }
             if (selectedIds.isNotEmpty()) {
-                viewModel.togglePin(selectedIds)
+                viewModel.togglePin(selectedIds) {
+                    pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
+                    val updatedPinnedThreadIds = pinnedThreadIds.toMutableSet()
+                    adapter.clearSelection()
+                    val updatedList = adapter.messages.map {
+                        it.copy(
+                            isPinned = updatedPinnedThreadIds.contains(it.threadId)
+                        )
+                    }.sortedWith(
+                        compareByDescending<MessageItem> { it.isPinned }
+                            .thenByDescending { it.lastMsgDate }
+                    ) ?: emptyList()
+                    val pinIndexes = updatedList.mapIndexedNotNull { index, message ->
+                        if (message.isPinned) index else null
+                    }
+                    pinIndexes.forEach {
+                        adapter.notifyItemChanged(it)
+                    }
+                    adapter.submitList(updatedList)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        adapter.notifyDataSetChanged()
+                    }, 500)
+
+                }
             }
             adapter.clearSelection()
 
@@ -206,7 +250,8 @@ class ArchivedActivity : BaseActivity() {
             val deleteDialog = DeleteDialog(this, false) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
-                    deleteMessages(selectedThreadIds)
+//                    deleteMessages(selectedThreadIds)
+                    deleteMessages()
                     adapter?.removeItems(selectedThreadIds)
                     adapter?.clearSelection()
                 }
@@ -262,9 +307,10 @@ class ArchivedActivity : BaseActivity() {
 
         }
     }
+
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.emptyConversation()
+//        viewModel.emptyConversation()
         EventBus.getDefault().unregister(this)
     }
 
@@ -283,7 +329,7 @@ class ArchivedActivity : BaseActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    fun deleteMessages(threadIds: List<Long>) {
+    fun deleteMessages() {
         if (adapter.selectedMessages.isEmpty()) return
 
         val contentResolver = contentResolver
@@ -291,20 +337,18 @@ class ArchivedActivity : BaseActivity() {
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
         val handler = Handler(Looper.getMainLooper())
         val deleteDialog = DeleteProgressDialog(this)
-
         val showDialogRunnable = Runnable {
             deleteDialog.show(getString(R.string.moving_messages_to_recycle_bin))
         }
         handler.postDelayed(showDialogRunnable, 300)
-        Thread {
+
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
-                val existingBodyDatePairs =
-                    mutableSetOf<Pair<String, Long>>()
+                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>()
 
                 for (item in adapter.selectedMessages) {
                     val threadId = item.threadId
-
                     val cursor = contentResolver.query(
                         Telephony.Sms.CONTENT_URI,
                         null,
@@ -324,56 +368,50 @@ class ArchivedActivity : BaseActivity() {
 
                         while (it.moveToNext()) {
                             val messageId = it.getLong(idIndex)
+                            val address = it.getString(addressIndex) ?: continue
                             val body = it.getString(bodyIndex) ?: ""
                             val date = it.getLong(dateIndex)
-                            val key = Pair(body, date)
-                            if (existingBodyDatePairs.contains(key)) {
-                                continue
-                            }
-                            existingBodyDatePairs.add(key)
+                            val key = body to date
+                            if (!existingBodyDatePairs.add(key)) continue
 
                             val deletedMessage = DeletedMessage(
                                 messageId = messageId,
                                 threadId = threadId,
-                                address = it.getString(addressIndex) ?: "",
+                                address = address,
                                 date = date,
                                 body = body,
                                 type = it.getInt(typeIndex),
                                 read = it.getInt(readIndex) == 1,
                                 subscriptionId = it.getInt(subIdIndex),
-                                deletedTime = System.currentTimeMillis()
+                                deletedTime = System.currentTimeMillis(),
+                                isGroupChat = address.contains(","),
+                                profileImageUrl = ""
                             )
-
                             deletedMessages.add(deletedMessage)
                         }
                     }
 
                     val uri = Uri.parse("content://sms/conversations/$threadId")
                     contentResolver.delete(uri, null, null)
-
                     updatedList.removeAll { it.threadId == threadId }
                 }
 
-                db.insertMessages(deletedMessages)
+                if (deletedMessages.isNotEmpty()) db.insertMessages(deletedMessages)
 
-                Handler(Looper.getMainLooper()).post {
+                withContext(Dispatchers.Main) {
                     handler.removeCallbacks(showDialogRunnable)
                     deleteDialog.dismiss()
-                    adapter.removeItems(threadIds)
                     adapter.selectedMessages.clear()
-                    viewModel.updateMessages(updatedList)
-                    adapter.submitList(updatedList)
-                    adapter.clearSelection()
+                    viewModel.loadMessages()
                 }
-
             } catch (e: Exception) {
-                e.printStackTrace()
-                handler.removeCallbacks(showDialogRunnable)
-                deleteDialog.dismiss()
+                withContext(Dispatchers.Main) {
+                    handler.removeCallbacks(showDialogRunnable)
+                    deleteDialog.dismiss()
+                }
             }
-        }.start()
+        }
     }
-
 
     fun showPopup(view: View) {
         val layoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -430,17 +468,32 @@ class ArchivedActivity : BaseActivity() {
 
                 allRead -> {
                     textView.text = getString(R.string.mark_as_unread)
-                    textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_mark_read, 0, 0, 0)
+                    textView.setCompoundDrawablesWithIntrinsicBounds(
+                        R.drawable.ic_mark_read,
+                        0,
+                        0,
+                        0
+                    )
                 }
 
                 else -> {
 
                     if (firstIsRead) {
                         textView.text = getString(R.string.mark_as_unread)
-                        textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_mark_read, 0, 0, 0)
+                        textView.setCompoundDrawablesWithIntrinsicBounds(
+                            R.drawable.ic_mark_read,
+                            0,
+                            0,
+                            0
+                        )
                     } else {
                         textView.text = getString(R.string.mark_as_read)
-                        textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_read, 0, 0, 0)
+                        textView.setCompoundDrawablesWithIntrinsicBounds(
+                            R.drawable.ic_read,
+                            0,
+                            0,
+                            0
+                        )
                     }
                 }
             }
@@ -467,7 +520,8 @@ class ArchivedActivity : BaseActivity() {
         }
 
         val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(",")})"
-        val updatedRows = contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
+        val updatedRows =
+            contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
 
         if (updatedRows > 0) {
             val updatedList = viewModel.messages.value?.map { message ->
@@ -537,7 +591,7 @@ class ArchivedActivity : BaseActivity() {
 
             when {
                 pinnedCount > unpinnedCount -> {
-                    binding.icPinArchiv.setImageResource(R.drawable.ic_unpin)
+                    binding.icPinArchiv.setImageResource(R.drawable.ic_unpin2)
                     pinTextView.text = getString(R.string.unpin)
                 }
 
@@ -547,32 +601,12 @@ class ArchivedActivity : BaseActivity() {
                 }
 
                 else -> {
-                    binding.icPinArchiv.setImageResource(R.drawable.ic_unpin)
+                    binding.icPinArchiv.setImageResource(R.drawable.ic_unpin2)
                     pinTextView.text = getString(R.string.unpin)
                 }
             }
         } else {
             binding.btnPin.visibility = View.GONE
-        }
-    }
-
-
-    private fun updatePinButton() {
-        val selectedIds = adapter.selectedMessages.map { it.threadId }
-        val pinnedIds = selectedIds.filter { it in pinnedThreadIds }
-
-        if (selectedIds.isEmpty()) {
-            binding.txtPinArchiv.text = getString(R.string.pin)
-            binding.icPinArchiv.setImageResource(R.drawable.ic_pin)
-            return
-        }
-
-        if (pinnedIds.size == selectedIds.size) {
-            binding.txtPinArchiv.setText(getString(R.string.unpin))
-            binding.icPinArchiv.setImageResource(R.drawable.ic_unpin)
-        } else {
-            binding.txtPinArchiv.setText(getString(R.string.pin))
-            binding.icPinArchiv.setImageResource(R.drawable.ic_pin)
         }
     }
 

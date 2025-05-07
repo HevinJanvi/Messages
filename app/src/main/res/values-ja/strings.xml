@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">連絡先が選択されていません</string>
     <string name="this_is_the_start_of_your_conversation">会話の始まりです。何か良いことを言ってください!</string>
     <string name="messages_copied">メッセージをコピーしました</string>
-    <string name="copy">\n「%1$s\」をコピーしました</string>
+    <string name="copy">」をコピーしました</string>
     <string name="can_t_replay">このショート コードに再生できません。 |</string>
     <string name="learn_more">&#160;&#160;<u>詳細</u></string>
     <string name="this_sms_is_100_secure">この SMS は 100% 安全です。事前の同意なしにメッセージがデータを収集することはありません。すべては携帯電話で処理され、保存されます。</string>
@@ -68,8 +68,8 @@
     <string name="delivered">配信済み</string>
     <string name="sending">送信中...</string>
     <string name="failed_to_send">送信に失敗しました</string>
-    <string name="today">今日、%1$s</string>
-    <string name="yesterday">昨日、%1$s</string>
+    <string name="today">今日</string>
+    <string name="yesterday">昨日</string>
     <string name="continues">続行</string>
     <string name="this_sender_isnot_your_contacts">この送信者はあなたの連絡先に含まれていません</string>
     <string name="link_from_people">知らない人からのリンクは、望ましくないコンテンツや有害なコンテンツを開く可能性があります</string>
@@ -267,5 +267,6 @@
     <string name="see_all">すべて表示</string>
     <string name="matches_found">%1$s件の一致が見つかりました</string>
     <string name="restoring">復元しています...</string>
+    <string name="exit_text">終了するには、もう一度 [戻る] をクリックしてください</string>
 
 </resources>

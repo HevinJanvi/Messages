@@ -94,7 +94,6 @@
         android:layout_marginHorizontal="50dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/product_sans_medium"
-        android:text="AN 5465uy"
         android:textColor="@color/textcolor"
         android:textFontWeight="500"
         android:textSize="22sp"
@@ -137,6 +136,7 @@
             android:layout_height="60dp"
             android:layout_marginHorizontal="10dp"
             android:adjustViewBounds="true"
+            android:src="@drawable/profile_contact"
             android:background="?attr/selectableItemBackgroundBorderless"
          />
 

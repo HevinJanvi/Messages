@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">선택된 연락처가 없습니다</string>
     <string name="this_is_the_start_of_your_conversation">대화의 시작입니다. \n좋은 말을 전하세요!</string>
     <string name="messages_copied">메시지 복사됨</string>
-    <string name="copy">\"%1$s\" 복사</string>
+    <string name="copy">복사</string>
     <string name="can_t_replay">이 짧은 코드로 재생할 수 없습니다. |</string>
     <string name="learn_more">&#160;&#160;<u>자세히 알아보기</u></string>
     <string name="this_sms_is_100_secure">이 SMS는 100% 안전합니다. 메시지는 사전 동의 없이는 데이터를 수집하지 않습니다. 모든 것이 처리되어 휴대전화에 저장됩니다.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">전달됨</string>
     <string name="sending">전송 중...</string>
     <string name="failed_to_send">전송 실패</string>
-    <string name="today">Today, %1$s</string>
-    <string name="yesterday">어제, %1$s</string>
+    <string name="today">오늘</string>
+    <string name="yesterday">어제</string>
     <string name="continues">계속</string>
     <string name="this_sender_isnot_your_contacts">이 발신자는 귀하의\n연락처 중 하나가 아닙니다.</string>
     <string name="link_from_people">모르는 사람의 링크는 원치 않는\n또는 해로운 콘텐츠를 열 수 있습니다.</string>
@@ -267,5 +267,6 @@
     <string name="see_all">모두 보기</string>
     <string name="matches_found">%1$s개의 일치 항목이 검색되었습니다.</string>
     <string name="restoring">복원 중...</string>
+    <string name="exit_text">종료하려면 뒤로를 다시 클릭하세요. </string>
 
 </resources>

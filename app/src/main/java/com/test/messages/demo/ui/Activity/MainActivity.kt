@@ -9,6 +9,8 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.PersistableBundle
 import android.provider.Settings
 import android.provider.Telephony
@@ -39,6 +41,7 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -56,10 +59,11 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     private var selectedMessagesCount = 0
     val viewModel: MessageViewModel by viewModels()
     private lateinit var schedulePermissionLauncher: ActivityResultLauncher<Intent>
+    private var doubleBackToExit = false
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
     }
@@ -89,20 +93,20 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         loadConversationFragment()
 
         updateSelectedItemsCount(0)
-        binding.icSelecteAll.setOnCheckedChangeListener { _, isChecked ->
+        binding.SelecteAll.setOnCheckedChangeListener { _, isChecked ->
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.toggleSelectAll(isChecked)
         }
-        binding.icSelecteAll.setBackgroundResource(R.drawable.round_checkbox)
+        binding.SelecteAll.setBackgroundResource(R.drawable.round_checkbox)
         binding.icDrawer.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
         setupClickListeners()
 
         CoroutineScope(Dispatchers.IO).launch {
-            val threadIds = fetchAllThreadIds() // Get all threads
-            viewModel.insertMissingThreadIds(threadIds) // Store in DB
+            val threadIds = fetchAllThreadIds()
+            viewModel.insertMissingThreadIds(threadIds)
         }
     }
 
@@ -158,7 +162,8 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         binding.muteLayout.setOnClickListener {
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
-            fragment?.muteMessages()
+//            fragment?.muteMessages()
+            fragment?.MuteUnmuteMessages()
         }
         binding.blockLayout.setOnClickListener {
             val fragment =
@@ -251,15 +256,25 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         val loadedFragment =
             supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
 
-        fragment.onSelectionChanged = { count, ispinned ->
+        fragment.onSelectionChanged = { count, ispinned, ismuted ->
             updatePinLayout(count, ispinned)
-
+            updateMuteLayout(count, ismuted)
             updateSelectedItemsCount(count)
         }
 
         loadedFragment?.let {
             val totalMessages = it.viewModel.messages.value?.size ?: 0
             updateTotalMessagesCount(totalMessages)
+        }
+
+        fragment.onSelectAllStateChanged = { allSelected ->
+            binding.SelecteAll.setOnCheckedChangeListener(null)
+            binding.SelecteAll.isChecked = allSelected
+            binding.SelecteAll.setOnCheckedChangeListener { _, isChecked ->
+                val frag =
+                    supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+                frag?.toggleSelectAll(isChecked)
+            }
         }
     }
 
@@ -277,7 +292,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             binding.txtMute.text = getString(R.string.mute)
         }
     }
-
 
     private fun updatePinLayout(selectedCount: Int, pinnedCount: Int) {
         if (selectedCount > 0) {
@@ -305,6 +319,32 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             binding.pinLayout.visibility = View.GONE
         }
     }
+    private fun updateMuteLayout(selectedCount: Int, muteCount: Int) {
+        if (selectedCount > 0) {
+            binding.muteLayout.visibility = View.VISIBLE
+            val muteTextView = binding.txtMute
+            val unmutedCount = selectedCount - muteCount
+
+            when {
+                muteCount > unmutedCount -> {
+                    binding.icmute.setImageResource(R.drawable.ic_unmute)
+                    muteTextView.text = getString(R.string.unmute)
+                }
+
+                unmutedCount > muteCount -> {
+                    binding.icmute.setImageResource(R.drawable.ic_mute)
+                    muteTextView.text = getString(R.string.mute)
+                }
+
+                else -> {
+                    binding.icmute.setImageResource(R.drawable.ic_unmute)
+                    muteTextView.text = getString(R.string.unmute)
+                }
+            }
+        } else {
+            binding.muteLayout.visibility = View.GONE
+        }
+    }
 
     private fun updateSelectedItemsCount(count: Int) {
         selectedMessagesCount = count
@@ -326,7 +366,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
     override fun onUnreadMessagesCountUpdated(count: Int) {
-        Log.d("MainActivity", "Unread Messages: $count")
         binding.include.unreadCount.text = "$count"
     }
 
@@ -409,6 +448,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
 
+    @Suppress("MissingSuperCall")
     override fun onBackPressed() {
         if (selectedMessagesCount > 0) {
             updateSelectedItemsCount(0)
@@ -416,7 +456,16 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.clearSelection()
         } else {
-            super.onBackPressed()
+//            super.onBackPressed()
+            if (doubleBackToExit) {
+                finishAffinity();
+                return
+            }
+            this.doubleBackToExit = true
+            Toast.makeText(this, getString(R.string.exit_text), Toast.LENGTH_SHORT).show()
+            Handler(Looper.getMainLooper()).postDelayed(Runnable {
+                doubleBackToExit = false
+            }, 2000)
         }
     }
 }

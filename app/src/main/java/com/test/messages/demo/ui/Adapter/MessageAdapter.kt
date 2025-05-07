@@ -36,10 +36,11 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
 
     var onItemClickListener: ((MessageItem) -> Unit)? = null
-    private var messages: MutableList<MessageItem> = mutableListOf()
+    var messages: MutableList<MessageItem> = mutableListOf()
 
     val selectedMessages = mutableSetOf<MessageItem>()
     private var draftMessages: MutableMap<Long, Pair<String, Long>> = mutableMapOf()
+    var onSelectAllStateChanged: ((Boolean) -> Unit)? = null
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderName: TextView = itemView.findViewById(R.id.senderName)
@@ -67,7 +68,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
 
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
-        holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
+        holder.date.text = formatTimestamp(holder.itemView.context,message.lastMsgDate)
 
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
@@ -187,6 +188,8 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.itemView.setOnClickListener {
             if (selectedMessages.isNotEmpty()) {
                 toggleSelection(message, holder)
+                val allSelected = selectedMessages.size == getAllMessages().size
+                onSelectAllStateChanged?.invoke(allSelected)
             } else {
                 onItemClickListener?.invoke(message)
             }
@@ -194,6 +197,8 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
 
         holder.itemView.setOnLongClickListener {
             toggleSelection(message, holder)
+            val allSelected = selectedMessages.size == getAllMessages().size
+            onSelectAllStateChanged?.invoke(allSelected)
             true
         }
     }
@@ -201,7 +206,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     private fun toggleSelection(message: MessageItem, holder: ViewHolder) {
         if (selectedMessages.find { it.threadId == message.threadId } != null) {
             selectedMessages.removeIf { it.threadId == message.threadId }
-            holder.icSelect.visibility = View.GONE
+            holder.icSelect.visibility = View.INVISIBLE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
         } else {
             selectedMessages.add(message)
@@ -218,10 +223,11 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         onSelectionChanged(selectedMessages.size)
     }
 
-    fun removeItems(ids: List<Long>) {
-        messages.removeAll { it.threadId in ids }
-        notifyDataSetChanged()
+    fun removeMessageAt(position: Int) {
+        messages.removeAt(position)
+        notifyItemRemoved(position)
     }
+
 
     override fun getItemCount(): Int = messages.size
     fun getAllMessages(): List<MessageItem> = messages
@@ -265,5 +271,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         submitList(currentList)
     }
 
-
+    override fun getItemId(position: Int): Long {
+        return super.getItemId(position)
+    }
 }

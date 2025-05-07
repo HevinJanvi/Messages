@@ -92,7 +92,6 @@ class StarredMessagesActivity : BaseActivity() {
     }
 
     fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
-
         adapter.notifyDataSetChanged()
         val currentList = adapter.getAllMessages().toMutableList()
         val index = currentList.indexOfFirst { it.threadId == threadId }

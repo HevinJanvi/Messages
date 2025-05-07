@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">ไม่มีผู้ติดต่อที่เลือก</string>
     <string name="this_is_the_start_of_your_conversation">นี่คือจุดเริ่มต้นของการสนทนาของคุณ พูดอะไรบางอย่างดีๆ สิ!</string>
     <string name="messages_copied">คัดลอกข้อความแล้ว</string>
-    <string name="copy">คัดลอก \"%1$s\"</string>
+    <string name="copy">คัดลอก</string>
     <string name="can_t_replay">ไม่สามารถเล่นซ้ำรหัสสั้นนี้ได้ |</string>
     <string name="learn_more">&#160;&#160;<u>เรียนรู้เพิ่มเติม</u></string>
     <string name="this_sms_is_100_secure">SMS นี้ปลอดภัย 100% ข้อความจะไม่รวบรวมข้อมูลโดยไม่ได้รับความยินยอมล่วงหน้า ทุกอย่างจะได้รับการประมวลผลและเก็บไว้ในโทรศัพท์ของคุณ</string>
@@ -68,8 +68,8 @@
     <string name="delivered">ส่งแล้ว</string>
     <string name="sending">กำลังส่ง...</string>
     <string name="failed_to_send">ส่งไม่สำเร็จ</string>
-    <string name="today">วันนี้ %1$s</string>
-    <string name="yesterday">เมื่อวาน %1$s</string>
+    <string name="today">วันนี้ </string>
+    <string name="yesterday">เมื่อวาน </string>
     <string name="continues">ดำเนินการต่อ</string>
     <string name="this_sender_isnot_your_contacts">ผู้ส่งรายนี้ไม่ใช่ผู้ติดต่อของคุณ</string>
     <string name="link_from_people">ลิงก์จากบุคคลที่คุณไม่รู้จักอาจเปิดเนื้อหาที่ไม่ต้องการหรือเป็นอันตราย</string>
@@ -115,7 +115,7 @@
     <string name="set_as_default">ตั้งเป็นค่าเริ่มต้น</string>
     <string name="skip">ข้าม</string>
     <string name="intro_txt1">ส่งข้อความได้ง่าย</string>
-    <string name="intro_txt2"><![CDATA[Schedule & Relax]]></string>
+    <string name="intro_txt2">กำหนดเวลาและผ่อนคลาย></string>
     <string name="intro_txt3">หลีกเลี่ยงข้อความสแปม</string>
     <string name="intro_subtxt1">เชื่อมต่อตลอดเวลาด้วยกล่องจดหมายที่สะอาดและเป็นระเบียบ แชทได้อย่างง่ายดายทุกเวลา!</string>
     <string name="intro_subtxt2">กำหนดเวลาส่งข้อความโดยอัตโนมัติ ไม่ลืมข้อความ!</string>
@@ -267,5 +267,6 @@
     <string name="see_all">ดูผลลัพธ์ทั้งหมด</string>
     <string name="matches_found">พบ %1$s รายการ</string>
     <string name="restoring">กำลังคืนค่า...</string>
+    <string name="exit_text">กรุณาคลิกย้อนกลับอีกครั้งเพื่อออกจากระบบ</string>
 
 </resources>

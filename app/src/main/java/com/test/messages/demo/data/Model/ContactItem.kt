@@ -2,7 +2,9 @@ package com.test.messages.demo.data.Model
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.errorprone.annotations.Keep
 
+@Keep
 data class ContactItem(
     val cid: String?,
     val name: String?,

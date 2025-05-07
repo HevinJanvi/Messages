@@ -42,16 +42,14 @@ class SearchMessageAdapter(
         return messages[position].id
     }
 
+
     fun updateList(newMessages: List<ConversationItem>, newQuery: String, newCountMap: Map<Long, Int>) {
-        Log.d("TAG", "updateList:search 1 ")
         val diffCallback = MessageDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messages = newMessages
         query = newQuery
         matchCountMap = newCountMap
         diffResult.dispatchUpdatesTo(this)
-        Log.d("TAG", "updateList:search 2 ")
-
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {

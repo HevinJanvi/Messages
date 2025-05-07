@@ -163,6 +163,8 @@
             android:layout_weight="1"
             android:textFontWeight="400"
             android:textSize="15sp"
+            android:imeOptions="actionNext"
+            android:inputType="textMultiLine"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
             android:textColor="@color/textcolor"
@@ -172,7 +174,7 @@
             android:textColorHint="@color/gray_txtcolor"
             android:paddingHorizontal="15dp"
             android:background="@drawable/send_msg_bg"
-            android:inputType="text" />
+             />
 
         <ImageView
             android:id="@+id/btnSendMessage"

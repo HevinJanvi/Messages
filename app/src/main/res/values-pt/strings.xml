@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Nenhum contato selecionado</string>
     <string name="this_is_the_start_of_your_conversation">Este é o início da sua conversa, diga \nalgo legal!</string>
     <string name="messages_copied">Mensagens copiadas</string>
-    <string name="copy">Copiar \"%1$s\"</string>
+    <string name="copy">Copiar</string>
     <string name="can_t_replay">Não é possível reproduzir este código curto. |</string>
     <string name="learn_more">&#160;&#160;<u>Saiba mais</u></string>
     <string name="this_sms_is_100_secure">Este SMS é 100% seguro. As mensagens nunca coletam dados sem consentimento prévio. Tudo é processado e armazenado no seu telefone.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Entregue</string>
     <string name="sending">Enviando...</string>
     <string name="failed_to_send">Falha ao enviar</string>
-    <string name="today">Hoje, %1$s</string>
-    <string name="yesterday">Ontem, %1$s</string>
+    <string name="today">Hoje</string>
+    <string name="yesterday">Ontem</string>
     <string name="continues">Continuar</string>
     <string name="this_sender_isnot_your_contacts">Este remetente não é um dos seus\ncontatos</string>
     <string name="link_from_people">Link de pessoas que você não conhece pode abrir\nconteúdo indesejado ou prejudicial</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Ver todas</string>
     <string name="matches_found">%1$s correspondências encontradas</string>
     <string name="restoring">Restaurando...</string>
+    <string name="exit_text">Clique em Voltar novamente para sair </string>
 
 </resources>

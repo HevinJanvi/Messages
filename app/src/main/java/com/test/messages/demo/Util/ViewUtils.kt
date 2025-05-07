@@ -36,7 +36,10 @@ object ViewUtils {
     private const val LOCK_SCREEN_SENDER_MESSAGE = 1
     private const val LOCK_SCREEN_SENDER = 2
 
-    fun RecyclerView.Adapter<*>.autoScrollToStart(recyclerView: RecyclerView, callBack: () -> Unit) {
+    fun RecyclerView.Adapter<*>.autoScrollToStart(
+        recyclerView: RecyclerView,
+        callBack: () -> Unit
+    ) {
         registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
@@ -83,6 +86,7 @@ object ViewUtils {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getInt(LOCK_SCREEN_VISIBILITY, LOCK_SCREEN_SENDER_MESSAGE)
     }
+
     fun setLockScreenVisibilitySetting(context: Context, setting: Int) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putInt(LOCK_SCREEN_VISIBILITY, setting).apply()
@@ -91,7 +95,7 @@ object ViewUtils {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
     fun isNougatPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 
-    fun getorcreateThreadId(context: Context,address: String): Long {
+    fun getorcreateThreadId(context: Context, address: String): Long {
         return try {
             Telephony.Threads.getOrCreateThreadId(context, address)
         } catch (e: Exception) {
@@ -99,8 +103,9 @@ object ViewUtils {
         }
     }
 
+
     fun isShortCodeWithLetters(address: String): Boolean {
-        return address.any { it.isLetter() }
+        return address.any { it.isLetter() || it == '-' }
     }
 
     fun getThreadId(context: Context, sender: String): Long {
@@ -118,12 +123,13 @@ object ViewUtils {
         return 0L
     }
 
-   /* fun isOfferSender(sender: String): Boolean {
-        return sender.matches(Regex("^[A-Z-]+$"))
-    }*/
+    /* fun isOfferSender(sender: String): Boolean {
+         return sender.matches(Regex("^[A-Z-]+$"))
+     }*/
 
     fun isOfferSender(sender: String): Boolean {
-        val cleanedSender = sender.replace("[^\\d]".toRegex(), "") // Remove everything except digits
+        val cleanedSender =
+            sender.replace("[^\\d]".toRegex(), "") // Remove everything except digits
         // Check if the cleaned sender matches a phone number pattern (10-15 digits, optional + at the start)
         val isPhoneNumber = cleanedSender.matches(Regex("^\\+?\\d{10,15}$"))
         return !isPhoneNumber
@@ -137,12 +143,63 @@ object ViewUtils {
 
     fun String.extractOtp(): String? {
         val otpRegex = Regex("\\b\\d{4,6}\\b")
+        val matchResults = otpRegex.findAll(this)
+
+        return matchResults.mapNotNull { matchResult ->
+            val otp = matchResult.value
+            if (!isProbablyYear(otp) && isLikelyOtp(this, otp)) {
+                otp
+            } else null
+        }.firstOrNull()
+    }
+
+    fun isLikelyOtp(message: String, otp: String): Boolean {
+        val nonOtpKeywords = listOf("offer", "best", "balance", "validity", "tariff", "recharge")
+        val otpKeywords = listOf(
+            "OTP",
+            "code",
+            "login",
+            "verify",
+            "confirmation",
+            "password",
+            "authentication",
+            "secure",
+            "token"
+        )
+        val lowerMessage = message.lowercase()
+        val containsOtpKeyword = otpKeywords.any { lowerMessage.contains(it, ignoreCase = true) }
+        val containsNonOtpKeyword =
+            nonOtpKeywords.any { lowerMessage.contains(it, ignoreCase = true) }
+
+        return containsOtpKeyword && !containsNonOtpKeyword
+    }
+
+    // Dynamically detect years and avoid them
+    fun isProbablyYear(value: String): Boolean {
+        val num = value.toIntOrNull() ?: return false
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        return num in 1900..(currentYear + 5)
+    }
+
+
+    /*fun String.extractOtp(): String? {
+        val otpRegex = Regex("\\b\\d{4,6}\\b")
         val matchResult = otpRegex.find(this)
 
         return matchResult?.value?.let { otp ->
             if (isLikelyOtp(this, otp)) otp else null
         }
-    }
+    }*/
+    /*  fun isLikelyOtp(message: String, otp: String): Boolean {
+            val nonOtpKeywords = listOf("offer", "best", "balance", "validity", "tariff", "recharge")
+            val otpKeywords = listOf("OTP", "code", "login", "verify", "confirmation", "password")
+
+            val containsOtpKeyword = otpKeywords.any { message.contains(it, ignoreCase = true) }
+            val containsNonOtpKeyword = nonOtpKeywords.any { message.contains(it, ignoreCase = true) }
+
+            return containsOtpKeyword && !containsNonOtpKeyword
+        }
+    */
 
     fun View.blinkThen(action: () -> Unit) {
         val anim = AnimationUtils.loadAnimation(context, R.anim.blink)
@@ -164,15 +221,6 @@ object ViewUtils {
         clipboard.setPrimaryClip(clip)
     }
 
-    fun isLikelyOtp(message: String, otp: String): Boolean {
-        val nonOtpKeywords = listOf("offer", "best", "balance", "validity", "tariff", "recharge")
-        val otpKeywords = listOf("OTP", "code", "login", "verify", "confirmation", "password")
-
-        val containsOtpKeyword = otpKeywords.any { message.contains(it, ignoreCase = true) }
-        val containsNonOtpKeyword = nonOtpKeywords.any { message.contains(it, ignoreCase = true) }
-
-        return containsOtpKeyword && !containsNonOtpKeyword
-    }
 
     fun updateMessageCount(context: Context, threadId: Long): Int {
         val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
@@ -186,10 +234,12 @@ object ViewUtils {
         val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putInt("msg_count_$threadId", 0).apply()
     }
+
     fun getPreviewOptionActivity(context: Context, threadId: Long): Int {
         val dao = AppDatabase.getDatabase(context).notificationDao()
         return dao.getPreviewOptionNow(threadId) ?: dao.getPreviewOptionforGlobal() ?: 0
     }
+
     suspend fun getPreviewOption(context: Context, threadId: Long): Int {
         return AppDatabase.getDatabase(context).notificationDao().getPreviewOption(threadId) ?: 0
     }
@@ -294,6 +344,33 @@ object ViewUtils {
     fun getFontSize(context: Context): Int {
         val sharedPref = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPref.getInt(FONT_SIZE_KEY, CommanConstants.ACTION_NORMAL)
+    }
+
+    fun getLanguageName(context: Context, languageCode: String?): String {
+        return when (languageCode) {
+            "en" -> context.getString(R.string.subtext_english)
+            "af" -> context.getString(R.string.subtext_afrikaans)
+            "ar" -> context.getString(R.string.subtext_arabic)
+            "bn" -> context.getString(R.string.subtext_bangla)
+            "fil" -> context.getString(R.string.subtext_fillipino)
+            "fr" -> context.getString(R.string.subtext_French)
+            "de" -> context.getString(R.string.subtext_German)
+            "hi" -> context.getString(R.string.subtext_Indian)
+            "in" -> context.getString(R.string.subtext_Indonesia)
+            "it" -> context.getString(R.string.subtext_italian)
+            "ja" -> context.getString(R.string.subtext_Japanese)
+            "ko" -> context.getString(R.string.subtext_Korean)
+            "pl" -> context.getString(R.string.subtext_polish)
+            "pt" -> context.getString(R.string.subtext_portugal)
+            "ru" -> context.getString(R.string.subtext_Russian)
+            "es" -> context.getString(R.string.subtext_Spanish)
+            "th" -> context.getString(R.string.subtext_thai)
+            "tr" -> context.getString(R.string.subtext_turkish)
+            "uk" -> context.getString(R.string.subtext_ukrainian)
+            "vi" -> context.getString(R.string.subtext_Vietnamese)
+            "zh" -> context.getString(R.string.subtext_chinese)
+            else -> languageCode ?: ""
+        }
     }
 
 }

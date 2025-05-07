@@ -13,11 +13,13 @@ import com.test.messages.demo.Util.CommanConstants.LAUNCHFROM
 import com.test.messages.demo.Util.CommanConstants.THEMEMODE
 import com.test.messages.demo.databinding.ActivitySettingsBinding
 import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.ViewUtils.getLanguageName
 import com.test.messages.demo.ui.Dialogs.FontsizeDialog
 
 class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
     var editor: SharedPreferences.Editor? = null
+    private var selectedLanguage: String? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +42,8 @@ class SettingsActivity : BaseActivity() {
             val intent = Intent(this, ThemeActivity::class.java)
             startActivityForResult(intent, 102)
         }
+        selectedLanguage = ViewUtils.getSelectedLanguage(this)
+        binding.selectLang.setText(getLanguageName(this,selectedLanguage))
         binding.langLy.setOnClickListener {
             val intent = Intent(this, LanguageActivity::class.java)
             intent.putExtra(LAUNCHFROM, "settings")

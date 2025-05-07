@@ -25,6 +25,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.ImageView
@@ -41,7 +42,10 @@ import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CustomLinkMovementMethod
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.extractOtp
+import com.test.messages.demo.Util.ViewUtils.isLikelyOtp
+import com.test.messages.demo.Util.ViewUtils.isProbablyYear
 import com.test.messages.demo.data.Model.ConversationItem
+import com.test.messages.demo.data.Model.SIMCard
 import com.test.messages.demo.data.repository.MessageRepository
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,6 +58,7 @@ import java.util.regex.Pattern
 class ConversationAdapter(
     private val context: Context,
     private val isContactSaved: Boolean,
+    private val availableSIMCards: List<SIMCard>,
     private val onSelectionChanged: (Int) -> Unit,
     private val onStarClicked: (ConversationItem) -> Unit
 ) : ListAdapter<ConversationItem, ConversationAdapter.ViewHolder>(
@@ -105,6 +110,7 @@ class ConversationAdapter(
         val starIcon: ImageView = view.findViewById(R.id.starIcon)
         private val headerText: TextView? = view.findViewById(R.id.headerText)
         private var fontSize: Float = getFontSizeFromPreferences()
+        val simIcon: ImageView = view.findViewById(R.id.simIcon)
 
         private fun getFontSizeFromPreferences(): Float {
             return when (ViewUtils.getFontSize(itemView.context)) {
@@ -133,11 +139,9 @@ class ConversationAdapter(
                 }
                 messageStatus.clearAnimation()
 
-
                 headerText?.visibility = View.GONE
                 messageBody.visibility = View.VISIBLE
                 messageBody.text = message.body
-
 
                 messageDate.text =
                     SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
@@ -145,11 +149,30 @@ class ConversationAdapter(
                 val shouldShowTime = isLastMessage || expandedMessages.contains(message.id)
                 messageDate.visibility = if (shouldShowTime) View.VISIBLE else View.GONE
 
+                val isExpanded = expandedMessages.contains(message.id)
+                if(isExpanded && availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                    val simIndex = availableSIMCards.indexOfFirst { it.subscriptionId == message.subscriptionId }
+                    Log.d("TAG", "bind: "+simIndex)
+                    when (simIndex) {
+                        0 -> simIcon.setImageResource(R.drawable.sim_1)
+                        1 -> simIcon.setImageResource(R.drawable.sim_2)
+                    }
+                    simIcon.visibility=View.VISIBLE
+                }else{
+                    simIcon.visibility=View.GONE
+                }
+
                 if (!message.isIncoming() && (isLastMessage || message.type == Telephony.Sms.MESSAGE_TYPE_FAILED)) {
                     when (message.type) {
                         Telephony.Sms.MESSAGE_TYPE_SENT -> {
                             messageStatus.text = itemView.context.getString(R.string.delivered)
                             messageStatus.visibility = View.VISIBLE
+                            if(availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                                simIcon.visibility = View.VISIBLE
+                            }else{
+                                simIcon.visibility = View.GONE
+                            }
+
                             messageStatus.setTextColor(Color.GRAY)
                             messageStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                         }
@@ -157,6 +180,11 @@ class ConversationAdapter(
                         Telephony.Sms.MESSAGE_TYPE_OUTBOX -> {
                             messageStatus.text = itemView.context.getString(R.string.sending)
                             messageStatus.visibility = View.VISIBLE
+                            if(availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                                simIcon.visibility = View.VISIBLE
+                            }else{
+                                simIcon.visibility = View.GONE
+                            }
                             messageStatus.setTextColor(Color.GRAY)
                             messageStatus.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                         }
@@ -165,6 +193,11 @@ class ConversationAdapter(
                             messageStatus.text =
                                 itemView.context.getString(R.string.failed_to_send_tap)
                             messageStatus.visibility = View.VISIBLE
+                            if(availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                                simIcon.visibility = View.VISIBLE
+                            }else{
+                                simIcon.visibility = View.GONE
+                            }
                             messageStatus.setTextColor(Color.RED)
                             messageStatus.setCompoundDrawablesWithIntrinsicBounds(
                                 R.drawable.ic_fail,
@@ -172,7 +205,6 @@ class ConversationAdapter(
                                 0,
                                 0
                             )
-
 
                             messageStatus.setOnClickListener {
                                 messageStatus.text = itemView.context.getString(R.string.sending)
@@ -182,7 +214,6 @@ class ConversationAdapter(
                                 retryListener?.onRetry(message)
                             }
                         }
-
                         else -> {
                             messageStatus.visibility = View.GONE
                         }
@@ -195,7 +226,7 @@ class ConversationAdapter(
                 val otpCode = message.body?.extractOtp()
                 if (otpCode != null) {
                     otptext.visibility = View.VISIBLE
-                    otptext.text = itemView.context.getString(R.string.copy, otpCode)
+                    otptext.text = itemView.context.getString(R.string.copy) + " \"$otpCode\""
                     otptext.setOnClickListener {
                         copyToClipboard(otpCode)
                     }
@@ -215,9 +246,6 @@ class ConversationAdapter(
                     }
                 }
 
-//                starIcon.setOnClickListener {
-//                    toggleStarred(message.id)
-//                }
                 starIcon.setOnClickListener {
                     onStarClicked(message)
                 }
@@ -248,11 +276,28 @@ class ConversationAdapter(
                 if (!searchQuery.isNotEmpty()) {
                     message.body
                 }
-                formatMessageWithLinks(
+
+                if (searchQuery.isNotEmpty() && message.body?.contains(searchQuery, ignoreCase = true) == true) {
+                    formatMessageWithLinks(
+                        messageBody,
+                        message,
+                        message = message.body ?: "",
+                        searchQuery
+                    )
+                } else {
+                    formatMessageWithLinks(
+                        messageBody,
+                        message,
+                        message = message.body ?: "",
+                        ""
+                    )
+                }
+
+               /* formatMessageWithLinks(
                     messageBody,
                     message,
                     message = message.body, searchQuery
-                )
+                )*/
             }
         }
 
@@ -370,41 +415,34 @@ class ConversationAdapter(
                 context.startActivity(intent)
             }
 
-            val otpMatcher = otpPattern.matcher(message)
-            while (otpMatcher.find()) {
-                val otpCode = otpMatcher.group(3) ?: otpMatcher.group(4)
-                val startIndex =
-                    if (otpMatcher.group(3) != null) otpMatcher.start(3) else otpMatcher.start(4)
-                val endIndex =
-                    if (otpMatcher.group(3) != null) otpMatcher.end(3) else otpMatcher.end(4)
+            val otpRegex = Regex("\\b\\d{4,8}\\b")
+            otpRegex.findAll(message).forEach { match ->
+                val otp = match.value
+                val start = match.range.first
+                val end = match.range.last + 1
 
-                spannableString.setSpan(object : ClickableSpan() {
-                    override fun onClick(widget: View) {
-                        otpCode?.let {
-                            copyToClipboard(it)
+                if (!isProbablyYear(otp) && isLikelyOtp(message, otp)) {
+                    spannableString.setSpan(object : ClickableSpan() {
+                        override fun onClick(widget: View) {
+                            copyToClipboard(otp)
                         }
-                    }
 
-                    override fun updateDrawState(ds: TextPaint) {
-                        super.updateDrawState(ds)
-                        val colorRes = if (isSelected) {
-                            R.color.white
-                        } else {
-                            R.color.textcolor
+                        override fun updateDrawState(ds: TextPaint) {
+                            super.updateDrawState(ds)
+                            val colorRes = if (isSelected) R.color.white else R.color.textcolor
+                            ds.color = ContextCompat.getColor(itemView.context, colorRes)
+                            ds.isUnderlineText = false
+                            val typeface = ResourcesCompat.getFont(
+                                itemView.context,
+                                R.font.product_sans_medium
+                            )
+                            ds.typeface = typeface
                         }
-                        ds.color = ContextCompat.getColor(itemView.context, colorRes)
-
-                        ds.isUnderlineText = false
-                        val typeface = ResourcesCompat.getFont(
-                            itemView.context,
-                            R.font.product_sans_medium
-                        )
-                        ds.typeface = typeface
-                    }
-
-
-                }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
             }
+
+
 
             if (query.isNotEmpty()) {
                 var startIndex = message.indexOf(query, ignoreCase = true)
@@ -435,12 +473,17 @@ class ConversationAdapter(
             }
 
             textView.text = spannableString
+            textView.movementMethod = LinkMovementMethod.getInstance()
+
+            textView.text = spannableString
+            textView.movementMethod = LinkMovementMethod.getInstance()
+
+            textView.text = spannableString
 
             textView.movementMethod = CustomLinkMovementMethod {
                 enableMultiSelection(conversationItem)
             }
         }
-
 
         private fun copyToClipboard(otp: String) {
             val clipboard =
@@ -452,7 +495,6 @@ class ConversationAdapter(
                 itemView.context.getString(R.string.otp_copied), Toast.LENGTH_SHORT
             ).show()
         }
-
 
     }
 
@@ -555,6 +597,16 @@ class ConversationAdapter(
             searchQuery = ""
             notifyDataSetChanged()
         }
+    }
+    fun highlightSearchQuery(query: String, recyclerView: RecyclerView) {
+        searchQuery = query
+        val position = currentList.indexOfFirst {
+            it.body?.contains(query, ignoreCase = true) == true
+        }
+        if (position != -1) {
+            recyclerView.scrollToPosition(position)
+        }
+        notifyDataSetChanged() // To refresh and highlight matching text
     }
 
 

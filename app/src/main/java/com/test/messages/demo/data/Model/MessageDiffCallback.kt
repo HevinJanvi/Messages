@@ -12,9 +12,8 @@ class MessageDiffCallback(
     override fun getNewListSize(): Int = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        // Compare unique identifiers (e.g., threadId, or any unique field)
-        return oldList[oldItemPosition].threadId == newList[newItemPosition].threadId &&
-                oldList[oldItemPosition].isPinned == newList[newItemPosition].isPinned
+        return oldList[oldItemPosition] == newList[newItemPosition]
+
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

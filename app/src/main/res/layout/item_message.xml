@@ -170,7 +170,7 @@
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_mute2"
-                    android:visibility="gone"
+                    android:visibility="invisible"
                     android:layout_marginTop="2dp"/>
 
                 <ImageView
@@ -179,7 +179,7 @@
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_pin_item"
-                    android:visibility="gone"
+                    android:visibility="invisible"
                     android:layout_marginTop="2dp" />
             </LinearLayout>
 
@@ -195,7 +195,7 @@
                 android:text="1"
                 android:textColor="@color/white"
                 android:textSize="10dp"
-                android:visibility="gone"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 

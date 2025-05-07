@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Контакти не вибрано</string>
     <string name="this_is_the_start_of_your_conversation">Це початок вашої розмови. Скажіть \nщось приємне!</string>
     <string name="messages_copied">Повідомлення скопійовано</string>
-    <string name="copy">Копіювати \"%1$s\"</string>
+    <string name="copy">Копіювати</string>
     <string name="can_t_replay">Неможливо відтворити цей короткий код. |</string>
     <string name="learn_more">&#160;&#160;<u>Докладніше</u></string>
     <string name="this_sms_is_100_secure">Це SMS на 100% безпечне. Повідомлення ніколи не збирають дані без попередньої згоди. Все обробляється і зберігається на вашому телефоні.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Доставлено</string>
     <string name="sending">Надсилання...</string>
     <string name="failed_to_send">Не вдалося надіслати</string>
-    <string name="today">Сьогодні, %1$s</string>
-    <string name="yesterday">Учора, %1$s</string>
+    <string name="today">Сьогодні</string>
+    <string name="yesterday">Учора</string>
     <string name="continues">Продовжити</string>
     <string name="this_sender_isnot_your_contacts">Цей відправник не є вашим\nконтактом</string>
     <string name="link_from_people">Посилання від людей, яких ви не знаєте, можуть відкрити\nнебажаний або шкідливий вміст</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Переглянути всі</string>
     <string name="matches_found">Знайдено %1$s збігів</string>
     <string name="restoring">Відновлення...</string>
+    <string name="exit_text">Натисніть «Назад» ще раз, щоб вийти</string>
 
 </resources>

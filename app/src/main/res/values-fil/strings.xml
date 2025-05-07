@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Walang napiling contact</string>
     <string name="this_is_the_start_of_your_conversation">Ito ang simula ng iyong usapan, Magsabi ng \nisang magandang bagay!</string>
     <string name="messages_copied">Nakopya ang mga mensahe</string>
-    <string name="copy">Kopyahin \"%1$s\"</string>
+    <string name="copy">Kopyahin</string>
     <string name="can_t_replay">Hindi maaaring sumagot sa code na ito. | </string>
     <string name="learn_more">&#160;&#160;<u>Matuto Pa</u></string>
     <string name="this_sms_is_100_secure">Ang SMS na ito ay 100% ligtas. Hindi kailanman nangongolekta ng data ang Mga Mensahe nang walang pahintulot. Ang lahat ay pinoproseso at iniimbak sa iyong telepono.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Naihatid</string>
     <string name="sending">Ipinapadala...</string>
     <string name="failed_to_send">Nabigong Ipadala</string>
-    <string name="today">Ngayon, %1$s</string>
-    <string name="yesterday">Kahapon, %1$s</string>
+    <string name="today">Ngayon</string>
+    <string name="yesterday">Kahapon</string>
     <string name="continues">Magpatuloy</string>
     <string name="this_sender_isnot_your_contacts">Ang nagpadala na ito ay hindi isa sa iyong\nmga contact</string>
     <string name="link_from_people">Ang mga link mula sa hindi mo kilala ay maaaring magbukas\nng hindi gustong o mapanganib na nilalaman</string>
@@ -268,5 +268,6 @@
     <string name="see_all">Tingnan lahat</string>
     <string name="matches_found">%1$s mga tugma ang nakita</string>
     <string name="restoring">Ine-restore...</string>
+    <string name="exit_text">Paki-click muli ang Bumalik upang lumabas</string>
 
 </resources>

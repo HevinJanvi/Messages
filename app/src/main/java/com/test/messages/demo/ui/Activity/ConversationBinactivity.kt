@@ -14,6 +14,7 @@ import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.ISDELETED
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.MessagesRestoredEvent
+import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.TimeUtils.formatHeaderDate
 import com.test.messages.demo.Util.ViewUtils.getThreadId
@@ -22,6 +23,8 @@ import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinBinding
 import com.test.messages.demo.ui.Adapter.ConversationBinAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinDao
 import org.greenrobot.eventbus.EventBus
@@ -242,4 +245,10 @@ class ConversationBinactivity : BaseActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
+            return
+        }
+    }
 }

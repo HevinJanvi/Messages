@@ -9,20 +9,20 @@ plugins {
 }
 
 android {
-//    signingConfigs {
-//        create("release") {
-//            storeFile = file("D:\\JanviAndroidProjects\\Messages\\app\\demo_jks.jks")
-//            storePassword = "demo_jks"
-//            keyAlias = "demo_jks"
-//            keyPassword = "demo_jks"
-//        }
-//    }
+    signingConfigs {
+        create("release") {
+            storeFile = file("D:\\JanviAndroidProjects\\Messages\\app\\demo_jks.jks")
+            storePassword = "demo_jks"
+            keyAlias = "demo_jks"
+            keyPassword = "demo_jks"
+        }
+    }
     namespace = "com.test.messages.demo"
     compileSdk = 34
 
     defaultConfig {
         applicationId = "com.test.messages.demo"
-        minSdk = 28
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -31,24 +31,24 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-//        signingConfig = signingConfigs.getByName("release")
+        signingConfig = signingConfigs.getByName("release")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            isDebuggable =false
+            isDebuggable =true
             isShrinkResources= false
         }
         release {
             isMinifyEnabled = true
-            isDebuggable =false
+            isDebuggable =true
             isShrinkResources= true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-//            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

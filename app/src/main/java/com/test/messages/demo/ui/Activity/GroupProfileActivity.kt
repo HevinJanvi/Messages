@@ -27,6 +27,8 @@ import com.test.messages.demo.ui.Dialogs.RenameDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.UpdateGroupNameEvent
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -205,7 +207,6 @@ class GroupProfileActivity : BaseActivity() {
         dialog.show()
     }
 
-
     private fun updateGroupName(threadId: Long, newName: String) {
         val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         sharedPreferences.edit().putString("${GROUP_NAME_KEY}$threadId", newName).apply()
@@ -222,7 +223,7 @@ class GroupProfileActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
     }

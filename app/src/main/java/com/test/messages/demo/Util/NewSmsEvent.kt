@@ -35,5 +35,7 @@ data class DraftChangedEvent(val threadId: Long, val isDraft: Boolean)
 
 data class DeleteSearchMessageEvent(val deletedMessageIds: List<Long>)
 data class NewSmsEvent(val threadId: Long)
+data class ActivityFinishEvent(val success: Boolean)
 
+class ConversationUpdatedEvent(val threadId: Long)
 

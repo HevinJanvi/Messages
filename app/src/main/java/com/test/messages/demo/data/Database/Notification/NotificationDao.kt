@@ -23,7 +23,7 @@ interface NotificationDao {
     suspend fun updatePreviewOption(threadId: Long, previewOption: Int, isCustom: Boolean)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertNotificationSetting(notificationSetting: NotificationSetting)
+     fun insertNotificationSetting(notificationSetting: NotificationSetting)
 
     @Query("SELECT * FROM notification_settings WHERE threadId = :threadId LIMIT 1")
     suspend fun getNotificationSetting(threadId: Long): NotificationSetting?
@@ -63,4 +63,6 @@ interface NotificationDao {
     suspend fun getAllMutedThreads(): List<Long>
 
 
+    @Query("UPDATE notification_settings SET isNotificationOn = :isNotificationOn WHERE threadId = :threadId")
+    fun updateNotificationSetting(threadId: Long, isNotificationOn: Int)
 }

@@ -14,6 +14,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:progressBackgroundTint="@color/send_color"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/categoryRecyclerView"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/conversationList"
         android:layout_width="match_parent"

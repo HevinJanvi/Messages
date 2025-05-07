@@ -51,7 +51,7 @@
     <string name="no_contacts_selected">Không chọn liên hệ nào</string>
     <string name="this_is_the_start_of_your_conversation">Đây là phần bắt đầu cuộc trò chuyện của bạn, Hãy nói \nđiều gì đó hay ho!</string>
     <string name="messages_copied">Tin nhắn đã sao chép</string>
-    <string name="copy">Sao chép \"%1$s\"</string>
+    <string name="copy">Sao chép </string>
     <string name="can_t_replay">Không thể phát lại mã ngắn này. |</string>
     <string name="learn_more">&#160;&#160;<u>Tìm hiểu thêm</u></string>
     <string name="this_sms_is_100_secure">Tin nhắn SMS này an toàn 100%. Tin nhắn không bao giờ thu thập dữ liệu mà không có sự đồng ý trước. Mọi thứ đều được xử lý và lưu trữ trên điện thoại của bạn.</string>
@@ -68,8 +68,8 @@
     <string name="delivered">Đã gửi</string>
     <string name="sending">Đang gửi...</string>
     <string name="failed_to_send">Không gửi được</string>
-    <string name="today">Hôm nay, %1$s</string>
-    <string name="yesterday">Hôm qua, %1$s</string>
+    <string name="today">Hôm nay</string>
+    <string name="yesterday">Hôm qua</string>
     <string name="continues">Tiếp tục</string>
     <string name="this_sender_isnot_your_contacts">Người gửi này không phải là một trong những người liên hệ của bạn</string>
     <string name="link_from_people">Liên kết từ những người bạn không biết có thể mở ra nội dung không mong muốn hoặc có hại</string>
@@ -267,5 +267,6 @@
     <string name="see_all">Xem tất cả</string>
     <string name="matches_found">%1$s kết quả phù hợp đã tìm thấy</string>
     <string name="restoring">Đang khôi phục...</string>
+    <string name="exit_text">Vui lòng nhấp vào Quay lại lần nữa để thoát</string>
 
 </resources>

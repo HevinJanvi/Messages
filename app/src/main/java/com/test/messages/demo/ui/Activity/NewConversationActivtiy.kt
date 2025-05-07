@@ -31,6 +31,9 @@ import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SmsSender
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.getThreadId
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -227,7 +230,7 @@ class NewConversationActivtiy : BaseActivity() {
         }
 
         if (selectedNumbers.size > 1) {
-            val groupAddress = selectedContacts.joinToString(", ") { it.name ?: it.phoneNumber }
+            val groupAddress = selectedContacts.joinToString(",") { it.name ?: it.phoneNumber }
             messageUtils.insertSmsMessage(
                 subId = subscriptionId,
                 dest = groupAddress,
@@ -298,14 +301,7 @@ class NewConversationActivtiy : BaseActivity() {
 
     }
 
-    @SuppressLint("NewApi")
-    fun Context.getThreadId(addresses: Set<String>): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(this, addresses)
-        } catch (e: Exception) {
-            0L
-        }
-    }
+
 
     override fun onBackPressed() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -320,7 +316,7 @@ class NewConversationActivtiy : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this)) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
     }

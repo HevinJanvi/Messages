@@ -11,6 +11,7 @@ import android.provider.Telephony
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -21,7 +22,7 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.ActivityFinishEvent
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.FORWARD
 import com.test.messages.demo.Util.CommanConstants.FORWARDMSGS
@@ -31,13 +32,16 @@ import com.test.messages.demo.Util.CommanConstants.SHARECONTACT
 import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNAME
 import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNUMBER
 import com.test.messages.demo.Util.CommanConstants.SOURCE
+import com.test.messages.demo.Util.NewSmsEvent
+import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.Model.ContactItem
+import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityContactBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
 import com.test.messages.demo.ui.send.MessageUtils
-import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.send.getThreadId
 import dagger.hilt.android.AndroidEntryPoint
+import org.greenrobot.eventbus.EventBus
 
 @AndroidEntryPoint
 class ContactActivtiy : BaseActivity() {
@@ -51,6 +55,7 @@ class ContactActivtiy : BaseActivity() {
     private lateinit var filteredContacts: List<ContactItem>
     private lateinit var messageUtils: MessageUtils
     private var isNumberKeyboard = false
+    private lateinit var source: String
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +79,8 @@ class ContactActivtiy : BaseActivity() {
                 setNumberKeyboard()
             }
         }
-        val source = intent.getStringExtra(SOURCE)
+        source = intent.getStringExtra(SOURCE) ?: ""
+
         if (source.equals(FORWARD)) {
             binding.btmly.visibility = View.GONE
         } else if (source.equals(SHARECONTACT)) {
@@ -86,7 +92,6 @@ class ContactActivtiy : BaseActivity() {
         val contactAdapter = ContactAdapter(allContacts) { contact ->
             when (source) {
                 FORWARD -> {
-
                     if (source == FORWARD && !forwardedMessage.isNullOrEmpty()) {
                         val selectedNumber = contact.phoneNumber
                         val contactName = viewModel.getContactNameOrNumber(selectedNumber)
@@ -97,9 +102,13 @@ class ContactActivtiy : BaseActivity() {
                             putExtra(NUMBER, selectedNumber)
                             putExtra(NAME, contactName)
                             putExtra(FORWARDMSGS, forwardedMessage)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         }
                         startActivity(intent)
                         finish()
+                        EventBus.getDefault().post(ActivityFinishEvent(true))
+
+
                     }
                 }
 
@@ -198,15 +207,6 @@ class ContactActivtiy : BaseActivity() {
         }
     }
 
-    @SuppressLint("NewApi")
-    fun Context.getThreadId(addresses: Set<String>): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(this, addresses)
-        } catch (e: Exception) {
-            0L
-        }
-    }
-
     private fun updateSelectedContactsHeader() {
         binding.selectedContactsLayout.removeAllViews()
         binding.selectedContactsScroll.visibility = View.GONE
@@ -282,7 +282,12 @@ class ContactActivtiy : BaseActivity() {
             imm.hideSoftInputFromWindow(view.windowToken, 0)
             view.clearFocus()
         } else {
-            super.onBackPressed()
+            if (source.equals(FORWARD)) {
+                finish()
+            } else {
+                super.onBackPressed()
+            }
+
         }
     }
 

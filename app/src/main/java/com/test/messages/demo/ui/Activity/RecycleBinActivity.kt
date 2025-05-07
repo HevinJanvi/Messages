@@ -1,16 +1,16 @@
 package com.test.messages.demo.ui.Activity
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.text.format.DateUtils.formatDateTime
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -21,21 +21,18 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.ISDELETED
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.MessageRestoredEvent
-import com.test.messages.demo.data.Model.ConversationItem
-import com.test.messages.demo.data.Model.MessageItem
-import com.test.messages.demo.data.viewmodel.BackupViewModel
+import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityRecyclebinBinding
 import com.test.messages.demo.ui.Adapter.RecycleBinAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
-import com.test.messages.demo.ui.Fragment.ConversationFragment
+import com.test.messages.demo.ui.send.hasReadContactsPermission
+import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -43,9 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -185,7 +180,7 @@ class RecycleBinActivity : BaseActivity() {
                 val restoredThreadMap = mutableMapOf<Long, Pair<String, Long>>()
                 val allMessagesToRestore = mutableListOf<DeletedMessage>()
 
-                // ✅ Fix: Properly gather all selected message threads and their messages
+
                 val selectedThreadIds =
                     recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
 
@@ -194,13 +189,14 @@ class RecycleBinActivity : BaseActivity() {
                     allMessagesToRestore.addAll(threadMessages)
                 }
 
-                // ✅ Restore messages
-                for (deletedMessage in allMessagesToRestore) {
+//                for (deletedMessage in allMessagesToRestore) {
+                for (deletedMessage in allMessagesToRestore.reversed()) {
                     var threadId = deletedMessage.threadId
                     if (!isThreadExists(threadId)) {
                         threadId = getThreadId(deletedMessage.address)
                     }
 
+//                    Log.d("TAG", "restoreSelectedMessages: "+deletedMessage.date)
                     val values = ContentValues().apply {
                         put(Telephony.Sms.THREAD_ID, threadId)
                         put(Telephony.Sms.DATE, deletedMessage.date)
@@ -213,8 +209,10 @@ class RecycleBinActivity : BaseActivity() {
 
                     contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
                     db.deleteMessage(deletedMessage)
-
-                    restoredThreadMap[threadId] = Pair(deletedMessage.body, deletedMessage.date)
+                    val current = restoredThreadMap[threadId]
+                    if (current == null || deletedMessage.date > current.second) {
+                        restoredThreadMap[threadId] = Pair(deletedMessage.body, deletedMessage.date)
+                    }
                 }
 
                 // Show dialog for a minimum duration
@@ -232,18 +230,21 @@ class RecycleBinActivity : BaseActivity() {
 
                     for ((threadId, pair) in restoredThreadMap) {
                         val (lastMessage, lastTime) = pair
+                        Log.d("SnippetUpdate R", "R ThreadID: $threadId, LastMessage: $lastMessage, LastTime: $lastTime")
+
                         EventBus.getDefault()
                             .post(MessageRestoredEvent(threadId, lastMessage, lastTime))
                     }
-
+                    viewModel.loadMessages()
 //                    Toast.makeText(this, getString(R.string.messages_restored), Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
+//                Log.d("TAG", "restoreSelectedMessages: "+e.message)
                 Handler(Looper.getMainLooper()).post {
                     dialog.dismiss()
-                    Toast.makeText(this, getString(R.string.restore_failed), Toast.LENGTH_SHORT)
+                    Toast.makeText(this, e.toString(), Toast.LENGTH_LONG)
                         .show()
                 }
             }
@@ -271,7 +272,6 @@ class RecycleBinActivity : BaseActivity() {
 
     private fun updateActionLayout(selectedCount: Int) {
 
-
         binding.btnSelectAll.isChecked = recycleBinAdapter.isAllSelected()
 
         binding.txtSelectedCount.text = "$selectedCount" + " " + getString(R.string.selected)
@@ -289,6 +289,12 @@ class RecycleBinActivity : BaseActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
+            return
+        }
+    }
 
 
 }

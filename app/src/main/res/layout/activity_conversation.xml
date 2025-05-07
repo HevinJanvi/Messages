@@ -278,6 +278,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Toolbar" />
 
+    <ProgressBar
+        android:id="@+id/loader"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_margin="15dp"
+        android:indeterminateTint="@color/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/blockLy"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewConversation"
         android:layout_width="match_parent"
@@ -362,74 +374,94 @@
                 android:background="@drawable/ripple_effect_round"
                 android:src="@drawable/ic_add_disable" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/send_msg_bg"
-                android:orientation="vertical">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/schedulLy"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:id="@+id/selectedTimeTextView"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:lineSpacingExtra="2dp"
-                        android:paddingStart="15dp"
-                        android:paddingTop="10dp"
-                        android:text=""
-                        android:textSize="15dp"
-                        app:layout_constraintEnd_toStartOf="@+id/close"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
-                        android:id="@+id/close"
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
-                        android:layout_gravity="end"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginEnd="12dp"
-                        android:adjustViewBounds="true"
-                        android:padding="3dp"
-                        android:src="@drawable/ic_close"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:layout_marginHorizontal="10dp"
-                        android:layout_marginTop="10dp"
-                        android:background="@color/subtext_color"
-                        app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-                <EditText
-                    android:id="@+id/editTextMessage"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@null"
-                    android:fontFamily="@font/product_sans_regular"
-                    android:hint="@string/write_a_message"
-                    android:imeOptions="normal"
-                    android:maxLines="4"
-                    android:inputType="textCapSentences"
-                    android:paddingHorizontal="15dp"
-                    android:paddingVertical="17dp"
-                    android:textColor="@color/textcolor"
-                    android:textColorHint="@color/gray_txtcolor"
-                    android:textFontWeight="400"
-                    android:textSize="15dp" />
-            </LinearLayout>
+                    android:background="@drawable/send_msg_bg"
+                    android:orientation="vertical">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/schedulLy"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/selectedTimeTextView"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:lineSpacingExtra="2dp"
+                            android:paddingStart="15dp"
+                            android:paddingTop="10dp"
+                            android:text=""
+                            android:textSize="15dp"
+                            app:layout_constraintEnd_toStartOf="@+id/close"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <ImageView
+                            android:id="@+id/close"
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_gravity="end"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="12dp"
+                            android:adjustViewBounds="true"
+                            android:padding="3dp"
+                            android:src="@drawable/ic_close"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height=".5dp"
+                            android:layout_marginHorizontal="10dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@color/subtext_color"
+                            app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/editTextMessage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:fontFamily="@font/product_sans_regular"
+                            android:hint="@string/write_a_message"
+                            android:imeOptions="actionNext"
+                            android:maxLines="4"
+                            android:inputType="textCapSentences|textMultiLine"
+                            android:paddingHorizontal="15dp"
+                            android:paddingVertical="17dp"
+                            android:textColor="@color/textcolor"
+                            android:textColorHint="@color/gray_txtcolor"
+                            android:textFontWeight="400"
+                            android:textSize="15dp" />
+
+                        <ImageView
+                            android:id="@+id/imageSimSwitch"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/sim_1"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginStart="5dp"
+                            android:visibility="gone"
+                            android:layout_gravity="center"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
 
             <ImageView
                 android:id="@+id/buttonSend"
@@ -514,20 +546,30 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/learnMoreLy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/send_bg_color"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="20dp"
+            android:paddingHorizontal="16dp"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:paddingVertical="20dp">
+
+            <androidx.constraintlayout.helper.widget.Flow
+                android:id="@+id/flowLearn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:constraint_referenced_ids="txtCantReply,learnMore"
+                app:flow_horizontalGap="4dp"
+                app:flow_horizontalStyle="spread_inside"
+                app:flow_wrapMode="chain"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
+                android:id="@+id/txtCantReply"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/product_sans_regular"
@@ -542,10 +584,13 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/product_sans_medium"
                 android:text="@string/learn_more"
+                android:gravity="start"
                 android:textColor="@color/colorPrimary"
                 android:textFontWeight="500"
                 android:textSize="14sp" />
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 
     </LinearLayout>
