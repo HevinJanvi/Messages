@@ -1,6 +1,5 @@
 package com.test.messages.demo.ui.Activity
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
@@ -40,7 +39,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -48,7 +46,6 @@ import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.Locale
 
 
 @AndroidEntryPoint
@@ -67,19 +64,20 @@ class SearchActivity : BaseActivity() {
 
     private val allMessages = mutableListOf<ConversationItem>()
     private val allContacts = mutableListOf<ContactItem>()
-
-
     private var indexedContacts = listOf<SearchableContact>()
     private var indexedMessages = listOf<SearchableMessage>()
 
     fun buildContactIndex(contacts: List<ContactItem>) {
         lifecycleScope.launch(Dispatchers.Default) {
-            indexedContacts = contacts.map {
+            val newList = contacts.map {
                 val searchable = "${it.name ?: ""} ${it.phoneNumber}".lowercase()
                 SearchableContact(it, searchable)
             }
-        }
 
+            withContext(Dispatchers.Main) {
+                indexedContacts = newList
+            }
+        }
     }
 
     private val indexMutex = Mutex()
@@ -89,7 +87,6 @@ class SearchActivity : BaseActivity() {
             val searchable = "${it.body} ${it.address}".lowercase()
             SearchableMessage(it, searchable)
         }
-
         CoroutineScope(Dispatchers.IO).launch {
             indexMutex.withLock {
                 indexedMessages = indexed

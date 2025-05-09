@@ -73,6 +73,7 @@ import com.test.messages.demo.Util.CommanConstants.SOURCE
 import com.test.messages.demo.Util.ConversationOpenedEvent
 import com.test.messages.demo.Util.ConversationUpdatedEvent
 import com.test.messages.demo.Util.DeleteSearchMessageEvent
+import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MessageDeletedEvent
 import com.test.messages.demo.Util.NewSmsEvent
 import com.test.messages.demo.data.Model.ConversationItem
@@ -169,6 +170,13 @@ class ConversationActivity : BaseActivity() {
         super.onPause()
         EventBus.getDefault().removeStickyEvent(ConversationOpenedEvent::class.java)
     }
+    override fun onStop() {
+        super.onStop()
+        if (!isScheduled || threadId.equals("") &&  binding.editTextMessage.text.isNotEmpty()) {
+            EventBus.getDefault().post(DraftChangedEvent(threadId,binding.editTextMessage.text.toString()))
+        }
+
+    }
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -193,11 +201,20 @@ class ConversationActivity : BaseActivity() {
         isStarred = intent.getBooleanExtra(CommanConstants.ISSTARRED, false)
 
         val forwardedMessage = intent.getStringExtra(FORWARDMSGS)
+        Log.d("ConversationActivity", "onCreate:forwardedMessage " + forwardedMessage.toString())
         if (!forwardedMessage.isNullOrEmpty()) {
-            Log.d("TAG", "onCreate:forwardedMessage " + forwardedMessage.toString())
             binding.editTextMessage.setText(forwardedMessage)
             binding.editTextMessage.setSelection(forwardedMessage.length)
         }
+         draftViewModel.getDraft(threadId).observe(this) { draftText ->
+             Log.d("TAG", "onCreate:draftViewModel observe ")
+             hasDraftPreviously = !draftText.isNullOrEmpty()
+              if (forwardedMessage.isNullOrEmpty() ) {
+                 binding.editTextMessage.setText(draftText)
+             }
+        }
+
+
 
         if (isScheduled) {
             showDateTimePickerDialog()
@@ -240,6 +257,7 @@ class ConversationActivity : BaseActivity() {
         }
 
         if (isfromBlock) {
+
             binding.blockLy.visibility = View.VISIBLE
             binding.btnUnblock.setOnClickListener {
                 unblockThread(threadId)
@@ -248,19 +266,15 @@ class ConversationActivity : BaseActivity() {
             binding.blockLy.visibility = View.GONE
         }
 
-        draftViewModel.getDraft(threadId).observe(this) { draftText ->
-            hasDraftPreviously = !draftText.isNullOrEmpty()
-            if (forwardedMessage.isNullOrEmpty()) {
-                binding.editTextMessage.setText(draftText)
-            }
-        }
+
 
         binding.editTextMessage.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                if (!isScheduled || threadId.equals("")) {
+                if (!isScheduled || threadId.equals("") ) {
                     draftViewModel.saveDraft(threadId, s.toString())
                 }
             }
+
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -282,16 +296,17 @@ class ConversationActivity : BaseActivity() {
                 if (result.resultCode == Activity.RESULT_OK) {
                     val updatedName = result.data?.getStringExtra("UPDATED_NAME")
                     isfromBlock = result.data?.getBooleanExtra(FROMBLOCK, false) ?: false
-                    var isThreadDelete = result.data?.getBooleanExtra("delete", false) ?: false
+                    /*var isThreadDelete = result.data?.getBooleanExtra("delete", false) ?: false
                     if (isThreadDelete) {
                         finish()
-                    }
+                    }*/
 
                     Handler(Looper.getMainLooper()).postDelayed({
                         binding.address.text = updatedName
                         if (isfromBlock) {
                             binding.blockLy.visibility = View.VISIBLE
                             binding.btnUnblock.setOnClickListener {
+                                isfromBlock = false
                                 unblockThread(threadId)
                             }
                         } else {
@@ -378,7 +393,7 @@ class ConversationActivity : BaseActivity() {
 
         binding.icClose.setOnClickListener { adapter.clearSelection() }
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false) {
+            val deleteDialog = DeleteDialog(this, false, false) {
                 deleteSelectedMessages()
             }
             deleteDialog.show()
@@ -465,7 +480,7 @@ class ConversationActivity : BaseActivity() {
             it.blinkThen {
 
                 val selectedBodies = adapter.selectedItems.map { it.body }
-                val joinedMessage = selectedBodies.joinToString("\n\n")
+                val joinedMessage = selectedBodies.joinToString("\n")
 
                 val intent = Intent(this, ContactActivtiy::class.java)
                 intent.putExtra(SOURCE, FORWARD)
@@ -570,8 +585,8 @@ class ConversationActivity : BaseActivity() {
         // Delay showing loader by 1 second
 //        showLoaderDelayedJob = CoroutineScope(Dispatchers.Main).launch {
 //            delay(1000)
-            binding.loader.visibility = View.VISIBLE
-            binding.emptyText.visibility = View.GONE
+        binding.loader.visibility = View.VISIBLE
+        binding.emptyText.visibility = View.GONE
 //        }
 
         viewModel.conversation.observe(this) { conversation ->
@@ -612,7 +627,7 @@ class ConversationActivity : BaseActivity() {
                     }
                     groupedList.add(message)
                 }
-                Log.d("TAG", "observeViewModel:--- " + groupedList.size)
+//                Log.d("TAG", "observeViewModel:--- " + groupedList.size)
                 withContext(Dispatchers.Main) {
                     loaderJob?.cancel()
                     adapter.submitList(groupedList) {
@@ -735,7 +750,8 @@ class ConversationActivity : BaseActivity() {
         }
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
         val simCard = availableSIMCards.getOrNull((selectedSimIndex - 1).toInt())
-        val subscriptionId = simCard?.subscriptionId ?: SubscriptionManager.getDefaultSmsSubscriptionId()
+        val subscriptionId =
+            simCard?.subscriptionId ?: SubscriptionManager.getDefaultSmsSubscriptionId()
 //        subscriptionId = simSubscriptionIds.getOrNull(currentSimIndex)
 //            ?: SubscriptionManager.getDefaultSmsSubscriptionId()
 
@@ -769,6 +785,7 @@ class ConversationActivity : BaseActivity() {
         draftViewModel.deleteDraft(threadId)
         binding.recyclerViewConversation.itemAnimator = null
         scrolltoBottom()
+        updateSnnipet()
         viewModel.loadMessages()
         viewModel.loadConversation(threadId)
         adapter.setSearchQuery("")
@@ -895,6 +912,7 @@ class ConversationActivity : BaseActivity() {
         selectedSimIndex = if (selectedSimIndex == 1L) 2L else 1L
         updateSimIcon()
     }
+
     private fun updateSimIcon() {
         when (selectedSimIndex) {
             1L -> binding.imageSimSwitch.setImageResource(R.drawable.sim_1)
@@ -911,8 +929,14 @@ class ConversationActivity : BaseActivity() {
 
             withContext(Dispatchers.Main) {
                 binding.blockLy.visibility = View.GONE
-                isfromBlock = false
-                finish()
+                if (isfromBlock) {
+                    finish()
+                    isfromBlock = false
+                } else {
+                    isfromBlock = false
+                    binding.blockLy.visibility = View.GONE
+                }
+
             }
         }
     }
@@ -935,7 +959,7 @@ class ConversationActivity : BaseActivity() {
             ).show()
             return
         }
-        val shareContent = selectedMessages.joinToString(separator = "\n\n") { it.body }
+        val shareContent = selectedMessages.joinToString(separator = "\n") { it.body }
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, shareContent)
@@ -1110,20 +1134,20 @@ class ConversationActivity : BaseActivity() {
             adapter.clearSelection()
             updateUI(0)
         } else {
-            setActivityResult()
-            finish()
+//            setActivityResult()
+//            finish()
             viewModel.emptyConversation()
             super.onBackPressed()
         }
     }
 
 
-    private fun setActivityResult() {
+   /* private fun setActivityResult() {
         val resultIntent = Intent().apply {
             putExtra("RESULT_OK", true)
         }
         setResult(Activity.RESULT_OK, resultIntent)
-    }
+    }*/
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1138,10 +1162,7 @@ class ConversationActivity : BaseActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onActivtiyfinishEvent(
-        event:
-        ActivityFinishEvent
-    ) {
+    fun onActivtiyfinishEvent(event: ActivityFinishEvent) {
         finish()
     }
 
@@ -1173,37 +1194,37 @@ class ConversationActivity : BaseActivity() {
                     set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 }
 
-               /* val timePicker = MaterialTimePicker.Builder()
-                    .setTheme(R.style.BaseTheme_TimePicker)
-                    .setHour(currentHour)
-                    .setMinute(currentMinute)
-                    .setTimeFormat(TimeFormat.CLOCK_24H)
-                    .build()
+                /* val timePicker = MaterialTimePicker.Builder()
+                     .setTheme(R.style.BaseTheme_TimePicker)
+                     .setHour(currentHour)
+                     .setMinute(currentMinute)
+                     .setTimeFormat(TimeFormat.CLOCK_24H)
+                     .build()
 
-                timePicker.addOnPositiveButtonClickListener {
-                    val selectedCalendar = Calendar.getInstance().apply {
-                        set(Calendar.YEAR, year)
-                        set(Calendar.MONTH, month)
-                        set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                        set(Calendar.HOUR_OF_DAY, timePicker.hour)
-                        set(Calendar.MINUTE, timePicker.minute)
-                        set(Calendar.SECOND, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }
+                 timePicker.addOnPositiveButtonClickListener {
+                     val selectedCalendar = Calendar.getInstance().apply {
+                         set(Calendar.YEAR, year)
+                         set(Calendar.MONTH, month)
+                         set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                         set(Calendar.HOUR_OF_DAY, timePicker.hour)
+                         set(Calendar.MINUTE, timePicker.minute)
+                         set(Calendar.SECOND, 0)
+                         set(Calendar.MILLISECOND, 0)
+                     }
 
-                    if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
-                        Toast.makeText(
-                            this,
-                            getString(R.string.cannot_select_past_time),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        showDateTimePickerDialog()
-                    } else {
-                        selectedTimeInMillis = selectedCalendar.timeInMillis
-                        binding.schedulLy.visibility = View.VISIBLE
+                     if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
+                         Toast.makeText(
+                             this,
+                             getString(R.string.cannot_select_past_time),
+                             Toast.LENGTH_SHORT
+                         ).show()
+                         showDateTimePickerDialog()
+                     } else {
+                         selectedTimeInMillis = selectedCalendar.timeInMillis
+                         binding.schedulLy.visibility = View.VISIBLE
 
-                        val formattedTime = SimpleDateFormat(
-                            "dd MMM yyyy " *//* +if (is24HourFormat) "HH:mm" else "hh:mm a"*//*,
+                         val formattedTime = SimpleDateFormat(
+                             "dd MMM yyyy " *//* +if (is24HourFormat) "HH:mm" else "hh:mm a"*//*,
                             Locale.getDefault()
                         ).format(selectedCalendar.time)
 
@@ -1240,9 +1261,6 @@ class ConversationActivity : BaseActivity() {
                 }
 
                 timePicker.show(supportFragmentManager, "time_picker")*/
-
-
-
 
 
                 val timePickerDialog = TimePickerDialog(

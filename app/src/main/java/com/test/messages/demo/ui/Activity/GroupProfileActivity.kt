@@ -47,6 +47,7 @@ class GroupProfileActivity : BaseActivity() {
     private lateinit var groupName: String
     private var threadId: Long = -1
     private val viewModel: MessageViewModel by viewModels()
+    private var isArchived = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +77,7 @@ class GroupProfileActivity : BaseActivity() {
             onBackPressed()
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false) {
+            val deleteDialog = DeleteDialog(this, false, true) {
                 deleteMessagesForCurrentThread(threadId)
             }
             deleteDialog.show()
@@ -87,8 +88,23 @@ class GroupProfileActivity : BaseActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             val archivedConversationIds =
                 viewModel.getArchivedConversations().map { it.conversationId }
-
             withContext(Dispatchers.Main) {
+                isArchived = archivedConversationIds.contains(threadId)
+                updateArchiveUI()
+
+                // Set up click listener once
+                binding.lyArchive.setOnClickListener {
+                    if (isArchived) {
+                        viewModel.unarchiveConversations(listOf(threadId))
+                        isArchived = false
+                    } else {
+                        viewModel.archiveSelectedConversations(listOf(threadId))
+                        isArchived = true
+                    }
+                    updateArchiveUI()
+                }
+            }
+            /*withContext(Dispatchers.Main) {
                 if (archivedConversationIds.contains(threadId)) {
                     binding.icArchiveText.text = getString(R.string.unarchived)
                     binding.icArchive.setImageResource(R.drawable.ic_unarchive)
@@ -106,7 +122,17 @@ class GroupProfileActivity : BaseActivity() {
                         refreshListStatus()
                     }
                 }
-            }
+            }*/
+        }
+    }
+
+    private fun updateArchiveUI() {
+        if (isArchived) {
+            binding.archiveText.text = getString(R.string.unarchived)
+            binding.icArchive.setImageResource(R.drawable.ic_unarchive)
+        } else {
+            binding.archiveText.text = getString(R.string.archive)
+            binding.icArchive.setImageResource(R.drawable.ic_archive)
         }
     }
 
@@ -118,7 +144,8 @@ class GroupProfileActivity : BaseActivity() {
         Thread {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
-                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>() // To prevent duplicates
+                val existingBodyDatePairs =
+                    mutableSetOf<Pair<String, Long>>() // To prevent duplicates
 
                 val cursor = contentResolver.query(
                     Telephony.Sms.CONTENT_URI,
@@ -141,28 +168,33 @@ class GroupProfileActivity : BaseActivity() {
                         val body = it.getString(bodyIndex) ?: ""
                         val date = it.getLong(dateIndex)
                         val key = Pair(body, date)
-
+                        val address = it.getString(addressIndex) ?: ""
+                        if (address.isNullOrEmpty()) {
+                            continue
+                        }
                         if (existingBodyDatePairs.contains(key)) continue
                         existingBodyDatePairs.add(key)
-
+                        val isGroup = address.contains(",")
                         val deletedMessage = DeletedMessage(
                             messageId = it.getLong(messageIdIndex),
                             threadId = threadId,
-                            address = it.getString(addressIndex) ?: "",
+                            address = address,
                             date = date,
                             body = body,
                             type = it.getInt(typeIndex),
                             read = it.getInt(readIndex) == 1,
                             subscriptionId = it.getInt(subIdIndex),
-                            deletedTime = System.currentTimeMillis()
+                            deletedTime = System.currentTimeMillis(),
+                            isGroupChat = isGroup,
+                            profileImageUrl = ""
                         )
-
                         deletedMessages.add(deletedMessage)
                     }
                 }
                 val uri = Uri.parse("content://sms/conversations/$threadId")
                 contentResolver.delete(uri, null, null)
                 db.insertMessages(deletedMessages)
+                viewModel.loadMessages()
                 Handler(Looper.getMainLooper()).post {
                     finish()
                 }
@@ -172,22 +204,23 @@ class GroupProfileActivity : BaseActivity() {
             }
         }.start()
     }
-   /* @RequiresApi(Build.VERSION_CODES.Q)
-    fun deleteMessage() {
-        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
-        Thread {
-            try {
-                val uri = Uri.parse("content://sms/conversations/$threadId")
-                val deletedRows = contentResolver.delete(uri, null, null)
-                if (deletedRows > 0) {
-                    updatedList.removeAll { it.threadId == threadId }
-                    refreshListStatus()
-                }
-            } catch (e: Exception) {
-            }
-        }.start()
-    }
-*/
+
+    /* @RequiresApi(Build.VERSION_CODES.Q)
+     fun deleteMessage() {
+         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
+         Thread {
+             try {
+                 val uri = Uri.parse("content://sms/conversations/$threadId")
+                 val deletedRows = contentResolver.delete(uri, null, null)
+                 if (deletedRows > 0) {
+                     updatedList.removeAll { it.threadId == threadId }
+                     refreshListStatus()
+                 }
+             } catch (e: Exception) {
+             }
+         }.start()
+     }
+ */
     private fun refreshListStatus() {
         Handler(Looper.getMainLooper()).postDelayed({
             val intent = Intent(this, MainActivity::class.java)
@@ -223,7 +256,7 @@ class GroupProfileActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && !hasReadSmsPermission() && !hasReadContactsPermission()) {
             return
         }
     }

@@ -202,6 +202,7 @@ class ConversationFragment : Fragment() {
         }
 
         draftViewModel.draftsLiveData.observe(viewLifecycleOwner) { draftMap ->
+            Log.d("TAG", "onCreateView:observe "+draftMap)
             adapter.updateDrafts(draftMap)
         }
         if (requireContext().hasReadSmsPermission()) {
@@ -352,7 +353,8 @@ class ConversationFragment : Fragment() {
                 putExtra(ISGROUP, message.isGroupChat)
                 putExtra(PROFILEURL, message.profileImageUrl)
             }
-            conversationResultLauncher.launch(intent)
+//            conversationResultLauncher.launch(intent)
+           startActivity(intent)
         }
     }
 
@@ -479,7 +481,7 @@ class ConversationFragment : Fragment() {
                     adapter.selectedMessages.clear()
                     adapter.selectedMessages.add(message)
                     var userConfirmedDelete = false
-                    val deleteDialog = DeleteDialog(requireContext(), false) {
+                    val deleteDialog = DeleteDialog(requireContext(), false,true) {
                         userConfirmedDelete = true
                         adapter.removeMessageAt(position)
                         deleteSelectedMessages()
@@ -740,6 +742,7 @@ class ConversationFragment : Fragment() {
 
                             existingBodyDatePairs.add(key)
                             val isGroup = address.contains(",")
+                            Log.d("TAG", "deleteSelectedMessages:isGroup "+isGroup)
                             val deletedMessage = DeletedMessage(
                                 messageId = messageId,
                                 threadId = threadId,
@@ -829,31 +832,29 @@ class ConversationFragment : Fragment() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onDraftRemovedEvent(event: DraftChangedEvent) {
-        Log.d("TAG", "onDraftRemovedEvent: ")
-        adapter.notifyDataSetChanged()
-
+    fun onDraftUpdateEvent(event: DraftChangedEvent) {
+        Log.d("TAG", "onDraftchangeEvent: ")
+        binding.conversationList.scrollToPosition(0)
+        draftViewModel.saveDraft(event.threadId, event.draft)
+//        draftViewModel.loadAllDrafts()
         viewModel.loadMessages()
-        Handler(Looper.getMainLooper()).postDelayed({
-            binding.conversationList.smoothScrollToPosition(0)
-        }, 1000)
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+   /* @RequiresApi(Build.VERSION_CODES.Q)
     private val conversationResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
             if (data != null) {
-
+                Log.d("TAG", "onresult fragment: ")
                 adapter.notifyDataSetChanged()
                 draftViewModel.loadAllDrafts()
                 viewModel.loadMessages()
             }
         }
-    }
+    }*/
 
 
     @RequiresApi(Build.VERSION_CODES.Q)

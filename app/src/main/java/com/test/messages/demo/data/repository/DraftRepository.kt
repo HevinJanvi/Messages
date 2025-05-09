@@ -130,6 +130,7 @@ class DraftRepository @Inject constructor(@ApplicationContext private val contex
         val contentValues = ContentValues().apply {
             put("body", draftText)
             put("type", Telephony.Sms.MESSAGE_TYPE_DRAFT)
+            put("date", System.currentTimeMillis())
         }
         val uri = Telephony.Sms.CONTENT_URI
         val selection = "${Telephony.Sms.THREAD_ID} = ? AND ${Telephony.Sms.TYPE} = ?"

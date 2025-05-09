@@ -197,7 +197,10 @@ class RecycleBinAdapter(
     }
 
     fun submitList(newMessages: List<DeletedMessage>) {
-        messages = newMessages.toMutableList()
+        messages.clear()
+        messages.addAll(newMessages)
+
+//        messages = newMessages.toMutableList()
         notifyDataSetChanged()
     }
 

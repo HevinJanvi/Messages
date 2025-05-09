@@ -34,6 +34,7 @@ import androidx.core.view.GravityCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.LanguageChangeEvent
 import com.test.messages.demo.Util.MessageRestoredEvent
+import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -142,7 +143,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
 
         binding.icDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false) {
+            val deleteDialog = DeleteDialog(this, false,true) {
                 val fragment =
                     supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
                 fragment?.deleteSelectedMessages()
@@ -246,6 +247,16 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         recreate()
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessagesRefreshed(event: MessagesRefreshEvent) {
+        if (event.success) {
+            Log.d("TAG", "onMessagesRefreshed:main screen ")
+            Handler(Looper.getMainLooper()).postDelayed({
+                viewModel.loadMessages()
+            }, 100)
+
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun loadConversationFragment() {
         val fragment = ConversationFragment()
@@ -279,8 +290,10 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
     fun updateBlockUI(shouldEnable: Boolean) {
-        binding.blockLayout.isEnabled = shouldEnable
-        binding.blockLayout.alpha = if (shouldEnable) 1f else 0.5f
+        runOnUiThread{
+            binding.blockLayout.isEnabled = shouldEnable
+            binding.blockLayout.alpha = if (shouldEnable) 1f else 0.5f
+        }
     }
 
     fun updateMuteUnmuteUI(isMuted: Boolean) {

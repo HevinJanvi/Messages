@@ -140,7 +140,7 @@ class ArchivedActivity : BaseActivity() {
                 val archivedMessages = messageList
                     .filter {
                         archivedConversationIds.contains(it.threadId) &&
-                        !blockedConversationIds.contains(it.threadId)
+                                !blockedConversationIds.contains(it.threadId)
                     }
                     .map { message ->
                         message.copy(isPinned = pinnedThreadIds.contains(message.threadId))
@@ -148,17 +148,16 @@ class ArchivedActivity : BaseActivity() {
                     .sortedByDescending { it.isPinned }
 
                 withContext(Dispatchers.Main) {
+                    binding.emptyList.visibility =
+                        if (archivedMessages.isEmpty()) View.VISIBLE else View.GONE
+
                     val layoutManager =
                         binding.archiveRecyclerView.layoutManager as LinearLayoutManager
                     val lastPosition = layoutManager.findFirstVisibleItemPosition()
-
                     adapter.submitList(archivedMessages)
                     binding.archiveRecyclerView.post {
                         layoutManager.scrollToPosition(lastPosition)
                     }
-
-                    binding.emptyList.visibility =
-                        if (archivedMessages.isEmpty()) View.VISIBLE else View.GONE
                 }
             }
         }
@@ -247,7 +246,7 @@ class ArchivedActivity : BaseActivity() {
         }
 
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false) {
+            val deleteDialog = DeleteDialog(this, false,true) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
 //                    deleteMessages(selectedThreadIds)
@@ -332,6 +331,8 @@ class ArchivedActivity : BaseActivity() {
     fun deleteMessages() {
         if (adapter.selectedMessages.isEmpty()) return
 
+        var messages = adapter.selectedMessages.toList()
+        adapter.selectedMessages.clear()
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
@@ -344,72 +345,68 @@ class ArchivedActivity : BaseActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val deletedMessages = mutableListOf<DeletedMessage>()
-                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>()
+            val deletedMessages = mutableListOf<DeletedMessage>()
+            val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>()
+                for (item in messages) {
+                val threadId = item.threadId
+                val cursor = contentResolver.query(
+                    Telephony.Sms.CONTENT_URI,
+                    null,
+                    "thread_id = ?",
+                    arrayOf(threadId.toString()),
+                    null
+                )
+                cursor?.use {
+                    val idIndex = it.getColumnIndex(Telephony.Sms._ID)
+                    val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+                    val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+                    val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+                    val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+                    val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+                    val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
 
-                for (item in adapter.selectedMessages) {
-                    val threadId = item.threadId
-                    val cursor = contentResolver.query(
-                        Telephony.Sms.CONTENT_URI,
-                        null,
-                        "thread_id = ?",
-                        arrayOf(threadId.toString()),
-                        null
-                    )
+                    while (it.moveToNext()) {
+                        val messageId = it.getLong(idIndex)
+                        val address = it.getString(addressIndex) ?: continue
+                        val body = it.getString(bodyIndex) ?: ""
+                        val date = it.getLong(dateIndex)
+                        val key = body to date
+                        if (!existingBodyDatePairs.add(key)) continue
 
-                    cursor?.use {
-                        val idIndex = it.getColumnIndex(Telephony.Sms._ID)
-                        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-                        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-                        val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
-                        val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
-                        val readIndex = it.getColumnIndex(Telephony.Sms.READ)
-                        val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
-
-                        while (it.moveToNext()) {
-                            val messageId = it.getLong(idIndex)
-                            val address = it.getString(addressIndex) ?: continue
-                            val body = it.getString(bodyIndex) ?: ""
-                            val date = it.getLong(dateIndex)
-                            val key = body to date
-                            if (!existingBodyDatePairs.add(key)) continue
-
-                            val deletedMessage = DeletedMessage(
-                                messageId = messageId,
-                                threadId = threadId,
-                                address = address,
-                                date = date,
-                                body = body,
-                                type = it.getInt(typeIndex),
-                                read = it.getInt(readIndex) == 1,
-                                subscriptionId = it.getInt(subIdIndex),
-                                deletedTime = System.currentTimeMillis(),
-                                isGroupChat = address.contains(","),
-                                profileImageUrl = ""
-                            )
-                            deletedMessages.add(deletedMessage)
-                        }
+                        val deletedMessage = DeletedMessage(
+                            messageId = messageId,
+                            threadId = threadId,
+                            address = address,
+                            date = date,
+                            body = body,
+                            type = it.getInt(typeIndex),
+                            read = it.getInt(readIndex) == 1,
+                            subscriptionId = it.getInt(subIdIndex),
+                            deletedTime = System.currentTimeMillis(),
+                            isGroupChat = address.contains(","),
+                            profileImageUrl = ""
+                        )
+                        deletedMessages.add(deletedMessage)
                     }
-
-                    val uri = Uri.parse("content://sms/conversations/$threadId")
-                    contentResolver.delete(uri, null, null)
-                    updatedList.removeAll { it.threadId == threadId }
                 }
 
-                if (deletedMessages.isNotEmpty()) db.insertMessages(deletedMessages)
-
-                withContext(Dispatchers.Main) {
-                    handler.removeCallbacks(showDialogRunnable)
-                    deleteDialog.dismiss()
-                    adapter.selectedMessages.clear()
-                    viewModel.loadMessages()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    handler.removeCallbacks(showDialogRunnable)
-                    deleteDialog.dismiss()
-                }
+                val uri = Uri.parse("content://sms/conversations/$threadId")
+                var result = contentResolver.delete(uri, null, null)
             }
+//          updatedList.removeAll { it.threadId == threadId }
+            if (deletedMessages.isNotEmpty()) db.insertMessages(deletedMessages)
+            withContext(Dispatchers.Main) {
+                viewModel.loadMessages()
+                handler.removeCallbacks(showDialogRunnable)
+                deleteDialog.dismiss()
+
+            }
+             } catch (e: Exception) {
+                 withContext(Dispatchers.Main) {
+                     handler.removeCallbacks(showDialogRunnable)
+                     deleteDialog.dismiss()
+                 }
+             }
         }
     }
 

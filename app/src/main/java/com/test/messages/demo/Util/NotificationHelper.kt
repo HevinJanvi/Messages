@@ -13,7 +13,9 @@ import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
+import android.provider.ContactsContract
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
@@ -34,6 +36,7 @@ import com.test.messages.demo.Util.ViewUtils.getPreviewOption
 import com.test.messages.demo.Util.ViewUtils.isNougatPlus
 import com.test.messages.demo.Util.ViewUtils.isShortCodeWithLetters
 import com.test.messages.demo.Util.ViewUtils.updateMessageCount
+import com.test.messages.demo.data.reciever.CopyOtpReceiver
 import com.test.messages.demo.data.reciever.DeleteSmsReceiver
 import com.test.messages.demo.data.reciever.DirectReplyReceiver
 import com.test.messages.demo.data.reciever.MarkAsReadReceiver
@@ -119,10 +122,10 @@ class NotificationHelper(private val context: Context) {
         maybeCreateChannel(name = context.getString(R.string.channel_received_sms))
 
         val notificationId = threadId.hashCode()
-        if(previewOption!=null){
+        if (previewOption != null) {
             previewOption = getPreviewOption(context, threadId) ?: 0
-        }else{
-            previewOption=0
+        } else {
+            previewOption = 0
         }
 
         val contentIntent = Intent(context, ConversationActivity::class.java).apply {
@@ -141,12 +144,27 @@ class NotificationHelper(private val context: Context) {
             addParentStack(ConversationActivity::class.java)
             addNextIntent(contentIntent)
 
-            getPendingIntent(notificationId, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+            getPendingIntent(
+                notificationId,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            )
         }
         val markAsReadIntent = Intent(context, MarkAsReadReceiver::class.java).apply {
             action = MARK_AS_READ
             putExtra(EXTRA_THREAD_ID, threadId)
         }
+
+        val copyOtpIntent = Intent(context, CopyOtpReceiver::class.java).apply {
+            putExtra("BODY", body)
+        }
+        val copyOtpPendingIntent = PendingIntent.getBroadcast(
+            context,
+            notificationId + 100,
+            copyOtpIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+
+
         val markAsReadPendingIntent =
             PendingIntent.getBroadcast(
                 context,
@@ -171,7 +189,7 @@ class NotificationHelper(private val context: Context) {
 
         var replyAction: NotificationCompat.Action? = null
         val isNoReplySms = isShortCodeWithLetters(address)
-        if (isNougatPlus() && !isNoReplySms ) {
+        if (isNougatPlus() && !isNoReplySms) {
             if (previewOption == 0) {
                 val replyLabel = context.getString(R.string.reply)
                 val remoteInput = RemoteInput.Builder(REPLY)
@@ -229,7 +247,7 @@ class NotificationHelper(private val context: Context) {
                 }
             }
 
-            val style = createMessagingStyle(notificationId, address, body,sender, previewOption)
+            val style = createMessagingStyle(notificationId, address, body, sender, previewOption)
 
             val primaryColor = ContextCompat.getColor(context, R.color.colorPrimary)
             color = primaryColor
@@ -253,7 +271,25 @@ class NotificationHelper(private val context: Context) {
             context.getString(R.string.mark_as_read),
             markAsReadPendingIntent
         )
-            .setChannelId(NOTIFICATION_CHANNEL)
+        val otpRegex = Regex("\\b\\d{4,8}\\b")
+        if (otpRegex.containsMatchIn(body) && !isNumberInContacts(context, address)) {
+            // Add the Copy OTP button
+            builder.addAction(
+                R.drawable.ic_copy,
+                context.getString(R.string.copy_otp),
+                copyOtpPendingIntent
+            ).setChannelId(NOTIFICATION_CHANNEL)
+           /* builder.addAction(
+                R.drawable.ic_copy,
+                "Copy OTP",
+                getCopyOtpPendingIntent(
+                    context,
+                    otpValue
+                ) // Create this intent to copy to clipboard
+            )*/
+        }
+
+
         if (isNoReplySms) {
             builder.addAction(
                 R.drawable.ic_delete,
@@ -268,41 +304,59 @@ class NotificationHelper(private val context: Context) {
 
     }
 
-    @SuppressLint("NewApi")
-    /*fun showSendingFailedNotification(recipientName: String, threadId: Long) {
-        maybeCreateChannel(name = context.getString(R.string.message_not_sent_short))
-
-        val notificationId = generateRandomId().hashCode()
-        val intent = Intent(context, ConversationActivity::class.java).apply {
-            putExtra(EXTRA_THREAD_ID, threadId)
-        }
-        val contentPendingIntent = PendingIntent.getActivity(
-            context,
-            notificationId,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+    fun isNumberInContacts(context: Context, phoneNumber: String): Boolean {
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
         )
+        val cursor = context.contentResolver.query(
+            uri,
+            arrayOf(ContactsContract.PhoneLookup._ID),
+            null,
+            null,
+            null
+        )
+        cursor?.use {
+            return it.count > 0
+        }
+        return false
+    }
 
-        val summaryText =
-            String.format(context.getString(R.string.message_sending_error), recipientName)
-//        val largeIcon = SimpleContactsHelper(context).getContactLetterIcon(recipientName)
-        val primaryColor = ContextCompat.getColor(context, R.color.colorPrimary)
+    @SuppressLint("NewApi")
+            /*fun showSendingFailedNotification(recipientName: String, threadId: Long) {
+                maybeCreateChannel(name = context.getString(R.string.message_not_sent_short))
 
-        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-            .setContentTitle(context.getString(R.string.message_not_sent_short))
-            .setContentText(summaryText)
-            .setColor(primaryColor)
-            .setSmallIcon(R.drawable.notification_logo)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(summaryText))
-            .setContentIntent(contentPendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setDefaults(Notification.DEFAULT_LIGHTS)
-            .setCategory(Notification.CATEGORY_MESSAGE)
-            .setAutoCancel(true)
-            .setChannelId(NOTIFICATION_CHANNEL)
+                val notificationId = generateRandomId().hashCode()
+                val intent = Intent(context, ConversationActivity::class.java).apply {
+                    putExtra(EXTRA_THREAD_ID, threadId)
+                }
+                val contentPendingIntent = PendingIntent.getActivity(
+                    context,
+                    notificationId,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                )
 
-        notificationManager.notify(notificationId, builder.build())
-    }*/
+                val summaryText =
+                    String.format(context.getString(R.string.message_sending_error), recipientName)
+        //        val largeIcon = SimpleContactsHelper(context).getContactLetterIcon(recipientName)
+                val primaryColor = ContextCompat.getColor(context, R.color.colorPrimary)
+
+                val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
+                    .setContentTitle(context.getString(R.string.message_not_sent_short))
+                    .setContentText(summaryText)
+                    .setColor(primaryColor)
+                    .setSmallIcon(R.drawable.notification_logo)
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(summaryText))
+                    .setContentIntent(contentPendingIntent)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setDefaults(Notification.DEFAULT_LIGHTS)
+                    .setCategory(Notification.CATEGORY_MESSAGE)
+                    .setAutoCancel(true)
+                    .setChannelId(NOTIFICATION_CHANNEL)
+
+                notificationManager.notify(notificationId, builder.build())
+            }*/
 
     fun maybeCreateChannel(name: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

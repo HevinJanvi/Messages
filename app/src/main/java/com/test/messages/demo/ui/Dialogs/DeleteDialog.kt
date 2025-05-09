@@ -9,11 +9,14 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.ActivityFinishEvent
 import com.test.messages.demo.Util.ViewUtils.blinkThen
+import org.greenrobot.eventbus.EventBus
 
 class DeleteDialog(
     context: Context,
    private val fromBin:Boolean,
+   private val shouldFinish:Boolean,
     private val onDeleteConfirmed: () -> Unit
 ) : Dialog(context) {
 
@@ -46,6 +49,10 @@ class DeleteDialog(
             it.blinkThen {
                 onDeleteConfirmed.invoke()
                 dismiss()
+                if(shouldFinish){
+                    EventBus.getDefault().post(ActivityFinishEvent(true))
+                }
+
             }
         }
     }

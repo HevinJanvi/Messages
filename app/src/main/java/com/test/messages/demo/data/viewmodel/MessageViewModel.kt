@@ -36,7 +36,7 @@ class MessageViewModel @Inject constructor(
 
 ) : ViewModel() {
 init {
-    emptyConversation()
+//    emptyConversation()
 }
     val messages: LiveData<List<MessageItem>> = repository.messages
     val conversation: LiveData<List<ConversationItem>?> = repository.conversation

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,9 +15,13 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.ui.Activity.ConversationActivity
+import com.test.messages.demo.ui.send.getThreadId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,8 +64,12 @@ class GroupMemberAdapter(
 
         holder.messageButton.setOnClickListener {
             val intent = Intent(context, ConversationActivity::class.java).apply {
+                val threadId = context.getThreadId(setOf( number))
+                Log.d("TAG", "onBindViewHolder:grop thread "+ threadId)
+                putExtra(EXTRA_THREAD_ID, threadId)
                 putExtra(NUMBER, number)
                 putExtra(NAME, holder.nameText.text)
+                putExtra(CommanConstants.ISGROUP, true)
             }
             context.startActivity(intent)
         }

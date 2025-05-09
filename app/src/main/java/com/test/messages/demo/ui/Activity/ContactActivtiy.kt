@@ -108,7 +108,6 @@ class ContactActivtiy : BaseActivity() {
                         finish()
                         EventBus.getDefault().post(ActivityFinishEvent(true))
 
-
                     }
                 }
 

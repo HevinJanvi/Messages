@@ -302,6 +302,11 @@
                 <action android:name="com.simplemobiletools.smsmessenger.action.delete" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".data.reciever.CopyOtpReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
     </application>
 
 </manifest>

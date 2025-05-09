@@ -161,7 +161,7 @@ class BlockMessageActivity : BaseActivity() {
             blockDialog.show()
         }
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,false) {
+            val deleteDialog = DeleteDialog(this,false,true) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
                     deleteMessages()
@@ -207,7 +207,8 @@ class BlockMessageActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     fun deleteMessages() {
         if (adapter.selectedMessages.isEmpty()) return
-
+        var messages = adapter.selectedMessages.toList()
+        adapter.selectedMessages.clear()
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
@@ -223,7 +224,7 @@ class BlockMessageActivity : BaseActivity() {
                 val deletedMessages = mutableListOf<DeletedMessage>()
                 val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>()
 
-                for (item in adapter.selectedMessages) {
+                for (item in messages) {
                     val threadId = item.threadId
                     val cursor = contentResolver.query(
                         Telephony.Sms.CONTENT_URI,
@@ -275,10 +276,9 @@ class BlockMessageActivity : BaseActivity() {
                 if (deletedMessages.isNotEmpty()) db.insertMessages(deletedMessages)
 
                 withContext(Dispatchers.Main) {
+                    viewModel.loadMessages()
                     handler.removeCallbacks(showDialogRunnable)
                     deleteDialog.dismiss()
-                    adapter.selectedMessages.clear()
-                    viewModel.loadMessages()
                 }
             } catch (e: Exception) {
                 Log.e("BlockMessageActivity", "Error deleting messages", e)

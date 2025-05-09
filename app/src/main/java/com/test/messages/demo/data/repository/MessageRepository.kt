@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.concurrent.thread
 
 class MessageRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
@@ -109,10 +110,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 //                Log.d("DEBUG", " Receipt IDs: ${messageItem.threadId} Sender:${messageItem.sender}  Body:${messageItem.body}")
 
                 if (messageItem.body.isNullOrBlank() || messageItem.sender == null) continue
-//                Log.d("TAG", "getMessages: "+messageItem.threadId)
+//                Log.d("TAG", "getMessages: " + reciptids)
                 val isGroupChat = reciptids.contains(" ")
 
+
                 val (displayName, rawPhoneNumber, photoUri) = if (isGroupChat) {
+//                    Log.d("TAG", "getMessages:11111 ")
                     val receiptIdList = reciptids.split(" ")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
@@ -134,7 +137,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     }.joinToString(", ")
 //                    Log.d("DEBUG", "Final group name: $groupName")
 
-                    Triple(groupName, rawPhoneNumbers.joinToString(", "), "")
+                    Triple(groupName, rawPhoneNumbers.joinToString(","), "")
                 } else {
                     val rawPhone = (recipientMap[reciptids] ?: reciptids).replace(" ", "")
 //                    Log.d("DEBUG", "Processing individual chat. Raw phone number: $rawPhone")
@@ -162,7 +165,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         contactInfo?.profileImageUrl ?: ""
                     )
                 }
-//                Log.d("DEBUG", "getMessages:displayName "+displayName)
+               /* Log.d(
+                    "TAG",
+                    "getMessages:thread " + messageItem.threadId + "---isgrpoup-----" + isGroupChat
+                )*/
                 newMsgList.add(
                     messageItem.copy(
                         sender = displayName,
@@ -202,7 +208,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
         if (!context.hasReadContactsPermission()
         ) {
-            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
             return conversations
         }
         val threadProjection = arrayOf(
@@ -240,9 +245,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 val senderName = ""
                 val profileImageUrl = ""
-
-//                Log.d("TAG", "getConversations:threadid " + threadId)
-                if (lastMessage != null) {
+//                Log.d("TAG", "getConversations:messageCount "+messageCount)
+                if (lastMessage != null && messageCount > 0) {
                     conversations.add(
                         MessageItem(
                             threadId,
@@ -618,7 +622,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
 
-
     fun findGroupThreadId(addresses: Set<String>): Long? {
         val mergedAddresses = addresses.joinToString("|")
         val cursor = context.contentResolver.query(
@@ -694,6 +697,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun addMutedMessages(threadIds: List<Long>) {
         threadIds.forEach { addMutedMessage(it) }
     }
+
     fun addMutedMessage(threadId: Long) {
         val dao = AppDatabase.getDatabase(context).notificationDao()
         dao.updateNotificationSetting(threadId, 1)
@@ -708,6 +712,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val dao = AppDatabase.getDatabase(context).notificationDao()
         dao.updateNotificationSetting(threadId, 0)
     }
+
     suspend fun getBlockConversations(): List<BlockConversation> {
         return AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
     }

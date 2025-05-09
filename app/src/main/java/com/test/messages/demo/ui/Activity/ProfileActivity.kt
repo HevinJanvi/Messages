@@ -34,7 +34,6 @@ import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.Util.CommanConstants.PROFILEURL
 import com.test.messages.demo.Util.MessagesRefreshEvent
-import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.databinding.ActivityProfileBinding
 import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -69,6 +68,7 @@ class ProfileActivity : BaseActivity() {
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var addContactLauncher: ActivityResultLauncher<Intent>
     private var contactId: String? = null
+    private var isArchived = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -223,7 +223,7 @@ class ProfileActivity : BaseActivity() {
         val resultIntent = Intent()
         resultIntent.putExtra("UPDATED_NAME", binding.adreesUser.text.toString())
         resultIntent.putExtra(FROMBLOCK, fromBlock)
-        resultIntent.putExtra("delete", isThreadDelete)
+//        resultIntent.putExtra("delete", isThreadDelete)
         setResult(Activity.RESULT_OK, resultIntent)
         super.finish()
     }
@@ -329,9 +329,9 @@ class ProfileActivity : BaseActivity() {
             overridePendingTransition(0, 0)
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false) {
+            val deleteDialog = DeleteDialog(this, false,true) {
                 deleteMessagesForCurrentThread(threadId)
-                isThreadDelete= true
+//                isThreadDelete = true
             }
             deleteDialog.show()
         }
@@ -426,8 +426,25 @@ class ProfileActivity : BaseActivity() {
                 viewModel.getArchivedConversations().map { it.conversationId }
 
             withContext(Dispatchers.Main) {
+                isArchived = archivedConversationIds.contains(threadId)
+                updateArchiveUI()
+
+                // Set up click listener once
+                binding.lyArchive.setOnClickListener {
+                    if (isArchived) {
+                        viewModel.unarchiveConversations(listOf(threadId))
+                        isArchived = false
+                    } else {
+                        viewModel.archiveSelectedConversations(listOf(threadId))
+                        isArchived = true
+                    }
+                    updateArchiveUI()
+                }
+            }
+
+           /* withContext(Dispatchers.Main) {
                 if (archivedConversationIds.contains(threadId)) {
-                    binding.icArchiveText.text = getString(R.string.unarchived)
+                    binding.archiveText.text = getString(R.string.unarchived)
                     binding.icArchive.setImageResource(R.drawable.ic_unarchive)
 
                     binding.lyArchive.setOnClickListener {
@@ -435,7 +452,7 @@ class ProfileActivity : BaseActivity() {
                         refreshListStatus()
                     }
                 } else {
-                    binding.icArchiveText.text = getString(R.string.archive)
+                    binding.archiveText.text = getString(R.string.archive)
                     binding.icArchive.setImageResource(R.drawable.ic_archive)
 
                     binding.lyArchive.setOnClickListener {
@@ -443,15 +460,28 @@ class ProfileActivity : BaseActivity() {
                         refreshListStatus()
                     }
                 }
-            }
+            }*/
         }
     }
 
+    private fun updateArchiveUI() {
+        if (isArchived) {
+            binding.archiveText.text = getString(R.string.unarchived)
+            binding.icArchive.setImageResource(R.drawable.ic_unarchive)
+        } else {
+            binding.archiveText.text = getString(R.string.archive)
+            binding.icArchive.setImageResource(R.drawable.ic_archive)
+        }
+    }
     private fun refreshListStatus() {
-        Handler(Looper.getMainLooper()).postDelayed({
+        if (threadId != -1L) {
+            checkIfArchived(threadId)
+        }
+
+      /*  Handler(Looper.getMainLooper()).postDelayed({
             finish()
         }, 500)
-        overridePendingTransition(R.anim.fadin, R.anim.fadout);
+        overridePendingTransition(R.anim.fadin, R.anim.fadout);*/
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -510,18 +540,9 @@ class ProfileActivity : BaseActivity() {
                 db.insertMessages(deletedMessages)
 
                 Handler(Looper.getMainLooper()).postDelayed({
-//                    if (!fromBlock && !fromArchive) {
-//                        Log.d("TAG", "deleteMessagesForCurrentThread:if ")
-//                        val intent = Intent(this, MainActivity::class.java)
-//                        startActivity(intent)
-//                        finish()
-//                    } else {
-                        Log.d("TAG", "deleteMessagesForCurrentThread:else ")
-                        EventBus.getDefault().post(MessagesRefreshEvent(true))
-//                        onBackPressedDispatcher.onBackPressed()
-
-//                    }
-
+                    Log.d("TAG", "deleteMessagesForCurrentThread:else ")
+                    EventBus.getDefault().post(MessagesRefreshEvent(true))
+                    finish()
                     overridePendingTransition(0, 0)
                 }, 100)
 
@@ -549,7 +570,7 @@ class ProfileActivity : BaseActivity() {
             ContextCompat.getColor(this, R.color.gray_txtcolor),
             PorterDuff.Mode.SRC_IN
         )
-        binding.icArchiveText.setTextColor(ContextCompat.getColor(this, R.color.gray_txtcolor))
+        binding.archiveText.setTextColor(ContextCompat.getColor(this, R.color.gray_txtcolor))
     }
 
     private fun enableLy() {
@@ -567,7 +588,7 @@ class ProfileActivity : BaseActivity() {
             ContextCompat.getColor(this, R.color.colorPrimary),
             PorterDuff.Mode.SRC_IN
         )
-        binding.icArchiveText.setTextColor(ContextCompat.getColor(this, R.color.textcolor))
+        binding.archiveText.setTextColor(ContextCompat.getColor(this, R.color.textcolor))
     }
 
     override fun onResume() {

@@ -86,11 +86,6 @@ class ConversationBinactivity : BaseActivity() {
         binding.btnRestore.setOnClickListener {
             restoreSelectedMessages()
             disableMultiSelection()
-            Handler(Looper.getMainLooper()).postDelayed({
-                setResult(RESULT_OK)
-                finish()
-            }, 500)
-
         }
         binding.icBack.setOnClickListener {
             onBackPressed() }
@@ -164,6 +159,7 @@ class ConversationBinactivity : BaseActivity() {
         adapter.clearSelection()
     }
 
+
     private fun deleteSelectedMessages() {
         val selected = adapter.getSelectedItems().filter { !it.isHeader }
         if (selected.isEmpty()) return
@@ -180,9 +176,18 @@ class ConversationBinactivity : BaseActivity() {
                 selected.forEach { db.deleteMessageById(it.id) }
 
                 runOnUiThread {
+
+                    loadDeletedMessages(threadId)
                     handler.removeCallbacks(showDialogRunnable)
                     deleteDialog.dismiss()
-                    loadDeletedMessages(threadId)
+//                    EventBus.getDefault().post(MessagesRestoredEvent(true))
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (adapter.itemCount == 0) {
+                            setResult(RESULT_OK)
+                            finish()
+                        }
+                    }, 100)
+
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -197,6 +202,7 @@ class ConversationBinactivity : BaseActivity() {
 
     private fun restoreSelectedMessages() {
         val selected = adapter.getSelectedItems().filter { !it.isHeader }
+        val totalToRestore = selected.size
         Thread {
             try {
                 selected.forEach {
@@ -213,11 +219,18 @@ class ConversationBinactivity : BaseActivity() {
 
                     val resultUri = contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
                     db.deleteMessageById(it.id)
-                    EventBus.getDefault().post(MessagesRestoredEvent(true))
+
                 }
+                EventBus.getDefault().post(MessagesRestoredEvent(true))
 
                 runOnUiThread {
                     loadDeletedMessages(threadId)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (adapter.itemCount == 0) {
+                            setResult(RESULT_OK)
+                            finish()
+                        }
+                    }, 100)
                 }
 
             } catch (e: Exception) {

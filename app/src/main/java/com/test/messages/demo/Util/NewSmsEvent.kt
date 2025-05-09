@@ -31,7 +31,7 @@ data class MessageRestoredEvent(
 
 data class LanguageChangeEvent(val language: String)
 data class ConversationOpenedEvent(val threadId: Long)
-data class DraftChangedEvent(val threadId: Long, val isDraft: Boolean)
+data class DraftChangedEvent(val threadId: Long, val draft: String)
 
 data class DeleteSearchMessageEvent(val deletedMessageIds: List<Long>)
 data class NewSmsEvent(val threadId: Long)
