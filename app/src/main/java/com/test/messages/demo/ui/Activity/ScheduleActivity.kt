@@ -20,6 +20,7 @@ import com.test.messages.demo.ui.Dialogs.ScheduleDialog
 import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SmsSender
+import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
@@ -47,10 +48,10 @@ class ScheduleActivity : BaseActivity() {
         binding.addSchedule.setOnClickListener {
             val intent = Intent(this, AddScheduleActivity::class.java)
             startActivity(intent)
-            finish()
+//            finish()
         }
         binding.icBack.setOnClickListener {
-            onBackPressed()
+            finish()
         }
     }
 
@@ -145,10 +146,11 @@ class ScheduleActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && !hasReadSmsPermission() && !hasReadContactsPermission()) {
             return
         }
     }
+
 
     override fun onBackPressed() {
         super.onBackPressed()

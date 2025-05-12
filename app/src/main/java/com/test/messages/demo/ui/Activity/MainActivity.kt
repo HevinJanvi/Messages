@@ -143,7 +143,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
 
         binding.icDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false,true) {
+            val deleteDialog = DeleteDialog(this, "mainscreen", true) {
                 val fragment =
                     supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
                 fragment?.deleteSelectedMessages()
@@ -199,35 +199,35 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
         binding.include.lySchedule.setOnClickListener {
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (!alarmManager.canScheduleExactAlarms()) {
-                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                    intent.data = Uri.parse("package:$packageName")
-                    schedulePermissionLauncher.launch(intent)
-                } else {
-                    val intent = Intent(this, ScheduleActivity::class.java)
-                    startActivity(intent)
-                }
-            } else {
-                val intent = Intent(this, ScheduleActivity::class.java)
-                startActivity(intent)
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                if (!alarmManager.canScheduleExactAlarms()) {
+//                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+//                    intent.data = Uri.parse("package:$packageName")
+//                    schedulePermissionLauncher.launch(intent)
+//                } else {
+//                    val intent = Intent(this, ScheduleActivity::class.java)
+//                    startActivity(intent)
+//                }
+//            } else {
+            val intent = Intent(this, ScheduleActivity::class.java)
+            startActivity(intent)
+//            }
 
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
-        schedulePermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
-                    val intent = Intent(this, ScheduleActivity::class.java)
-                    startActivity(intent)
-                } else {
-//                    Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
+        /* schedulePermissionLauncher = registerForActivityResult(
+             ActivityResultContracts.StartActivityForResult()
+         ) {
+             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                 if (alarmManager.canScheduleExactAlarms()) {
+                     val intent = Intent(this, ScheduleActivity::class.java)
+                     startActivity(intent)
+                 } else {
+ //                    Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
+                 }
+             }
+         }*/
 
         binding.include.lySetting.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -257,6 +257,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun loadConversationFragment() {
         val fragment = ConversationFragment()
@@ -290,7 +291,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     }
 
     fun updateBlockUI(shouldEnable: Boolean) {
-        runOnUiThread{
+        runOnUiThread {
             binding.blockLayout.isEnabled = shouldEnable
             binding.blockLayout.alpha = if (shouldEnable) 1f else 0.5f
         }
@@ -332,6 +333,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             binding.pinLayout.visibility = View.GONE
         }
     }
+
     private fun updateMuteLayout(selectedCount: Int, muteCount: Int) {
         if (selectedCount > 0) {
             binding.muteLayout.visibility = View.VISIBLE
@@ -457,28 +459,30 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
                 popupWindow.dismiss()
             }
         }
-
     }
 
 
     @Suppress("MissingSuperCall")
     override fun onBackPressed() {
-        if (selectedMessagesCount > 0) {
-            updateSelectedItemsCount(0)
-            val fragment =
-                supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
-            fragment?.clearSelection()
+        if (binding.drawerLayout.isOpen) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-//            super.onBackPressed()
-            if (doubleBackToExit) {
-                finishAffinity();
-                return
+            if (selectedMessagesCount > 0) {
+                updateSelectedItemsCount(0)
+                val fragment =
+                    supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
+                fragment?.clearSelection()
+            } else {
+                if (doubleBackToExit) {
+                    finishAffinity();
+                    return
+                }
+                this.doubleBackToExit = true
+                Toast.makeText(this, getString(R.string.exit_text), Toast.LENGTH_SHORT).show()
+                Handler(Looper.getMainLooper()).postDelayed(Runnable {
+                    doubleBackToExit = false
+                }, 2000)
             }
-            this.doubleBackToExit = true
-            Toast.makeText(this, getString(R.string.exit_text), Toast.LENGTH_SHORT).show()
-            Handler(Looper.getMainLooper()).postDelayed(Runnable {
-                doubleBackToExit = false
-            }, 2000)
         }
     }
 }

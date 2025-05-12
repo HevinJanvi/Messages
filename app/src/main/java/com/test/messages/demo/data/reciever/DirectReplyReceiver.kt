@@ -10,6 +10,7 @@ import android.os.Looper
 import android.telephony.SmsManager
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.RemoteInput
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
@@ -76,7 +77,6 @@ class DirectReplyReceiver : BroadcastReceiver() {
                     )
 
                     delay(300)
-                    repository.getMessages()
 
                     withContext(Dispatchers.Main) {
                         context.notificationHelper.showMessageNotification(
@@ -89,9 +89,12 @@ class DirectReplyReceiver : BroadcastReceiver() {
                             alertOnlyOnce = true
                         )
                     }
-                    SmsUtils.markThreadAsRead(context, threadId)
+//                    Handler(Looper.getMainLooper()).postDelayed({
+                        SmsUtils.markThreadAsRead(context, threadId)
+                        repository.getMessages()
+//                    }, 500)
                     EventBus.getDefault().post(MarkasreadEvent(true))
-
+    
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

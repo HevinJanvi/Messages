@@ -147,10 +147,21 @@ init {
     }
 
 
+    /*@RequiresApi(Build.VERSION_CODES.Q)
+    fun archiveSelectedConversations(conversationIds: List<Long>) {
+        viewModelScope.launch {
+            repository.archiveConversations(conversationIds)
+        }
+    }*/
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun archiveSelectedConversations(conversationIds: List<Long>) {
         viewModelScope.launch {
             repository.archiveConversations(conversationIds)
+
+            // Ensure the updated messages are fetched and posted
+            val updatedMessages = repository.getMessages()
+            (repository.messages as MutableLiveData).postValue(updatedMessages)
         }
     }
 

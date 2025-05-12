@@ -245,7 +245,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 val senderName = ""
                 val profileImageUrl = ""
-//                Log.d("TAG", "getConversations:messageCount "+messageCount)
+                Log.d("TAG", "getConversations:messageCount "+messageCount)
                 if (lastMessage != null && messageCount > 0) {
                     conversations.add(
                         MessageItem(
@@ -270,7 +270,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
 
         }
-//        Log.d("ObserverDebug", "getConversations: " + conversations.size)
+        Log.d("ObserverDebug", "getConversations: " + conversations.size)
         val conversationList = getLastLatestMessage()
 //        Log.d("ObserverDebug", "Unique threads count: ${conversationList.size}")
         return conversations

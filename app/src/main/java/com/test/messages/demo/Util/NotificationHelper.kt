@@ -16,6 +16,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
@@ -27,7 +28,6 @@ import com.test.messages.demo.Util.CommanConstants.LOCK_SCREEN_SENDER_MESSAGE
 import com.test.messages.demo.Util.CommanConstants.MARK_AS_READ
 import com.test.messages.demo.Util.CommanConstants.MESSAGE_ID
 import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NOTIFICATION_CHANNEL
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.Util.CommanConstants.REPLY
 import com.test.messages.demo.Util.ViewUtils.generateRandomId
@@ -35,6 +35,7 @@ import com.test.messages.demo.Util.ViewUtils.getLockScreenVisibilitySetting
 import com.test.messages.demo.Util.ViewUtils.getPreviewOption
 import com.test.messages.demo.Util.ViewUtils.isNougatPlus
 import com.test.messages.demo.Util.ViewUtils.isShortCodeWithLetters
+import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import com.test.messages.demo.Util.ViewUtils.updateMessageCount
 import com.test.messages.demo.data.reciever.CopyOtpReceiver
 import com.test.messages.demo.data.reciever.DeleteSmsReceiver
@@ -119,7 +120,11 @@ class NotificationHelper(private val context: Context) {
         sender: String?,
         alertOnlyOnce: Boolean = false
     ) {
-        maybeCreateChannel(name = context.getString(R.string.channel_received_sms))
+
+//        val NOTIFICATION_CHANNEL = "smsChannel_$address"
+        val NOTIFICATION_CHANNEL = "${CommanConstants.KEY_SMS_CHANNEL}${address.removeCountryCode()}"
+
+        maybeCreateChannel(NOTIFICATION_CHANNEL, context.getString(R.string.channel_received_sms))
 
         val notificationId = threadId.hashCode()
         if (previewOption != null) {
@@ -229,7 +234,7 @@ class NotificationHelper(private val context: Context) {
         }
 
         val lockScreenVisibilitySetting = getLockScreenVisibilitySetting(context)
-
+        Log.d("TAG", "showMessageNotification: " + NOTIFICATION_CHANNEL)
         val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL).apply {
             when (lockScreenVisibilitySetting) {
                 LOCK_SCREEN_SENDER_MESSAGE -> {
@@ -279,14 +284,14 @@ class NotificationHelper(private val context: Context) {
                 context.getString(R.string.copy_otp),
                 copyOtpPendingIntent
             ).setChannelId(NOTIFICATION_CHANNEL)
-           /* builder.addAction(
-                R.drawable.ic_copy,
-                "Copy OTP",
-                getCopyOtpPendingIntent(
-                    context,
-                    otpValue
-                ) // Create this intent to copy to clipboard
-            )*/
+            /* builder.addAction(
+                 R.drawable.ic_copy,
+                 "Copy OTP",
+                 getCopyOtpPendingIntent(
+                     context,
+                     otpValue
+                 ) // Create this intent to copy to clipboard
+             )*/
         }
 
 
@@ -358,7 +363,7 @@ class NotificationHelper(private val context: Context) {
                 notificationManager.notify(notificationId, builder.build())
             }*/
 
-    fun maybeCreateChannel(name: String) {
+    fun maybeCreateChannel(channl_id: String, name: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -366,7 +371,7 @@ class NotificationHelper(private val context: Context) {
                 .setLegacyStreamType(AudioManager.STREAM_NOTIFICATION)
                 .build()
 
-            val id = NOTIFICATION_CHANNEL
+            val id = channl_id
             val importance = IMPORTANCE_HIGH
             NotificationChannel(id, name, importance).apply {
                 setBypassDnd(false)
@@ -375,30 +380,6 @@ class NotificationHelper(private val context: Context) {
                 enableVibration(true)
                 notificationManager.createNotificationChannel(this)
             }
-        }
-    }
-
-    fun createNotificationChannel(context: Context, contactNumber: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "${CommanConstants.KEY_SMS_CHANNEL}$contactNumber"
-            val channelName = "$contactNumber"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelId, channelName, importance)
-
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
-    fun createNotificationChannelGlobal(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = CommanConstants.KEY_SMS_CHANNEL
-            val channelName = "Default"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelId, channelName, importance)
-
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
         }
     }
 

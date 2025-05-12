@@ -8,6 +8,7 @@ import android.provider.Telephony
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -52,9 +53,12 @@ class AddScheduleActivity : BaseActivity() {
         val view: View = binding.getRoot()
         setContentView(view)
         messageUtils = MessageUtils(this)
-
+        view.hideKeyboard(this)
         binding.icBack.setOnClickListener {
+            Log.d("TAG", "onCreate:back ")
             onBackPressed()
+
+
         }
         binding.btnKeypad.setOnClickListener {
             if (isNumberKeyboard) {
@@ -133,6 +137,7 @@ class AddScheduleActivity : BaseActivity() {
         startActivity(intent)
         finish()
     }
+
     private fun updateSelectedContactsHeader() {
 
         selectedContactViews.clear()
@@ -169,13 +174,6 @@ class AddScheduleActivity : BaseActivity() {
         return 0L
     }
 
-    private fun addToSelectedContacts(contact: ContactItem) {
-        if (selectedContacts.contains(contact)) {
-            return
-        }
-        selectedContacts.add(contact)
-        updateSelectedContactsHeader()
-    }
 
     private fun removeFromSelectedContacts(contact: ContactItem) {
         if (!selectedContacts.contains(contact)) return
@@ -207,15 +205,14 @@ class AddScheduleActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = currentFocus
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-            view.clearFocus()
+        if (binding.editTextSearch.text.isNotEmpty()) {
+            binding.editTextSearch.text.clear()
         } else {
+            binding.editTextSearch.hideKeyboard(this)
             super.onBackPressed()
         }
     }
+
 
     override fun onResume() {
         super.onResume()

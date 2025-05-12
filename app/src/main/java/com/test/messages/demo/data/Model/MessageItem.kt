@@ -22,6 +22,7 @@ data class MessageItem(
         if (this === other) return true
         if (other !is MessageItem) return false
         return threadId == other.threadId && body == other.body && isMuted == other.isMuted && isPinned == other.isPinned
+                && isRead == other.isRead
     }
 
     override fun hashCode(): Int {

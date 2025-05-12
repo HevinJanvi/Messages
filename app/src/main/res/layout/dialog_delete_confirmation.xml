@@ -33,7 +33,7 @@
         android:textColor="@color/gray_txtcolor"
         android:fontFamily="@font/product_sans_regular"
         android:text="@string/move_this_conversation_to_the_rrecycle_bin"
-        android:gravity="center"/>
+        android:gravity="start"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"

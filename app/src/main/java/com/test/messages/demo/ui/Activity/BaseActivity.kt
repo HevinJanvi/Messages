@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowInsetsController
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.test.messages.demo.R
@@ -34,6 +35,25 @@ open class BaseActivity : AppCompatActivity() {
         }
         updateSystemBarsColor()
 
+    }
+
+    fun View.hideKeyboard(context: Context) {
+        try {
+            val inputMethodManager =
+                context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(this.windowToken, 0)
+        } catch (e: Exception) {
+
+        }
+    }
+
+    fun View.showKeyboard() {
+        try {
+            val inputMethodManager =
+                context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+        } catch (e: Exception) {
+        }
     }
 
     open fun setLanguage(context: Context): Context? {

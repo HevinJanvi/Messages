@@ -10,7 +10,7 @@ object CommanConstants {
 
     const val GROUP_NAME_KEY = "group_name_"
     const val GROUP_NAME_DEFAULT = "Unnamed Group"
-    const val KEY_SMS_CHANNEL = "sms_channel_"
+    const val KEY_SMS_CHANNEL = "smsChannel_"
 
     //BACKUP file
     const val BACKUP_FILE = "messages_backup.json"

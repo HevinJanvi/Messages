@@ -292,5 +292,7 @@
     <string name="matches_found">%1$s matches found</string>
     <string name="restoring">Restoring...</string>
     <string name="exit_text">Please click Back again to exit </string>
+    <string name="move_to_recycle_bin2" >Move to recycle Bin?</string>
+    <string name="selected_message_move" >Selected messages will be moved to the recycle bin </string>
 
 </resources>

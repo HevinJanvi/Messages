@@ -23,6 +23,7 @@ import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
 import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.databinding.ActivityBlockBinding
@@ -84,8 +85,8 @@ class BlockMessageActivity : BaseActivity() {
             intent.putExtra(NUMBER, message.number)
             intent.putExtra(NAME, message.sender)
             intent.putExtra(FROMBLOCK,true)
-//            startActivity(intent)
-            conversationResultLauncher.launch(intent)
+            startActivity(intent)
+//            conversationResultLauncher.launch(intent)
 
         }
         viewModel.loadBlockThreads()
@@ -122,7 +123,7 @@ class BlockMessageActivity : BaseActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+    /*@RequiresApi(Build.VERSION_CODES.Q)
     private val conversationResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -134,6 +135,14 @@ class BlockMessageActivity : BaseActivity() {
                 viewModel.loadMessages()
             }
         }
+    }*/
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onDraftUpdateEvent(event: DraftChangedEvent) {
+        Log.d("TAG", "onDraftchangeEvent: ")
+        binding.blockRecyclerView.scrollToPosition(0)
+        draftViewModel.saveDraft(event.threadId, event.draft)
+        viewModel.loadMessages()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -161,7 +170,7 @@ class BlockMessageActivity : BaseActivity() {
             blockDialog.show()
         }
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,false,true) {
+            val deleteDialog = DeleteDialog(this,"block",true) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
                     deleteMessages()

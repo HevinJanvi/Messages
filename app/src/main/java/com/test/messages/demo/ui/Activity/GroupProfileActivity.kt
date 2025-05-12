@@ -77,7 +77,7 @@ class GroupProfileActivity : BaseActivity() {
             onBackPressed()
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false, true) {
+            val deleteDialog = DeleteDialog(this, "group", true) {
                 deleteMessagesForCurrentThread(threadId)
             }
             deleteDialog.show()

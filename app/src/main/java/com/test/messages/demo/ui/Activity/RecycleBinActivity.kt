@@ -105,7 +105,7 @@ class RecycleBinActivity : BaseActivity() {
         }
 
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, true,true) {
+            val deleteDialog = DeleteDialog(this, "recyclebin",true) {
                 deleteSelectedMessages()
             }
             deleteDialog.show()
@@ -279,27 +279,6 @@ class RecycleBinActivity : BaseActivity() {
         }.start()
     }
 
-
-    private fun resolveContactNameToNumber(nameOrNumber: String): String {
-        // If already a number, return it
-        if (nameOrNumber.matches(Regex("\\+?[0-9]+"))) return nameOrNumber
-
-        val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-        val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
-        val selection = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} = ?"
-        val selectionArgs = arrayOf(nameOrNumber)
-
-        val cursor = contentResolver.query(uri, projection, selection, selectionArgs, null)
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val number = it.getString(0)
-                return number.replace(" ", "").replace("-", "")
-            }
-        }
-
-        // If no match found, return original
-        return nameOrNumber
-    }
 
     private fun createNewGroupThread(addresses: String): Long {
 

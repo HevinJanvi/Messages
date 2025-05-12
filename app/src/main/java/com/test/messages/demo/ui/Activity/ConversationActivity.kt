@@ -159,9 +159,10 @@ class ConversationActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
+        if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && !hasReadSmsPermission() && !hasReadContactsPermission()) {
             return
         }
+
         val threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
         EventBus.getDefault().postSticky(ConversationOpenedEvent(threadId))
     }
@@ -183,11 +184,9 @@ class ConversationActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityConversationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-//        viewModel.emptyConversation()
         messagingUtils = MessageUtils(this)
         EventBus.getDefault().register(this)
-//        setupSimSwitcher()
-        setupSIMSelector()
+        setupSimSwitcher()
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
         number = intent.getStringExtra(NUMBER).toString()
         name = intent.getStringExtra(NAME).toString()
@@ -242,6 +241,7 @@ class ConversationActivity : BaseActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             SmsUtils.markThreadAsRead(this@ConversationActivity, threadId) {
                 runOnUiThread {
+                    Log.d("MessageRepository", "onCreate:conv read ")
                     viewModel.loadMessages()
                 }
             }
@@ -266,15 +266,12 @@ class ConversationActivity : BaseActivity() {
             binding.blockLy.visibility = View.GONE
         }
 
-
-
         binding.editTextMessage.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 if (!isScheduled || threadId.equals("") ) {
                     draftViewModel.saveDraft(threadId, s.toString())
                 }
             }
-
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -393,7 +390,7 @@ class ConversationActivity : BaseActivity() {
 
         binding.icClose.setOnClickListener { adapter.clearSelection() }
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false, false) {
+            val deleteDialog = DeleteDialog(this, "conversation_chat", false) {
                 deleteSelectedMessages()
             }
             deleteDialog.show()
@@ -519,7 +516,6 @@ class ConversationActivity : BaseActivity() {
     }
 
     private fun setupRecyclerView() {
-
         val contactName = viewModel.getContactName(this@ConversationActivity, name)
         val isContactSaved = contactName != number
 
@@ -552,10 +548,9 @@ class ConversationActivity : BaseActivity() {
         linearLayoutManager.stackFromEnd = true
         binding.recyclerViewConversation.layoutManager = linearLayoutManager
         binding.recyclerViewConversation.itemAnimator = null
-//        (binding.recyclerViewConversation.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations =
-        true
+//        (binding.recyclerViewConversation.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = true
         binding.recyclerViewConversation.adapter = adapter
-        setKeyboardVisibilityListener()
+//        setKeyboardVisibilityListener()
         binding.learnMoreLy.visibility = View.GONE
         binding.secureLy.visibility = View.GONE
     }
@@ -590,7 +585,6 @@ class ConversationActivity : BaseActivity() {
 //        }
 
         viewModel.conversation.observe(this) { conversation ->
-
             if (conversation == null) {
                 return@observe
             }
@@ -706,7 +700,8 @@ class ConversationActivity : BaseActivity() {
                 if (heightDifference > 0) {
                     binding.recyclerViewConversation.scrollBy(0, heightDifference)
                 } else if (heightDifference < 0 && lastVisibleItem != totalItems - 1) {
-                    scrollToBottom()
+                    Log.d("TAG", "onPreDraw: ")
+//                    scrollToBottom()
                 }
                 return true
             }
@@ -875,9 +870,9 @@ class ConversationActivity : BaseActivity() {
     }*/
 
     private val availableSIMCards = mutableListOf<SIMCard>()
-    private var selectedSimIndex: Long = 1L  // Default to SIM 1
+    private var selectedSimIndex: Long = 1L
 
-    private fun setupSIMSelector() {
+    private fun setupSimSwitcher() {
         if (!hasReadStatePermission()) {
             binding.imageSimSwitch.visibility = View.GONE
             return
@@ -1194,75 +1189,6 @@ class ConversationActivity : BaseActivity() {
                     set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 }
 
-                /* val timePicker = MaterialTimePicker.Builder()
-                     .setTheme(R.style.BaseTheme_TimePicker)
-                     .setHour(currentHour)
-                     .setMinute(currentMinute)
-                     .setTimeFormat(TimeFormat.CLOCK_24H)
-                     .build()
-
-                 timePicker.addOnPositiveButtonClickListener {
-                     val selectedCalendar = Calendar.getInstance().apply {
-                         set(Calendar.YEAR, year)
-                         set(Calendar.MONTH, month)
-                         set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                         set(Calendar.HOUR_OF_DAY, timePicker.hour)
-                         set(Calendar.MINUTE, timePicker.minute)
-                         set(Calendar.SECOND, 0)
-                         set(Calendar.MILLISECOND, 0)
-                     }
-
-                     if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
-                         Toast.makeText(
-                             this,
-                             getString(R.string.cannot_select_past_time),
-                             Toast.LENGTH_SHORT
-                         ).show()
-                         showDateTimePickerDialog()
-                     } else {
-                         selectedTimeInMillis = selectedCalendar.timeInMillis
-                         binding.schedulLy.visibility = View.VISIBLE
-
-                         val formattedTime = SimpleDateFormat(
-                             "dd MMM yyyy " *//* +if (is24HourFormat) "HH:mm" else "hh:mm a"*//*,
-                            Locale.getDefault()
-                        ).format(selectedCalendar.time)
-
-                        val spannable = SpannableStringBuilder().apply {
-                            append(getString(R.string.schedule_at) + " ")
-                            setSpan(
-                                ForegroundColorSpan(
-                                    ContextCompat.getColor(
-                                        this@ConversationActivity,
-                                        R.color.colorPrimary
-                                    )
-                                ),
-                                0,
-                                getString(R.string.schedule_at).length,
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                            val timeSpan = SpannableString(formattedTime)
-                            timeSpan.setSpan(
-                                ForegroundColorSpan(
-                                    ContextCompat.getColor(
-                                        this@ConversationActivity,
-                                        R.color.colorPrimary
-                                    )
-                                ),
-                                0,
-                                timeSpan.length,
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                            append(timeSpan)
-                        }
-
-                        binding.selectedTimeTextView.text = spannable
-                    }
-                }
-
-                timePicker.show(supportFragmentManager, "time_picker")*/
-
-
                 val timePickerDialog = TimePickerDialog(
                     this, R.style.CustomTimePicker,
 
@@ -1327,12 +1253,12 @@ class ConversationActivity : BaseActivity() {
                     false
                 )
                 timePickerDialog.show()
-
             },
             currentYear,
             currentMonth,
             currentDay
         )
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
         datePickerDialog.show()
     }
 
@@ -1365,6 +1291,7 @@ class ConversationActivity : BaseActivity() {
                 Toast.makeText(this, getString(R.string.message_scheduled), Toast.LENGTH_SHORT)
                     .show()
                 val intent = Intent(this, ScheduleActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 startActivity(intent)
                 finish()
             }

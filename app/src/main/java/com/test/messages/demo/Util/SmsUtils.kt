@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
+import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +20,6 @@ object SmsUtils {
     fun markThreadAsRead(context: Context, threadId: Long, onComplete: (() -> Unit)? = null) {
         if (threadId == -1L) return
 
-        // Launch a coroutine on the IO dispatcher to perform the update operation
         CoroutineScope(Dispatchers.IO).launch {
             val contentValues = ContentValues().apply {
                 put(Telephony.Sms.READ, 1)
@@ -32,7 +32,6 @@ object SmsUtils {
 
             val updatedRows = context.contentResolver.update(uri, contentValues, selection, selectionArgs)
             Log.d("MessageRepository", "Marked $updatedRows messages as read in thread $threadId")
-
             // Once the update is complete, call the completion callback on the main thread
             withContext(Dispatchers.Main) {
                 onComplete?.invoke()
@@ -64,7 +63,7 @@ object SmsUtils {
 
     fun createNotificationChannel(context: Context, contactNumber: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "${CommanConstants.KEY_SMS_CHANNEL}$contactNumber"
+            val channelId = "${CommanConstants.KEY_SMS_CHANNEL}${contactNumber.removeCountryCode()}"
             val channelName = "$contactNumber"
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(channelId, channelName, importance)

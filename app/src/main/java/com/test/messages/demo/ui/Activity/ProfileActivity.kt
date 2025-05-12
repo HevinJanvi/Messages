@@ -329,7 +329,7 @@ class ProfileActivity : BaseActivity() {
             overridePendingTransition(0, 0)
         }
         binding.deleteLy.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false,true) {
+            val deleteDialog = DeleteDialog(this, "profile",true) {
                 deleteMessagesForCurrentThread(threadId)
 //                isThreadDelete = true
             }

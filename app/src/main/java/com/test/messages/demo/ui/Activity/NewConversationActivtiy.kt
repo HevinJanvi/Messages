@@ -1,11 +1,9 @@
 package com.test.messages.demo.ui.Activity
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Telephony
 import android.telephony.SmsManager
@@ -304,12 +302,10 @@ class NewConversationActivtiy : BaseActivity() {
 
 
     override fun onBackPressed() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = currentFocus
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-            view.clearFocus()
+        if (binding.editTextSearch.text.isNotEmpty()) {
+            binding.editTextSearch.text.clear()
         } else {
+            binding.editTextSearch.hideKeyboard(this)
             super.onBackPressed()
         }
     }

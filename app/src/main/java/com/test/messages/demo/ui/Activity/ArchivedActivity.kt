@@ -34,6 +34,7 @@ import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.databinding.ActivityArchivedBinding
 import com.test.messages.demo.ui.Adapter.ArchiveMessageAdapter
@@ -76,7 +77,15 @@ class ArchivedActivity : BaseActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onDraftUpdateEvent(event: DraftChangedEvent) {
+        Log.d("TAG", "onDraftchangeEvent: ")
+        binding.archiveRecyclerView.scrollToPosition(0)
+        draftViewModel.saveDraft(event.threadId, event.draft)
+        viewModel.loadMessages()
+    }
+
+    /*@RequiresApi(Build.VERSION_CODES.Q)
     private val conversationResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -91,7 +100,7 @@ class ArchivedActivity : BaseActivity() {
 
             }
         }
-    }
+    }*/
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,7 +134,8 @@ class ArchivedActivity : BaseActivity() {
                 putExtra(NAME, message.sender)
                 putExtra(CommanConstants.FROMARCHIVE, true)
             }
-            conversationResultLauncher.launch(intent)
+//            conversationResultLauncher.launch(intent)
+            startActivity(intent)
         }
 
         viewModel.messages.observe(this) { messageList ->
@@ -246,7 +256,7 @@ class ArchivedActivity : BaseActivity() {
         }
 
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, false,true) {
+            val deleteDialog = DeleteDialog(this, "archive",true) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
 //                    deleteMessages(selectedThreadIds)

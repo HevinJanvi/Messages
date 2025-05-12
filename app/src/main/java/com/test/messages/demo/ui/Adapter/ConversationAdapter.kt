@@ -80,7 +80,7 @@ class ConversationAdapter(
     var isMultiSelectionEnabled = false
     private val expandedMessages = mutableSetOf<Long>()
     private var lastMessagePosition: Int? = null
-    private  var searchQuery: String=""
+    private var searchQuery: String = ""
 
 
     interface OnMessageRetryListener {
@@ -150,16 +150,23 @@ class ConversationAdapter(
                 messageDate.visibility = if (shouldShowTime) View.VISIBLE else View.GONE
 
                 val isExpanded = expandedMessages.contains(message.id)
-                if(isExpanded && availableSIMCards.size>1 &&message.subscriptionId!=-1){
-                    val simIndex = availableSIMCards.indexOfFirst { it.subscriptionId == message.subscriptionId }
-                    Log.d("TAG", "bind: "+simIndex)
+                if (availableSIMCards.size > 1 && message.subscriptionId != -1) {
+                    val simIndex =
+                        availableSIMCards.indexOfFirst { it.subscriptionId == message.subscriptionId }
+                    Log.d("TAG", "bind: " + simIndex)
                     when (simIndex) {
                         0 -> simIcon.setImageResource(R.drawable.sim_1)
                         1 -> simIcon.setImageResource(R.drawable.sim_2)
                     }
-                    simIcon.visibility=View.VISIBLE
-                }else{
-                    simIcon.visibility=View.GONE
+
+                } else {
+                    simIcon.visibility = View.GONE
+                }
+
+                if (isExpanded && availableSIMCards.size > 1) {
+                    simIcon.visibility = View.VISIBLE
+                } else {
+                    simIcon.visibility = View.GONE
                 }
 
                 if (!message.isIncoming() && (isLastMessage || message.type == Telephony.Sms.MESSAGE_TYPE_FAILED)) {
@@ -167,9 +174,9 @@ class ConversationAdapter(
                         Telephony.Sms.MESSAGE_TYPE_SENT -> {
                             messageStatus.text = itemView.context.getString(R.string.delivered)
                             messageStatus.visibility = View.VISIBLE
-                            if(availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                            if (availableSIMCards.size > 1 && message.subscriptionId != -1) {
                                 simIcon.visibility = View.VISIBLE
-                            }else{
+                            } else {
                                 simIcon.visibility = View.GONE
                             }
 
@@ -180,9 +187,9 @@ class ConversationAdapter(
                         Telephony.Sms.MESSAGE_TYPE_OUTBOX -> {
                             messageStatus.text = itemView.context.getString(R.string.sending)
                             messageStatus.visibility = View.VISIBLE
-                            if(availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                            if (availableSIMCards.size > 1 && message.subscriptionId != -1) {
                                 simIcon.visibility = View.VISIBLE
-                            }else{
+                            } else {
                                 simIcon.visibility = View.GONE
                             }
                             messageStatus.setTextColor(Color.GRAY)
@@ -193,9 +200,9 @@ class ConversationAdapter(
                             messageStatus.text =
                                 itemView.context.getString(R.string.failed_to_send_tap)
                             messageStatus.visibility = View.VISIBLE
-                            if(availableSIMCards.size>1 &&message.subscriptionId!=-1){
+                            if (availableSIMCards.size > 1 && message.subscriptionId != -1) {
                                 simIcon.visibility = View.VISIBLE
-                            }else{
+                            } else {
                                 simIcon.visibility = View.GONE
                             }
                             messageStatus.setTextColor(Color.RED)
@@ -214,6 +221,7 @@ class ConversationAdapter(
                                 retryListener?.onRetry(message)
                             }
                         }
+
                         else -> {
                             messageStatus.visibility = View.GONE
                         }
@@ -277,7 +285,11 @@ class ConversationAdapter(
                     message.body
                 }
 
-                if (searchQuery.isNotEmpty() && message.body?.contains(searchQuery, ignoreCase = true) == true) {
+                if (searchQuery.isNotEmpty() && message.body?.contains(
+                        searchQuery,
+                        ignoreCase = true
+                    ) == true
+                ) {
                     formatMessageWithLinks(
                         messageBody,
                         message,
@@ -293,14 +305,13 @@ class ConversationAdapter(
                     )
                 }
 
-               /* formatMessageWithLinks(
-                    messageBody,
-                    message,
-                    message = message.body, searchQuery
-                )*/
+                /* formatMessageWithLinks(
+                     messageBody,
+                     message,
+                     message = message.body, searchQuery
+                 )*/
             }
         }
-
 
         private fun formatMessageWithLinks(
             textView: TextView,
@@ -590,14 +601,15 @@ class ConversationAdapter(
     }
 
     fun setSearchQuery(query: String) {
-        if(query.isNotEmpty()){
+        if (query.isNotEmpty()) {
             searchQuery = query!!
             notifyDataSetChanged()
-        }else{
+        } else {
             searchQuery = ""
             notifyDataSetChanged()
         }
     }
+
     fun highlightSearchQuery(query: String, recyclerView: RecyclerView) {
         searchQuery = query
         val position = currentList.indexOfFirst {

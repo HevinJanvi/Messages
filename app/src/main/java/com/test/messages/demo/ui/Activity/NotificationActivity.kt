@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import com.test.messages.demo.data.Database.Notification.NotificationDao
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.NAME
 import com.test.messages.demo.Util.CommanConstants.NUMBER
@@ -22,6 +23,7 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SmsUtils.createNotificationChannel
 import com.test.messages.demo.Util.SmsUtils.createNotificationChannelGlobal
 import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
@@ -132,7 +134,10 @@ class NotificationActivity : BaseActivity(){
 
 
     fun openSmsNotificationSettings(context: Context, contactNumber: String) {
-        val channelId = "sms_channel_$contactNumber"
+        val channelId = "${CommanConstants.KEY_SMS_CHANNEL}${contactNumber.removeCountryCode()}"
+
+        Log.d("TAG", "showMessageNotification:activity1 "+channelId)
+
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         var myNotificationChannel = notificationManager.getNotificationChannel(channelId)
 
@@ -149,11 +154,15 @@ class NotificationActivity : BaseActivity(){
             putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
             putExtra(Settings.EXTRA_CHANNEL_ID, myNotificationChannel.id)
         }
+        Log.d("TAG", "showMessageNotification:activity "+channelId)
+
         context.startActivity(intent)
     }
 
     fun openSmsNotificationGlobalSettings(context: Context) {
-        val channelId = "sms_channel_"
+//        val channelId = "sms_channel_"
+        val channelId = "${CommanConstants.KEY_SMS_CHANNEL}"
+
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         var myNotificationChannel = notificationManager.getNotificationChannel(channelId)
 
