@@ -87,7 +87,7 @@ class SearchActivity : BaseActivity() {
             val searchable = "${it.body} ${it.address}".lowercase()
             SearchableMessage(it, searchable)
         }
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Default).launch {
             indexMutex.withLock {
                 indexedMessages = indexed
             }
@@ -130,6 +130,7 @@ class SearchActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyWindowInsetsToView(binding.rootView)
         EventBus.getDefault().register(this)
         setupRecyclerViews()
         setupObservers()
@@ -410,7 +411,13 @@ class SearchActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun performSearch(query: String) {
         searchJob?.cancel()
-        searchJob = CoroutineScope(Dispatchers.IO).launch {
+
+        runOnUiThread {
+            binding.textNoResults.visibility = View.GONE
+            binding.emptyList.visibility = View.GONE
+        }
+
+        searchJob = CoroutineScope(Dispatchers.Default).launch {
             if (query.isNotEmpty() && query.length > 1) {
                 val lowerQuery = query.lowercase()
                 indexMutex.withLock {
@@ -474,8 +481,12 @@ class SearchActivity : BaseActivity() {
                     }
                     updateAdapterList()
                     binding.btnclose.visibility = View.VISIBLE
-                    binding.emptyList.visibility = View.GONE
+//                    binding.emptyList.visibility = View.GONE
+
+                    val hasNoResults = filteredMessages.isEmpty() && filteredContacts.isEmpty()
+                    binding.textNoResults.visibility = if (hasNoResults) View.VISIBLE else View.GONE
                 }
+
             } else {
                 withContext(Dispatchers.Main) {
                     clearFilters()

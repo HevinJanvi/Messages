@@ -88,7 +88,7 @@ class ContactAdapter(
             val firstChar = contact.name?.firstOrNull()?.uppercase() ?: ""
             firstChar.isNotEmpty() && firstChar[0].isLetter()
         }.sortedBy { it.name?.firstOrNull()?.uppercase() }
-        contacts = specialCharContacts + alphabeticContacts
+        contacts = alphabeticContacts + specialCharContacts
         sections.clear()
         sectionPositions.clear()
         var currentPos = 0
@@ -139,7 +139,7 @@ class ContactAdapter(
 
         fun bind(contact: ContactItem) {
             contactName.text = contact.name
-            contactNumber.text = contact.phoneNumber
+            contactNumber.text = contact.normalizeNumber
             val firstChar = contact.name!!.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
             if (startsWithSpecialChar || contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {

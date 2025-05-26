@@ -30,36 +30,58 @@ object SmsUtils {
             val selection = "${Telephony.Sms.THREAD_ID} = ?"
             val selectionArgs = arrayOf(threadId.toString())
 
-            val updatedRows = context.contentResolver.update(uri, contentValues, selection, selectionArgs)
+            val updatedRows =
+                context.contentResolver.update(uri, contentValues, selection, selectionArgs)
             Log.d("MessageRepository", "Marked $updatedRows messages as read in thread $threadId")
-            // Once the update is complete, call the completion callback on the main thread
             withContext(Dispatchers.Main) {
                 onComplete?.invoke()
             }
         }
     }
 
-   /* fun markThreadAsRead(context: Context, threadId: Long, onComplete: (() -> Unit)? = null) {
+    fun markThreadAsRead(context: Context, threadId: Long) {
         if (threadId == -1L) return
 
-        val contentValues = ContentValues().apply {
-            put(Telephony.Sms.READ, 1)
-            put(Telephony.Sms.SEEN, 1)
-        }
-
-        val uri = Telephony.Sms.CONTENT_URI
-        val selection = "${Telephony.Sms.THREAD_ID} = ?"
-        val selectionArgs = arrayOf(threadId.toString())
-
-        val updatedRows = context.contentResolver.update(uri, contentValues, selection, selectionArgs)
-        Log.d("MessageRepository", "Marked $updatedRows messages as read in thread $threadId")
-
-        onComplete?.let {
-            Handler(Looper.getMainLooper()).post {
-                it()
+        CoroutineScope(Dispatchers.IO).launch {
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, 1)
+                put(Telephony.Sms.SEEN, 1)
             }
+
+            val uri = Telephony.Sms.CONTENT_URI
+            val selection = "${Telephony.Sms.THREAD_ID} = ?"
+            val selectionArgs = arrayOf(threadId.toString())
+
+            val updatedRows =
+                context.contentResolver.update(uri, contentValues, selection, selectionArgs)
+            Log.d("MessageRepository", "Marked $updatedRows messages as read in thread $threadId")
+//            withContext(Dispatchers.Main) {
+//                onComplete?.invoke()
+//            }
         }
-    }*/
+    }
+
+    /* fun markThreadAsRead(context: Context, threadId: Long, onComplete: (() -> Unit)? = null) {
+         if (threadId == -1L) return
+
+         val contentValues = ContentValues().apply {
+             put(Telephony.Sms.READ, 1)
+             put(Telephony.Sms.SEEN, 1)
+         }
+
+         val uri = Telephony.Sms.CONTENT_URI
+         val selection = "${Telephony.Sms.THREAD_ID} = ?"
+         val selectionArgs = arrayOf(threadId.toString())
+
+         val updatedRows = context.contentResolver.update(uri, contentValues, selection, selectionArgs)
+         Log.d("MessageRepository", "Marked $updatedRows messages as read in thread $threadId")
+
+         onComplete?.let {
+             Handler(Looper.getMainLooper()).post {
+                 it()
+             }
+         }
+     }*/
 
     fun createNotificationChannel(context: Context, contactNumber: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -27,7 +27,7 @@ class IntroActivity : BaseActivity() {
         binding = ActivityIntroBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-
+        applyWindowInsetsToView(binding.rootView)
         val selectedLanguage = ViewUtils.getSelectedLanguage(this)
         Log.d("TAG", "Selected Language on Splash i: $selectedLanguage")
 

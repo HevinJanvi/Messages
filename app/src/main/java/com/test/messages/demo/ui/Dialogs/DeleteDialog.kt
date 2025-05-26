@@ -49,13 +49,13 @@ class DeleteDialog(
             txtDialogMessage.setText(context.getString(R.string.permanently_delete_conversation))
         } else {
             if (from.equals("conversation_chat")) {
-                txtDialogTitle.setText(context.getString(R.string.move_to_recycle_bin2))
+                txtDialogTitle.setText(context.getString(R.string.move_to_bin))
                 txtDialogMessage.setText(context.getString(R.string.selected_message_move))
             } else {
-                txtDialogTitle.setText(context.getString(R.string.delete_conversation))
+                txtDialogTitle.setText(context.getString(R.string.move_to_bin))
                 txtDialogMessage.setText(context.getString(R.string.move_this_conversation_to_the_rrecycle_bin))
             }
-            btnConfirmDelete.setText(context.getString(R.string.move_to_recycle_bin))
+            btnConfirmDelete.setText(context.getString(R.string.move))
         }
 
         btnCancel.setOnClickListener {

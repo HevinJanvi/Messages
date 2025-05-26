@@ -46,6 +46,7 @@ import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.send.notificationManager
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.util.Locale
 
 
 class NotificationHelper(private val context: Context) {
@@ -73,7 +74,7 @@ class NotificationHelper(private val context: Context) {
         previewOption: Int
     ): NotificationCompat.MessagingStyle {
 
-//        val senderName = getContactName(context, senderNumber)
+        val localizedContext = setLanguage(context) ?: context
         val userPerson = Person.Builder().setName(context.getString(R.string.me)).build()
         val style = NotificationCompat.MessagingStyle(userPerson)
 
@@ -90,9 +91,9 @@ class NotificationHelper(private val context: Context) {
             0 -> message
             1, 2 -> {
                 if (count == 1) {
-                    "$count ${context.getString(R.string.new_message)}"
+                    "$count ${localizedContext.getString(R.string.new_message)}"
                 } else {
-                    "$count ${context.getString(R.string.new_messages)}"
+                    "$count ${localizedContext.getString(R.string.new_messages)}"
                 }
             }
 
@@ -110,6 +111,15 @@ class NotificationHelper(private val context: Context) {
         return style
     }
 
+    fun setLanguage(context: Context): Context? {
+        val languageCode = ViewUtils.getSelectedLanguage(context)
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+        val configuration = context.resources.configuration
+        configuration.setLocale(locale)
+        configuration.setLayoutDirection(locale)
+        return context.createConfigurationContext(configuration)
+    }
     @SuppressLint("NewApi")
     suspend fun showMessageNotification(
         messageId: Long,
@@ -121,6 +131,7 @@ class NotificationHelper(private val context: Context) {
         alertOnlyOnce: Boolean = false
     ) {
 
+        val localizedContext = setLanguage(context) ?: context
 //        val NOTIFICATION_CHANNEL = "smsChannel_$address"
         val NOTIFICATION_CHANNEL = "${CommanConstants.KEY_SMS_CHANNEL}${address.removeCountryCode()}"
 
@@ -196,7 +207,7 @@ class NotificationHelper(private val context: Context) {
         val isNoReplySms = isShortCodeWithLetters(address)
         if (isNougatPlus() && !isNoReplySms) {
             if (previewOption == 0) {
-                val replyLabel = context.getString(R.string.reply)
+                val replyLabel = localizedContext.getString(R.string.reply)
                 val remoteInput = RemoteInput.Builder(REPLY)
                     .setLabel(replyLabel)
                     .build()
@@ -245,7 +256,7 @@ class NotificationHelper(private val context: Context) {
                 LOCK_SCREEN_SENDER -> {
                     setContentTitle(sender)
                     setLargeIcon(largeIcon)
-                    val summaryText = context.getString(R.string.new_message)
+                    val summaryText = localizedContext.getString(R.string.new_message)
                     setStyle(
                         NotificationCompat.BigTextStyle().setSummaryText(summaryText).bigText(body)
                     )
@@ -273,32 +284,23 @@ class NotificationHelper(private val context: Context) {
 
         builder.addAction(
             R.drawable.ic_selected,
-            context.getString(R.string.mark_as_read),
+            localizedContext.getString(R.string.mark_as_read),
             markAsReadPendingIntent
         )
         val otpRegex = Regex("\\b\\d{4,8}\\b")
         if (otpRegex.containsMatchIn(body) && !isNumberInContacts(context, address)) {
-            // Add the Copy OTP button
             builder.addAction(
                 R.drawable.ic_copy,
-                context.getString(R.string.copy_otp),
+                localizedContext.getString(R.string.copy_otp),
                 copyOtpPendingIntent
             ).setChannelId(NOTIFICATION_CHANNEL)
-            /* builder.addAction(
-                 R.drawable.ic_copy,
-                 "Copy OTP",
-                 getCopyOtpPendingIntent(
-                     context,
-                     otpValue
-                 ) // Create this intent to copy to clipboard
-             )*/
         }
 
 
         if (isNoReplySms) {
             builder.addAction(
                 R.drawable.ic_delete,
-                context.getString(R.string.clear),
+                localizedContext.getString(R.string.clear),
                 deleteSmsPendingIntent
             ).setChannelId(NOTIFICATION_CHANNEL)
         }
@@ -326,42 +328,6 @@ class NotificationHelper(private val context: Context) {
         }
         return false
     }
-
-    @SuppressLint("NewApi")
-            /*fun showSendingFailedNotification(recipientName: String, threadId: Long) {
-                maybeCreateChannel(name = context.getString(R.string.message_not_sent_short))
-
-                val notificationId = generateRandomId().hashCode()
-                val intent = Intent(context, ConversationActivity::class.java).apply {
-                    putExtra(EXTRA_THREAD_ID, threadId)
-                }
-                val contentPendingIntent = PendingIntent.getActivity(
-                    context,
-                    notificationId,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-                )
-
-                val summaryText =
-                    String.format(context.getString(R.string.message_sending_error), recipientName)
-        //        val largeIcon = SimpleContactsHelper(context).getContactLetterIcon(recipientName)
-                val primaryColor = ContextCompat.getColor(context, R.color.colorPrimary)
-
-                val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-                    .setContentTitle(context.getString(R.string.message_not_sent_short))
-                    .setContentText(summaryText)
-                    .setColor(primaryColor)
-                    .setSmallIcon(R.drawable.notification_logo)
-                    .setStyle(NotificationCompat.BigTextStyle().bigText(summaryText))
-                    .setContentIntent(contentPendingIntent)
-                    .setPriority(NotificationCompat.PRIORITY_MAX)
-                    .setDefaults(Notification.DEFAULT_LIGHTS)
-                    .setCategory(Notification.CATEGORY_MESSAGE)
-                    .setAutoCancel(true)
-                    .setChannelId(NOTIFICATION_CHANNEL)
-
-                notificationManager.notify(notificationId, builder.build())
-            }*/
 
     fun maybeCreateChannel(channl_id: String, name: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

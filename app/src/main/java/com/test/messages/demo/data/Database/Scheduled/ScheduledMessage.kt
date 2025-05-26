@@ -7,10 +7,13 @@ import com.google.errorprone.annotations.Keep
 @Keep
 @Entity(tableName = "scheduled_messages")
 data class ScheduledMessage(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val recipient: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val recipientName: String,
+    val recipientNumber: String,
     val message: String,
     val scheduledTime: Long,
     val threadId: String,
-    val profileUrl: String
+    val profileUrl: String,
+    val subscriptionId:Int
 )

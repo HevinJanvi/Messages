@@ -3,15 +3,19 @@ package com.test.messages.demo.ui.Activity
 import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -25,11 +29,17 @@ class SmsPermissionActivity : BaseActivity() {
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sms_permission)
+        applyWindowInsetsToView(findViewById(android.R.id.content))
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.statusBarColor = resources.getColor(R.color.per_bg_clr, theme)
         }
+        window.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(this, R.color.per_bg_clr)))
+
+
         prepareIntentLauncher()
         prepareDialerLauncher()
         findViewById<TextView>(R.id.btnSetDefaultSms).setOnClickListener {

@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Це початок вашої розмови. Скажіть \nщось приємне!</string>
     <string name="messages_copied">Повідомлення скопійовано</string>
     <string name="copy">Копіювати</string>
-    <string name="can_t_replay">Неможливо відтворити цей короткий код. |</string>
-    <string name="learn_more">&#160;&#160;<u>Докладніше</u></string>
+    <string name="can_t_replay">Неможливо відтворити цей короткий код.|&#160;</string>
+    <string name="learn_more">Докладніше</string>
     <string name="this_sms_is_100_secure">Це SMS на 100% безпечне. Повідомлення ніколи не збирають дані без попередньої згоди. Все обробляється і зберігається на вашому телефоні.</string>
     <string name="ok">добре</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Обмін повідомленнями став простим</string>
     <string name="intro_txt2"><![CDATA[Розклад і відпочинок]]></string>
     <string name="intro_txt3">Уникайте спаму</string>
-    <string name="intro_subtxt1">Залишайтеся на зв’язку завдяки чистій та впорядкованій папці «Вхідні». Спілкуйтеся в чаті без зусиль у будь-який час!</string>
+    <string name="intro_subtxt1">Залишайтеся на зв’язку завдяки чистій та впорядкованій папці «Вхідні».Спілкуйтеся в чаті без зусиль у будь-який час!</string>
     <string name="intro_subtxt2">Заплануйте автоматичне надсилання текстових повідомлень — ніколи не забувайте повідомлення!</string>
     <string name="intro_subtxt3">Легко блокуйте спам і небажані контакти, щоб ваша папка "Вхідні" була чистою.</string>
     <string name="flag">прапор</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Не вибрано жодного повідомлення для спільного використання</string>
     <string name="message_details">Деталі повідомлення</string>
     <string name="type">Тип</string>
-    <string name="to">до</string>
+    <string name="to">до :&#160;</string>
     <string name="sent">Надіслано</string>
     <string name="unknown">Невідомий</string>
     <string name="web_type">Веб-тип</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">Знайдено %1$s збігів</string>
     <string name="restoring">Відновлення...</string>
     <string name="exit_text">Натисніть «Назад» ще раз, щоб вийти</string>
+    <string name="move_to_recycle_bin2">Перемістити до кошика?</string>
+    <string name="selected_message_move">Вибрані повідомлення будуть переміщені до кошика</string>
+    <string name="block_messages_progress">Блокування вибраних повідомлень... </string>
+    <string name="pin_limit_reached">Ви можете закріпити лише 10 повідомлень.</string>
+    <string name="no_result_found">Результатів не знайдено</string>
+
+    <string name="move">Перемістити</string>
+    <string name="move_to_bin">Перемістити до кошика?</string>
+    <string name="marking_messages_as_read">Позначення повідомлень як прочитаних...</string>
 
 </resources>

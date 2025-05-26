@@ -26,7 +26,8 @@ class MessageDiffCallback(
                         old.isRead == new.isRead &&
                         old.isPinned == new.isPinned &&
                         old.isMuted == new.isMuted &&
-                        old.sender == new.sender
+                        old.sender == new.sender &&
+                        old.profileImageUrl == new.profileImageUrl
                 )
     }
 }

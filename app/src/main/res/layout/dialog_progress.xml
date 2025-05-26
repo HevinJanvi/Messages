@@ -25,7 +25,7 @@
             android:indeterminateTint="@color/colorPrimary" />
 
         <TextView
-            android:id="@+id/dialogText"
+            android:id="@+id/tvProgressMessage"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center_vertical"

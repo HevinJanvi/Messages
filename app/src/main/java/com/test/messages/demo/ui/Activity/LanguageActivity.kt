@@ -103,7 +103,7 @@ class LanguageActivity : BaseActivity() {
         binding = ActivityLanguageBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-
+        applyWindowInsetsToView(binding.rootView)
         val launchedFrom = intent.getStringExtra("launched_from") ?: "first_time"
 
         isFirstVisit = !ViewUtils.isLanguageSelected(this)

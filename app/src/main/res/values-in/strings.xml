@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Ini adalah awal percakapan Anda, Ucapkan sesuatu yang baik!</string>
     <string name="messages_copied">Pesan disalin</string>
     <string name="copy">Salin </string>
-    <string name="can_t_replay">Tidak dapat memutar ulang ke kode pendek ini. |</string>
-    <string name="learn_more">&#160;&#160;<u>Pelajari Lebih Lanjut</u></string>
+    <string name="can_t_replay">Tidak dapat memutar ulang ke kode pendek ini.|&#160;</string>
+    <string name="learn_more">Pelajari Lebih Lanjut</string>
     <string name="this_sms_is_100_secure">SMS ini 100% aman. Pesan tidak pernah mengumpulkan data tanpa persetujuan sebelumnya. Semuanya diproses dan disimpan di ponsel Anda.</string>
     <string name="ok">Oke</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Pesan Menjadi Mudah</string>
     <string name="intro_txt2"><![CDATA[Jadwal & Bersantai]]></string>
     <string name="intro_txt3">Hindari Pesan Spam</string>
-    <string name="intro_subtxt1">Tetap terhubung dengan kotak masuk yang bersih dan teratur. Ngobrol dengan mudah kapan saja!</string>
+    <string name="intro_subtxt1">Tetap terhubung dengan kotak masuk yang bersih dan teratur.Ngobrol dengan mudah kapan saja!</string>
     <string name="intro_subtxt2">Jadwalkan teks untuk dikirim secara otomatis—jangan pernah lupa pesan!</string>
     <string name="intro_subtxt3">Blokir spam dan kontak yang tidak diinginkan dengan mudah untuk menjaga kotak masuk Anda tetap bersih.</string>
     <string name="flag">bendera</string>
@@ -223,14 +223,14 @@
 
     <string name="language">Bahasa</string>
     <string name="copy_otp">Salin OTP</string>
-    <string name="move_to_recycle_bin">Pindahkan ke tempat sampah</string>
+    <string name="move_to_recycle_bin">Pindahkan ke\ntempat sampah</string>
     <string name="move_this_conversation_to_the_rrecycle_bin">Pindahkan percakapan ini ke tempat sampah?</string>
     <string name="share">Bagikan</string>
     <string name="forward">Teruskan</string>
     <string name="no_messages_selected_to_share">Tidak ada pesan yang dipilih untuk dibagikan</string>
     <string name="message_details">Detail Pesan</string>
     <string name="type">Jenis</string>
-    <string name="to">Kepada</string>
+    <string name="to">Kepada :&#160;</string>
     <string name="sent">Terkirim</string>
     <string name="unknown">Tidak diketahui</string>
     <string name="web_type">Jenis web</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">%1$s kecocokan ditemukan</string>
     <string name="restoring">Memulihkan...</string>
     <string name="exit_text">Silakan klik Kembali lagi untuk keluar </string>
+    <string name="move_to_recycle_bin2">Pindahkan ke tempat sampah daur ulang?</string>
+    <string name="selected_message_move">Pesan yang dipilih akan dipindahkan ke recycle bin </string>
+    <string name="block_messages_progress">Memblokir pesan yang dipilih... </string>
+    <string name="pin_limit_reached">Anda hanya dapat menyematkan hingga 10 pesan.</string>
+    <string name="no_result_found">Tidak ada hasil yang ditemukan</string>
+
+    <string name="move">Pindah</string>
+    <string name="move_to_bin">Pindahkan ke Bin?</string>
+    <string name="marking_messages_as_read">Menandai pesan sebagai telah dibaca...</string>
 
 </resources>

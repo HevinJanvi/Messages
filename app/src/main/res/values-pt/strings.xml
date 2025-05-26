@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Este é o início da sua conversa, diga \nalgo legal!</string>
     <string name="messages_copied">Mensagens copiadas</string>
     <string name="copy">Copiar</string>
-    <string name="can_t_replay">Não é possível reproduzir este código curto. |</string>
-    <string name="learn_more">&#160;&#160;<u>Saiba mais</u></string>
+    <string name="can_t_replay">Não é possível reproduzir este código curto.|&#160;</string>
+    <string name="learn_more">Saiba mais</string>
     <string name="this_sms_is_100_secure">Este SMS é 100% seguro. As mensagens nunca coletam dados sem consentimento prévio. Tudo é processado e armazenado no seu telefone.</string>
     <string name="ok">OK</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Mensagens facilitadas</string>
     <string name="intro_txt2"><![CDATA[Agende e relaxe]]></string>
     <string name="intro_txt3">Evite mensagens de spam</string>
-    <string name="intro_subtxt1">Fique conectado com uma caixa de entrada limpa e organizada. Converse sem esforço a qualquer hora!</string>
+    <string name="intro_subtxt1">Fique conectado com uma caixa de entrada limpa e organizada.Converse sem esforço a qualquer hora!</string>
     <string name="intro_subtxt2">Programe mensagens de texto para serem enviadas automaticamente — nunca se esqueça de uma mensagem!</string>
     <string name="intro_subtxt3">Bloqueie facilmente spam e contatos indesejados para manter sua caixa de entrada limpa.</string>
     <string name="flag">flag</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Nenhuma mensagem selecionada para compartilhar</string>
     <string name="message_details">Detalhes da Mensagem</string>
     <string name="type">Tipo</string>
-    <string name="to">Para</string>
+    <string name="to">Para :&#160;</string>
     <string name="sent">Enviado</string>
     <string name="unknown">Desconhecido</string>
     <string name="web_type">Tipo de Web</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">%1$s correspondências encontradas</string>
     <string name="restoring">Restaurando...</string>
     <string name="exit_text">Clique em Voltar novamente para sair </string>
+    <string name="move_to_recycle_bin2">Mover para a Lixeira de Reciclagem?</string>
+    <string name="selected_message_move">As mensagens selecionadas serão movidas para a lixeira </string>
+    <string name="block_messages_progress">Bloqueando mensagens selecionadas...</string>
+    <string name="pin_limit_reached">Você pode fixar até 10 mensagens apenas.</string>
+    <string name="no_result_found">Nenhum resultado encontrado</string>
+
+    <string name="move">Mover</string>
+    <string name="move_to_bin">Mover para a lixeira?</string>
+    <string name="marking_messages_as_read">Marcando mensagens como lidas...</string>
 
 </resources>

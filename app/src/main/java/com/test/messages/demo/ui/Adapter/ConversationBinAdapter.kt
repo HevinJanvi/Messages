@@ -147,9 +147,12 @@ class ConversationBinAdapter(
                 } else {
                     messageBody.text = message.body
                 }
-                messageDate.text =
-                    SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
-
+//                messageDate.text =
+//                    SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
+                val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+                val timeFormat = if (is24Hour) "HH:mm" else "hh:mm a"
+                val sdf = SimpleDateFormat(timeFormat, Locale.getDefault())
+                messageDate.text = sdf.format(Date(message.date))
                 val shouldShowTime = isLastMessage || expandedMessages.contains(message.id)
                 messageDate.visibility = if (shouldShowTime) View.VISIBLE else View.GONE
 

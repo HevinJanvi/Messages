@@ -7,10 +7,12 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
 import android.provider.Telephony
+import android.telephony.SubscriptionManager
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,6 +27,7 @@ import com.test.messages.demo.Util.CommanConstants.KEY_RIGHT_SWIPE_ACTION
 import com.test.messages.demo.Util.CommanConstants.KEY_SELECTED_LANGUAGE
 import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
 import com.test.messages.demo.Util.CommanConstants.SHOW_CATEGORIES
+import com.test.messages.demo.Util.CommanConstants.SIM_SELECT
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import org.json.JSONArray
 import java.time.Instant
@@ -109,20 +112,20 @@ object ViewUtils {
         return address.any { it.isLetter() || it == '-' }
     }
 
-    fun getThreadId(context: Context, sender: String): Long {
-        val uri = Telephony.Sms.CONTENT_URI
-        val projection = arrayOf(Telephony.Sms.THREAD_ID)
-        val selection = "${Telephony.Sms.ADDRESS} = ?"
-        val selectionArgs = arrayOf(sender)
-
-        context.contentResolver.query(uri, projection, selection, selectionArgs, null)
-            ?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    return cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
-                }
-            }
-        return 0L
-    }
+//    fun getThreadId(context: Context, sender: String): Long {
+//        val uri = Telephony.Sms.CONTENT_URI
+//        val projection = arrayOf(Telephony.Sms.THREAD_ID)
+//        val selection = "${Telephony.Sms.ADDRESS} = ?"
+//        val selectionArgs = arrayOf(sender)
+//
+//        context.contentResolver.query(uri, projection, selection, selectionArgs, null)
+//            ?.use { cursor ->
+//                if (cursor.moveToFirst()) {
+//                    return cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
+//                }
+//            }
+//        return 0L
+//    }
 
     /* fun isOfferSender(sender: String): Boolean {
          return sender.matches(Regex("^[A-Z-]+$"))
@@ -220,6 +223,14 @@ object ViewUtils {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("OTP", text)
         clipboard.setPrimaryClip(clip)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Optional: Add logic here if you want to conditionally show the toast
+//            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        } else {
+            // Always show on Android 12 and below
+            Toast.makeText(context, context.getString(R.string.otp_copied), Toast.LENGTH_SHORT).show()
+        }
     }
 
 
@@ -321,6 +332,15 @@ object ViewUtils {
         sharedPrefs.edit().putBoolean(SHOW_CATEGORIES, isEnabled).apply()
     }
 
+    fun saveSelectedSimId(context: Context,subscriptionId: Int) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+            .putInt(SIM_SELECT, subscriptionId)
+            .apply()
+    }
+     fun getSavedSimId(context: Context): Int {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getInt(SIM_SELECT, SubscriptionManager.getDefaultSmsSubscriptionId())
+    }
 
     fun getSwipeAction(context: Context, isRightSwipe: Boolean): Int {
         val key = if (isRightSwipe) KEY_RIGHT_SWIPE_ACTION else KEY_LEFT_SWIPE_ACTION
@@ -407,6 +427,7 @@ object ViewUtils {
         }
         return this
     }
+
 
 }
 

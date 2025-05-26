@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">This is the start of your conversation, Say \nsomething nice!</string>
     <string name="messages_copied">Boodskappe gekopieer</string>
     <string name="copy">Copy</string>
-    <string name="can_t_replay">Kan nie op hierdie kortkode antwoord nie.</string>
-    <string name="learn_more"><u>Learn More</u></string>
+    <string name="can_t_replay">Kan nie op hierdie kortkode antwoord nie.&#160;</string>
+    <string name="learn_more">Learn More</string>
     <string name="this_sms_is_100_secure">Hierdie SMS is 100% veilig. Boodskappe versamel nooit data sonder jou toestemming nie. Alles word verwerk en gestoor op jou foon.</string>
     <string name="ok">OK</string>
 
@@ -118,7 +118,7 @@
     <string name="intro_txt1">Boodskappe Maklik gemaak</string>
     <string name="intro_txt2">Skedule &amp; Ontspan</string>
     <string name="intro_txt3">Vermy strooiposboodskappe</string>
-    <string name="intro_subtxt1">Bly verbind met \'n skoon, georganiseerde inkassie. Gesels enige tyd moeiteloos!</string>
+    <string name="intro_subtxt1">Bly verbind met \'n skoon, georganiseerde inkassie.Gesels enige tyd moeiteloos!</string>
     <string name="intro_subtxt2">Skeduleer tekste om outomaties te stuur—moet nooit \'n boodskap vergeet nie!</string>
     <string name="intro_subtxt3">Blokkeer strooipos en ongewenste kontakte maklik om jou inkassie skoon te hou.</string>
     <string name="flag">vlag</string>
@@ -231,7 +231,7 @@
     <string name="no_messages_selected_to_share">Geen boodskappe gekies om te deel nie</string>
     <string name="message_details">Boodskap besonderhede</string>
     <string name="type">Tik</string>
-    <string name="to">Om</string>
+    <string name="to">Om:&#160;</string>
     <string name="sent">Gestuur</string>
     <string name="unknown">Onbekend</string>
     <string name="web_type">Web tipe</string>
@@ -269,5 +269,14 @@
     <string name="matches_found">%1$s passings gevind</string>
     <string name="restoring">Herstel tans...</string>
     <string name="exit_text">Klik asseblief weer terug om af te sluit</string>
+
+    <string name="move_to_recycle_bin2">Skuif na die herwinningsdrom?</string>
+    <string name="selected_message_move">Geselekteerde boodskappe sal na die asblik geskuif word </string>
+    <string name="block_messages_progress">Blokkeer geselekteerde boodskappe... </string>
+    <string name="pin_limit_reached">Jy kan tot 10 boodskappe vaspen.</string>
+    <string name="no_result_found">Geen resultaat gevind nie</string>
+    <string name="move">Skuif</string>
+    <string name="move_to_bin">Skuif na Asblik?</string>
+    <string name="marking_messages_as_read">Merk boodskappe as gelees...</string>
 
 </resources>

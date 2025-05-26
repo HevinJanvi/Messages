@@ -5,7 +5,7 @@ import com.google.errorprone.annotations.Keep
 
 @Keep
 data class ConversationItem(
-    val id: Long,
+    var id: Long,
     val threadId: Long,
     val date: Long,
     val body: String,

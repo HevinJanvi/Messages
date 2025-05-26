@@ -11,6 +11,7 @@ import android.provider.Telephony
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants
@@ -53,7 +54,7 @@ class GroupProfileActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityGroupProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        applyWindowInsetsToView(binding.rootView)
         val numbersList = intent.getStringArrayListExtra(GROUP_MEMBERS) ?: arrayListOf()
         groupName = intent.getStringExtra(GROUP_NAME) ?: getString(R.string.group_chat)
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
@@ -66,6 +67,9 @@ class GroupProfileActivity : BaseActivity() {
         binding.recyclerViewMembers.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewMembers.adapter = adapter
         binding.textGroupName.text = groupName
+        binding.textGroupName.movementMethod =
+            android.text.method.ScrollingMovementMethod.getInstance()
+        binding.textGroupName.isVerticalScrollBarEnabled = true
 
         binding.icEdit.setOnClickListener {
             showRenameDialog()
@@ -104,25 +108,6 @@ class GroupProfileActivity : BaseActivity() {
                     updateArchiveUI()
                 }
             }
-            /*withContext(Dispatchers.Main) {
-                if (archivedConversationIds.contains(threadId)) {
-                    binding.icArchiveText.text = getString(R.string.unarchived)
-                    binding.icArchive.setImageResource(R.drawable.ic_unarchive)
-
-                    binding.lyArchive.setOnClickListener {
-                        viewModel.unarchiveConversations(listOf(threadId))
-                        refreshListStatus()
-                    }
-                } else {
-                    binding.icArchiveText.text = getString(R.string.archive)
-                    binding.icArchive.setImageResource(R.drawable.ic_archive)
-
-                    binding.lyArchive.setOnClickListener {
-                        viewModel.archiveSelectedConversations(listOf(threadId))
-                        refreshListStatus()
-                    }
-                }
-            }*/
         }
     }
 
@@ -259,6 +244,7 @@ class GroupProfileActivity : BaseActivity() {
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && !hasReadSmsPermission() && !hasReadContactsPermission()) {
             return
         }
+        adapter.clearCacheAndReload()
     }
 
 }

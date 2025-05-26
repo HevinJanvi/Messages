@@ -60,7 +60,7 @@ class MessageDetailsDialog(
             .format(Date(message.date))
 
         txtType.text = " : $type"
-        txtTo.text =  " : ${message.address ?: context.getString(R.string.unknown)}"
+        txtTo.text =  "${message.address ?: context.getString(R.string.unknown)}"
         txtSent.text = " : $dateFormatted"
 
         btnOk.setOnClickListener {

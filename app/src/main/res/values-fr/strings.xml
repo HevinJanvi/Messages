@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">C\'est le début de votre conversation, dites\nquelque chose de gentil !</string>
     <string name="messages_copied">Messages copiés</string>
     <string name="copy">Copier </string>
-    <string name="can_t_replay">Impossible de répondre à ce code court. | </string>
-    <string name="learn_more">&#160;&#160;<u>En savoir plus</u></string>
+    <string name="can_t_replay">Impossible de répondre à ce code court.|&#160; </string>
+    <string name="learn_more">En savoir plus</string>
     <string name="this_sms_is_100_secure">Ce SMS est 100% sécurisé. Les messages ne collectent jamais de données sans consentement préalable. Tout est traité et stocké sur votre téléphone.</string>
     <string name="ok">Ok</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Messagerie simplifiée</string>
     <string name="intro_txt2"><![CDATA[Planifiez & Détendez-vous]]></string>
     <string name="intro_txt3">Évitez les spams</string>
-    <string name="intro_subtxt1">Restez connecté avec une boîte de réception propre et organisée. Discutez facilement à tout moment !</string>
+    <string name="intro_subtxt1">Restez connecté avec une boîte de réception propre et organisée.Discutez facilement à tout moment !</string>
     <string name="intro_subtxt2">Planifiez vos messages pour un envoi automatique—n\'oubliez jamais un message !</string>
     <string name="intro_subtxt3">Bloquez facilement les spams et les contacts indésirables pour garder votre boîte de réception propre.</string>
     <string name="flag">Drapeau</string>
@@ -157,7 +157,7 @@
     <string name="appearance">Apparence</string>
     <string name="system_mode">Mode Système</string>
     <string name="font_size">Taille de police</string>
-    <string name="normal">Normal</string>
+    <string name="normal">Normale</string>
     <string name="swipe_actions">Actions de balayage</string>
     <string name="general">Général</string>
     <string name="notification">Notification</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Aucun message sélectionné à partager</string>
     <string name="message_details">Détails du message</string>
     <string name="type">Type</string>
-    <string name="to">À</string>
+    <string name="to">À :&#160;</string>
     <string name="sent">Envoyé</string>
     <string name="unknown">Inconnu</string>
     <string name="web_type">Type de site web</string>
@@ -269,4 +269,13 @@
     <string name="restoring">Restauration...</string>
     <string name="exit_text">Veuillez cliquer à nouveau sur Retour pour quitter </string>
 
+    <string name="move_to_recycle_bin2">Déplacer vers la corbeille ?</string>
+    <string name="selected_message_move">Les messages sélectionnés seront déplacés vers la corbeille </string>
+    <string name="block_messages_progress">Blocage des messages sélectionnés... </string>
+    <string name="pin_limit_reached">Vous ne pouvez épingler que 10 messages maximum.</string>
+    <string name="no_result_found">Aucun résultat trouvé</string>
+
+    <string name="move">Déplacer</string>
+    <string name="move_to_bin">Déplacer vers la corbeille ?</string>
+    <string name="marking_messages_as_read">Marquage des messages comme lus...</string>
 </resources>

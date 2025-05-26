@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.telephony.PhoneNumberUtils
+import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import com.test.messages.demo.data.SmsException
 import com.test.messages.demo.data.SmsException.Companion.EMPTY_DESTINATION_ADDRESS
@@ -25,7 +26,10 @@ class SmsSender(val app: Application) {
         if (body.isEmpty()) {
             throw IllegalArgumentException("SmsSender: empty text message")
         }
+//        Log.d("TAG", "sendMessage:dest11 "+ dest)
+
         dest = PhoneNumberUtils.stripSeparators(dest)
+//        Log.d("TAG", "sendMessage:dest "+ dest)
 
         if (dest.isEmpty()) {
             throw SmsException(EMPTY_DESTINATION_ADDRESS)
@@ -33,6 +37,7 @@ class SmsSender(val app: Application) {
         val smsManager = getSmsManager(subId)
         val messages = smsManager.divideMessage(body)
         if (messages == null || messages.size < 1) {
+//            Log.d("TAG", "sendMessage:catch "+ ERROR_SENDING_MESSAGE)
             throw SmsException(ERROR_SENDING_MESSAGE)
         }
         sendInternal(
@@ -78,6 +83,8 @@ class SmsSender(val app: Application) {
         try {
             if (sendMultipartSmsAsSeparateMessages) {
                 for (i in 0 until messageCount) {
+//                    Log.d("TAG", "sendInternal:if-- "+dest+"----body----"+messages)
+
                     smsManager.sendTextMessage(
                         dest,
                         serviceCenter,
@@ -87,11 +94,13 @@ class SmsSender(val app: Application) {
                     )
                 }
             } else {
+//                Log.d("TAG", "sendInternal:else-- "+dest+"----body----"+messages)
                 smsManager.sendMultipartTextMessage(
                     dest, serviceCenter, messages, sentIntents, deliveryIntents
                 )
             }
         } catch (e: Exception) {
+//            Log.d("TAG", "sendInternal:catch-- "+dest+"----body----"+messages)
             throw SmsException(ERROR_SENDING_MESSAGE, e)
         }
     }

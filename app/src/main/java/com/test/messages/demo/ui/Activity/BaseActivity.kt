@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -13,6 +14,10 @@ import android.view.Window
 import android.view.WindowInsetsController
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
@@ -37,6 +42,26 @@ open class BaseActivity : AppCompatActivity() {
 
     }
 
+    protected fun applyWindowInsetsToView(view: View) {
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+
+           v.setBackgroundColor(resources.getColor(R.color.bg))
+            v.setPadding(
+                bars.left,
+                bars.top,
+                bars.right,
+                bars.bottom
+            )
+            WindowInsetsCompat.CONSUMED
+        }
+
+        // Trigger the insets listener immediately
+        ViewCompat.requestApplyInsets(view)
+    }
+
     fun View.hideKeyboard(context: Context) {
         try {
             val inputMethodManager =
@@ -56,7 +81,7 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
-    open fun setLanguage(context: Context): Context? {
+     fun setLanguage(context: Context): Context? {
         val languageCode = ViewUtils.getSelectedLanguage(context)
         val locale = Locale(languageCode)
         Locale.setDefault(locale)
@@ -65,6 +90,7 @@ open class BaseActivity : AppCompatActivity() {
         configuration.setLayoutDirection(locale)
         return context.createConfigurationContext(configuration)
     }
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -78,7 +104,7 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
-    fun handleDrawerState(drawerLayout: DrawerLayout,drawerWasOpen :Boolean=false) {
+    fun handleDrawerState(drawerLayout: DrawerLayout, drawerWasOpen: Boolean = false) {
 
         drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
 
@@ -140,6 +166,7 @@ open class BaseActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val insetsController: WindowInsetsController? = window.insetsController
                 insetsController?.apply {
+
                     setSystemBarsAppearance(
                         if (isDarkBackground) 0 else WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
                         WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS

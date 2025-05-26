@@ -30,7 +30,7 @@ class EditCategoryActivity : BaseActivity() {
         binding = ActivityEditCategoryBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-
+        applyWindowInsetsToView(binding.rootView)
         categories =
             intent.getStringArrayListExtra("category_list")?.toMutableList() ?: mutableListOf()
 

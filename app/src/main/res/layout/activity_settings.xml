@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
+    android:id="@+id/rootView"
     tools:context=".ui.Activity.SettingsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -74,92 +75,17 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/themeLy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/ripple_effect"
-                android:clickable="true"
-                android:focusable="true"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="17dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/subtxt1">
-
-                <ImageView
-                    android:id="@+id/icTheme"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_theme"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:paddingStart="15dp"
-                    android:paddingEnd="5dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/icTheme"
-                    app:layout_constraintEnd_toStartOf="@+id/nextTheme"
-                    app:layout_constraintStart_toEndOf="@+id/icTheme"
-                    app:layout_constraintTop_toTopOf="@+id/icTheme">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/product_sans_regular"
-                        android:text="@string/theme_mode"
-                        android:textColor="@color/textcolor"
-                        android:textFontWeight="400"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/themeMode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:fontFamily="@font/product_sans_regular"
-                        android:text="@string/system_mode"
-                        android:textColor="@color/gray_txtcolor"
-                        android:textFontWeight="400"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/nextTheme"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_next"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <View
-                android:id="@+id/view1"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="20dp"
-                android:background="@color/view_color"
-                app:layout_constraintTop_toBottomOf="@id/themeLy" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/langLy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/ripple_effect"
                 android:clickable="true"
+                android:layout_marginTop="10dp"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="17dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/view1">
+                app:layout_constraintTop_toBottomOf="@id/subtxt1">
 
                 <ImageView
                     android:id="@+id/icLanguage"
@@ -216,13 +142,90 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+            <View
+                android:id="@+id/view1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="20dp"
+                android:background="@color/view_color"
+                app:layout_constraintTop_toBottomOf="@id/langLy" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/themeLy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="17dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view1">
+
+                <ImageView
+                    android:id="@+id/icTheme"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_theme"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/icTheme"
+                    app:layout_constraintEnd_toStartOf="@+id/nextTheme"
+                    app:layout_constraintStart_toEndOf="@+id/icTheme"
+                    app:layout_constraintTop_toTopOf="@+id/icTheme">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/theme_mode"
+                        android:textColor="@color/textcolor"
+                        android:textFontWeight="400"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/themeMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:text="@string/system_mode"
+                        android:textColor="@color/gray_txtcolor"
+                        android:textFontWeight="400"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/nextTheme"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_next"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
             <View
                 android:id="@+id/view2"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginHorizontal="20dp"
                 android:background="@color/view_color"
-                app:layout_constraintTop_toBottomOf="@id/langLy" />
+                app:layout_constraintTop_toBottomOf="@id/themeLy" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/categoryLy"

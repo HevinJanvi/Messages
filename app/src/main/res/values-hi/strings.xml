@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">यह आपकी बातचीत की शुरुआत है, \nकुछ अच्छा बोलें!</string>
     <string name="messages_copied">संदेश कॉपी किए गए</string>
     <string name="copy"> कॉपी करें</string>
-    <string name="can_t_replay">इस संक्षिप्त कोड को फिर से नहीं चलाया जा सकता। |</string>
-    <string name="learn_more">&#160;&#160;<u>अधिक जानें</u></string>
+    <string name="can_t_replay">इस संक्षिप्त कोड को फिर से नहीं चलाया जा सकता।|</string>
+    <string name="learn_more">अधिक जानें</string>
     <string name="this_sms_is_100_secure">यह SMS 100% सुरक्षित है। संदेश बिना पूर्व सहमति के कभी भी डेटा एकत्र नहीं करते हैं। सब कुछ आपके फ़ोन पर संसाधित और संग्रहीत किया जाता है।</string>
     <string name="ok">ठीक है</string>
 
@@ -109,7 +109,7 @@
     <string name="schedule_at">शेड्यूल करें</string>
     <string name="welcome_to_messages"><font fgcolor="#1A73E8">संदेश</font> में आपका स्वागत है</string>
 
-    <string name="to_send_and_receive">संदेश भेजने और प्राप्त करने के लिए, Messages\na को अपने डिफ़ॉल्ट SMS ऐप के रूप में सेट करें।</string>
+    <string name="to_send_and_receive">संदेश भेजने और प्राप्त करने के लिए, Messages\nको अपने डिफ़ॉल्ट SMS ऐप के रूप में सेट करें।</string>
     <string name="instant_replies_in_one_tap">एक टैप में तुरंत उत्तर।</string>
     <string name="stay_safe_with">सुरक्षित मैसेजिंग के साथ सुरक्षित रहें।</string>
     <string name="set_as_default">डिफ़ॉल्ट के रूप में सेट करें</string>
@@ -117,7 +117,7 @@
     <string name="intro_txt1">संदेश भेजना आसान बना दिया गया</string>
     <string name="intro_txt2"><![CDATA[शेड्यूल और आराम करें]]></string>
     <string name="intro_txt3">स्पैम संदेशों से बचें</string>
-    <string name="intro_subtxt1">एक साफ, व्यवस्थित इनबॉक्स के साथ जुड़े रहें। किसी भी समय आसानी से चैट करें!</string>
+    <string name="intro_subtxt1">एक साफ, व्यवस्थित इनबॉक्स के साथ जुड़े रहें।किसी भी समय आसानी से चैट करें!</string>
     <string name="intro_subtxt2">स्वचालित रूप से भेजने के लिए टेक्स्ट शेड्यूल करें - कभी भी संदेश न भूलें!</string>
     <string name="intro_subtxt3">अपने इनबॉक्स को साफ रखने के लिए स्पैम और अवांछित संपर्कों को आसानी से ब्लॉक करें।</string>
     <string name="flag">ध्वज</string>
@@ -222,7 +222,7 @@
     <string name="this_step_may_contains_ads">इस चरण में विज्ञापन हो सकते हैं</string>
 
     <string name="language">भाषा</string>
-    <string name="copy_otp">ओटीपी कॉपी करें</string>
+    <string name="copy_otp">कॉपी ओटीपी</string>
     <string name="move_to_recycle_bin">रीसायकल बिन में ले जाएँ</string>
     <string name="move_this_conversation_to_the_rrecycle_bin">इस वार्तालाप को रीसायकल बिन में ले जाएँ?</string>
     <string name="share">साझा करें</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">साझा करने के लिए कोई संदेश नहीं चुना गया</string>
     <string name="message_details">संदेश विवरण</string>
     <string name="type">प्रकार</string>
-    <string name="to">को</string>
+    <string name="to">को :&#160;</string>
     <string name="sent">भेजा गया</string>
     <string name="unknown">अज्ञात</string>
     <string name="web_type">वेब प्रकार</string>
@@ -269,4 +269,12 @@
     <string name="restoring">पुनर्स्थापित किया जा रहा है...</string>
     <string name='exit_text'> कृपया बाहर निकलने के लिए वापस क्लिक करें </string>
 
+    <string name="move_to_recycle_bin2">रीसायकल बिन में ले जाएं?</string>
+    <string name="selected_message_move">चयनित संदेश रीसायकल बिन में ले जाए जाएंगे </string>
+    <string name="block_messages_progress">चयनित संदेश अवरुद्ध किए जा रहे हैं... </string>
+    <string name="pin_limit_reached">आप अधिकतम 10 संदेश ही पिन कर सकते हैं.</string>
+    <string name="no_result_found">कोई परिणाम नहीं मिला</string>
+    <string name="move">स्थानांतरित करें</string>
+    <string name="move_to_bin">बिन में ले जाएं?</string>
+    <string name="marking_messages_as_read">संदेशों को पढ़ा हुआ चिह्नित करना...</string>
 </resources>

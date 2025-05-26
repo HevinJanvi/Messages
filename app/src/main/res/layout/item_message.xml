@@ -18,7 +18,7 @@
             android:id="@+id/imageContainer"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="2dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -52,44 +52,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:visibility="gone"
-                android:src="@drawable/ic_selected" />
+                android:src="@drawable/ic_selected"
+                android:visibility="gone" />
 
         </FrameLayout>
 
-        <TextView
-            android:id="@+id/senderName"
+        <FrameLayout
+            android:id="@+id/senderLy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="18dp"
             android:layout_marginEnd="8dp"
-            android:fontFamily="@font/product_sans_medium"
-            android:singleLine="true"
-            android:text="@string/app_name"
-            android:textDirection="locale"
-            android:textColor="@color/textcolor"
-            android:textFontWeight="500"
-            android:textSize="17sp"
-            app:layout_constraintEnd_toStartOf="@+id/date"
+            app:layout_constraintEnd_toStartOf="@+id/barrier"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed">
 
-      <!--  <TextView
+            <TextView
+                android:id="@+id/senderName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/product_sans_medium"
+                android:singleLine="true"
+                android:text="@string/app_name"
+                android:textColor="@color/textcolor"
+                android:textDirection="ltr"
+                android:textFontWeight="500"
+                android:textSize="17sp" />
+
+        </FrameLayout>
+
+        <TextView
             android:id="@+id/messageContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="2dp"
-            android:layout_marginEnd="5dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="6dp"
             android:fontFamily="@font/product_sans_regular"
             android:maxLines="2"
-            android:text=""
+            android:text="@string/app_name"
             android:textColor="@color/gray_txtcolor"
+            android:textDirection="locale"
             android:textFontWeight="400"
-            android:textSize="13dp"
-            app:layout_constraintEnd_toStartOf="@+id/lyExtra"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toStartOf="@+id/barrier"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
-            app:layout_constraintTop_toBottomOf="@id/senderName" />-->
+            app:layout_constraintTop_toBottomOf="@+id/senderLy" />
 
         <TextView
             android:id="@+id/otpTextView"
@@ -109,8 +117,7 @@
             android:textSize="13sp"
             android:visibility="gone"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
-            app:layout_constraintTop_toBottomOf="@+id/lyExtra" />
-
+            app:layout_constraintTop_toBottomOf="@+id/messageContent" />
 
         <TextView
             android:id="@+id/date"
@@ -121,96 +128,73 @@
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
             android:textSize="13sp"
-            android:layout_marginTop="2dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@+id/senderLy" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/lyExtra"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="3dp"
-            app:layout_constraintStart_toEndOf="@+id/imageContainer"
-            app:layout_constraintTop_toBottomOf="@id/senderName"
-            app:layout_constraintEnd_toStartOf="@+id/blueDot">
+            app:barrierDirection="start"
+            app:constraint_referenced_ids="date,icMute" />
 
-            <TextView
-                android:id="@+id/messageContent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:fontFamily="@font/product_sans_regular"
-                android:maxLines="2"
-                android:text="@string/app_name"
-                android:textColor="@color/gray_txtcolor"
-                android:textFontWeight="400"
-                android:textSize="13sp"
-                android:textDirection="locale"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/lyIcons"
-                app:layout_constraintStart_toStartOf="parent"
-                 />
 
-            <LinearLayout
-                android:id="@+id/lyIcons"
+<!--        <LinearLayout-->
+<!--            android:id="@+id/lyIcons"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:gravity="end"-->
+<!--            android:orientation="horizontal"-->
+<!--            app:layout_constraintHorizontal_chainStyle="packed"-->
+<!--            app:layout_constraintBottom_toBottomOf="@id/messageContent"-->
+<!--            app:layout_constraintEnd_toStartOf="@+id/blueDot"-->
+<!--            app:layout_constraintHorizontal_bias="1"-->
+<!--            app:layout_constraintStart_toEndOf="@+id/messageContent"-->
+<!--            app:layout_constraintTop_toTopOf="@id/messageContent">-->
+
+            <ImageView
+                android:id="@+id/icMute"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBaseline_toBottomOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                android:layout_marginTop="2dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_mutt"
+                android:visibility="visible"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintHorizontal_bias="1"
+                app:layout_constraintEnd_toStartOf="@+id/icPin"
+                app:layout_constraintTop_toTopOf="@id/messageContent"
+                app:layout_constraintStart_toEndOf="@+id/messageContent"
+                app:layout_constraintBottom_toBottomOf="@id/messageContent"/>
 
-                <ImageView
-                    android:id="@+id/icMute"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_mute2"
-                    android:visibility="invisible"
-                    android:layout_marginTop="2dp"/>
-
-                <ImageView
-                    android:id="@+id/icPin"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
-                    android:src="@drawable/ic_pin_item"
-                    android:visibility="invisible"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
-
-
-            <TextView
-                android:id="@+id/newMessage"
+            <ImageView
+                android:id="@+id/icPin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/unread_msg_bg"
-                android:fontFamily="@font/product_sans_medium"
-                android:paddingHorizontal="7dp"
-                android:paddingVertical="3dp"
-                android:text="1"
-                android:textColor="@color/white"
-                android:textSize="10dp"
-                android:visibility="invisible"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="2dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_pinn"
+                android:visibility="visible"
+                app:layout_constraintTop_toTopOf="@id/messageContent"
+                app:layout_constraintStart_toEndOf="@+id/icMute"
+                app:layout_constraintEnd_toStartOf="@+id/blueDot"
+                app:layout_constraintBottom_toBottomOf="@id/messageContent"/>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView
             android:id="@+id/blueDot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
             android:adjustViewBounds="true"
             android:src="@drawable/blue_dot"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@+id/lyExtra"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/messageContent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/lyExtra" />
+            app:layout_constraintStart_toEndOf="@+id/icPin"
+            app:layout_constraintTop_toTopOf="@+id/messageContent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -218,7 +202,7 @@
         android:id="@+id/dividerView"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginHorizontal="15dp"
+        android:layout_marginHorizontal="14dp"
         android:layout_marginTop="4dp"
         android:background="@color/view_color"
         android:visibility="gone"

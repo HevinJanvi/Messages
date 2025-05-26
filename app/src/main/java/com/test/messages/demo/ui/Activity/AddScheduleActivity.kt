@@ -45,13 +45,16 @@ class AddScheduleActivity : BaseActivity() {
     private lateinit var filteredContacts: List<ContactItem>
     private lateinit var messageUtils: MessageUtils
     private var isNumberKeyboard = false
+    private lateinit var view: View
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddScheduleBinding.inflate(layoutInflater)
-        val view: View = binding.getRoot()
+        view = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
+
         messageUtils = MessageUtils(this)
         view.hideKeyboard(this)
         binding.icBack.setOnClickListener {
@@ -126,6 +129,7 @@ class AddScheduleActivity : BaseActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun openConversation(contact: ContactItem) {
+        view.hideKeyboard(this@AddScheduleActivity)
         val threadId = getThreadId(this, contact.phoneNumber)
         val intent = Intent(this, ConversationActivity::class.java)
         intent.putExtra(EXTRA_THREAD_ID, threadId)
@@ -139,9 +143,7 @@ class AddScheduleActivity : BaseActivity() {
     }
 
     private fun updateSelectedContactsHeader() {
-
         selectedContactViews.clear()
-
         selectedContacts.forEach { contact ->
             val contactView =
                 LayoutInflater.from(this).inflate(R.layout.item_selected_contact, null)

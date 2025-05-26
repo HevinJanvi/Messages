@@ -1,6 +1,4 @@
 package com.test.messages.demo.ui.Activity
-
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,7 +9,6 @@ import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +28,7 @@ import com.test.messages.demo.ui.Adapter.BlockedMessagesAdapter
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
@@ -61,6 +59,7 @@ class BlockMessageActivity : BaseActivity() {
         binding = ActivityBlockBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
         EventBus.getDefault().register(this)
         binding.blockRecyclerView.layoutManager = LinearLayoutManager(this)
         adapter = BlockedMessagesAdapter(
@@ -137,12 +136,13 @@ class BlockMessageActivity : BaseActivity() {
         }
     }*/
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDraftUpdateEvent(event: DraftChangedEvent) {
-        Log.d("TAG", "onDraftchangeEvent: ")
-        binding.blockRecyclerView.scrollToPosition(0)
-        draftViewModel.saveDraft(event.threadId, event.draft)
-        viewModel.loadMessages()
+        Handler(Looper.getMainLooper()).postDelayed({
+            draftViewModel.loadAllDrafts()
+            viewModel.loadMessages()
+        }, 500)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -159,8 +159,9 @@ class BlockMessageActivity : BaseActivity() {
                 val selectedThreadIds = adapter.getSelectedThreadIds()
                 if (selectedThreadIds.isNotEmpty()) {
                     viewModel.unblockConversations(selectedThreadIds)
+
                     val updatedList =
-                        viewModel.messages.value?.filterNot { it.threadId in selectedThreadIds }
+                        adapter.getAllMessages().filterNot { it.threadId in selectedThreadIds }
                             ?: emptyList()
                     viewModel.updateMessages(updatedList)
                     adapter.clearSelection()

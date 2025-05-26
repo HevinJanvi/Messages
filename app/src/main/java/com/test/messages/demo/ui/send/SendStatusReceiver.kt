@@ -34,6 +34,7 @@ abstract class SendStatusReceiver : BroadcastReceiver() {
         const val SMS_SENT_ACTION = "receiver.SMS_SENT"
         const val EXTRA_ERROR_CODE = "errorCode"
         const val EXTRA_SUB_ID = "subId"
+//        const val EXTRA_SUB_ID = "sub_id"
         const val NO_ERROR_CODE = -1
     }
 }

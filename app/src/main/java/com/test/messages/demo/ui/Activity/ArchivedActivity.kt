@@ -79,28 +79,13 @@ class ArchivedActivity : BaseActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDraftUpdateEvent(event: DraftChangedEvent) {
-        Log.d("TAG", "onDraftchangeEvent: ")
-        binding.archiveRecyclerView.scrollToPosition(0)
-        draftViewModel.saveDraft(event.threadId, event.draft)
+        draftViewModel.loadAllDrafts()
         viewModel.loadMessages()
+        Handler(Looper.getMainLooper()).postDelayed({
+            draftViewModel.loadAllDrafts()
+            viewModel.loadMessages()
+        }, 500)
     }
-
-    /*@RequiresApi(Build.VERSION_CODES.Q)
-    private val conversationResultLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data: Intent? = result.data
-            if (data != null) {
-                adapter.notifyDataSetChanged()
-                draftViewModel.loadAllDrafts()
-                Handler(Looper.getMainLooper()).postDelayed({
-                    viewModel.loadMessages()
-                }, 80)
-
-            }
-        }
-    }*/
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,6 +93,7 @@ class ArchivedActivity : BaseActivity() {
         binding = ActivityArchivedBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
         EventBus.getDefault().register(this)
 
         binding.archiveRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -162,7 +148,7 @@ class ArchivedActivity : BaseActivity() {
                         if (archivedMessages.isEmpty()) View.VISIBLE else View.GONE
 
                     val layoutManager =
-                        binding.archiveRecyclerView.layoutManager as LinearLayoutManager
+                    binding.archiveRecyclerView.layoutManager as LinearLayoutManager
                     val lastPosition = layoutManager.findFirstVisibleItemPosition()
                     adapter.submitList(archivedMessages)
                     binding.archiveRecyclerView.post {
@@ -261,6 +247,7 @@ class ArchivedActivity : BaseActivity() {
                 if (selectedThreadIds.isNotEmpty()) {
 //                    deleteMessages(selectedThreadIds)
                     deleteMessages()
+                    viewModel.deleteArchiveConversations(selectedThreadIds)
                     adapter?.removeItems(selectedThreadIds)
                     adapter?.clearSelection()
                 }
@@ -276,11 +263,14 @@ class ArchivedActivity : BaseActivity() {
                     CoroutineScope(Dispatchers.IO).launch {
                         viewModel.unarchiveConversations(selectedThreadIds)
                         val selectedIds = adapter.selectedMessages.map { it.threadId }
-                        viewModel.blockSelectedConversations(selectedIds)
-                        withContext(Dispatchers.Main) {
+                        viewModel.blockSelectedConversations(selectedIds){
                             adapter.removeItems(selectedThreadIds)
                             adapter.clearSelection()
                         }
+                       /* withContext(Dispatchers.Main) {
+                            adapter.removeItems(selectedThreadIds)
+                            adapter.clearSelection()
+                        }*/
                     }
                 }
                 blockDialog.show()
@@ -482,7 +472,6 @@ class ArchivedActivity : BaseActivity() {
                         0
                     )
                 }
-
                 else -> {
 
                     if (firstIsRead) {
@@ -518,7 +507,38 @@ class ArchivedActivity : BaseActivity() {
         val selectedMessages = adapter.selectedMessages
         if (selectedMessages.isEmpty()) return
 
-        val firstIsRead = selectedMessages.first().isRead
+        lifecycleScope.launch(Dispatchers.IO) {
+            val firstIsRead = selectedMessages.first().isRead
+            val newReadStatus = if (firstIsRead) 0 else 1
+
+            val threadIds = selectedMessages.map { it.threadId }
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, newReadStatus)
+            }
+
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(",")})"
+            val updatedRows = contentResolver.update(
+                Telephony.Sms.CONTENT_URI,
+                contentValues,
+                selection,
+                null
+            )
+
+            if (updatedRows > 0) {
+                val updatedList = viewModel.messages.value?.map { message ->
+                    if (threadIds.contains(message.threadId)) {
+                        message.copy(isRead = newReadStatus == 1)
+                    } else message
+                } ?: emptyList()
+
+                withContext(Dispatchers.Main) {
+                    viewModel.updateMessages(updatedList)
+                    adapter.updateReadStatus(threadIds)
+                }
+            }
+        }
+
+       /* val firstIsRead = selectedMessages.first().isRead
         val newReadStatus = if (firstIsRead) 0 else 1
 
         val threadIds = selectedMessages.map { it.threadId }
@@ -539,7 +559,7 @@ class ArchivedActivity : BaseActivity() {
 
             viewModel.updateMessages(updatedList)
             adapter.updateReadStatus(threadIds)
-        }
+        }*/
     }
 
 

@@ -48,22 +48,31 @@
 
         </FrameLayout>
 
-        <TextView
-            android:id="@+id/recipient"
+        <FrameLayout
+            android:id="@+id/senderLy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
             android:layout_marginEnd="8dp"
-            android:fontFamily="@font/product_sans_medium"
-            android:singleLine="true"
-            android:text="@string/app_name"
-            android:textColor="@color/textcolor"
-            android:textFontWeight="500"
-            android:textSize="17sp"
-            android:textDirection="locale"
             app:layout_constraintEnd_toStartOf="@+id/time"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/recipient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/product_sans_medium"
+                android:singleLine="true"
+                android:text="@string/app_name"
+                android:textDirection="ltr"
+                android:textColor="@color/textcolor"
+                android:textFontWeight="500"
+                android:textSize="17sp"
+                />
+        </FrameLayout>
+
 
         <TextView
             android:id="@+id/message"
@@ -81,7 +90,7 @@
             android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
-            app:layout_constraintTop_toBottomOf="@id/recipient" />
+            app:layout_constraintTop_toBottomOf="@id/senderLy" />
 
         <TextView
             android:id="@+id/time"

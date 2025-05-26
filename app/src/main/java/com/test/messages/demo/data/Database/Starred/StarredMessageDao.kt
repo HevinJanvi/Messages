@@ -25,4 +25,7 @@ interface StarredMessageDao {
     fun getAllStarredMessages(): List<StarredMessage>
     @Query("DELETE FROM starred_messages WHERE message_id = :messageId")
     suspend fun deleteStarredMessageById(messageId: Long)
+
+    @Query("DELETE FROM starred_messages WHERE message_id IN (:messageIds)")
+    suspend fun deleteStarredMessagesByIds(messageIds: List<Long>)
 }

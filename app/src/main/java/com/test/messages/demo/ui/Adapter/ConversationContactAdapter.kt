@@ -15,6 +15,7 @@ import com.test.messages.demo.Util.TimeUtils
 
 class ConversationContactAdapter(
     private var contacts: List<ContactItem>,
+
     private val onContactSelected: (ContactItem) -> Unit
 ) : RecyclerView.Adapter<ConversationContactAdapter.ContactViewHolder>() {
 
@@ -42,7 +43,7 @@ class ConversationContactAdapter(
 
         fun bind(contact: ContactItem) {
             contactName.text = contact.name
-            contactNumber.text = contact.phoneNumber
+            contactNumber.text = contact.normalizeNumber
             val firstChar = contact.name!!.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
             if (startsWithSpecialChar || contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {

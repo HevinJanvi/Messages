@@ -51,8 +51,8 @@
     <string name="this_is_the_start_of_your_conversation">This is the start of your conversation, Say \nsomething nice!</string>
     <string name="messages_copied">Messages copied</string>
     <string name="copy">Copy</string>
-    <string name="can_t_replay">Can’t replay to this short code. | </string>
-    <string name="learn_more">&#160;&#160;<u>Learn More</u></string>
+    <string name="can_t_replay">Can’t replay to this short code.|&#160; </string>
+    <string name="learn_more">Learn more</string>
     <string name="this_sms_is_100_secure">This SMS is 100% secure. Messages never collect data without prior consent. Everything is processed and stored on your phone.</string>
     <string name="ok">Ok</string>
 
@@ -254,7 +254,7 @@
     <string name="no_messages_selected_to_share">No messages selected to share</string>
     <string name="message_details">Message Details</string>
     <string name="type">Type </string>
-    <string name="to">To</string>
+    <string name="to">To :&#160;</string>
     <string name="sent">Sent</string>
     <string name="unknown">Unknown</string>
     <string name="web_type">Web type</string>
@@ -292,7 +292,15 @@
     <string name="matches_found">%1$s matches found</string>
     <string name="restoring">Restoring...</string>
     <string name="exit_text">Please click Back again to exit </string>
-    <string name="move_to_recycle_bin2" >Move to recycle Bin?</string>
-    <string name="selected_message_move" >Selected messages will be moved to the recycle bin </string>
+
+    <string name="move_to_recycle_bin2">Move to recycle Bin?</string>
+    <string name="selected_message_move">Selected messages will be moved to the recycle bin </string>
+    <string name="block_messages_progress">Blocking selected messages... </string>
+    <string name="pin_limit_reached">You can pin up to 10 messages only.</string>
+    <string name="no_result_found">No result found</string>
+
+        <string name="move">Move</string>
+        <string name="move_to_bin">Move to Bin?</string>
+        <string name="marking_messages_as_read">Marking messages as read...</string>
 
 </resources>

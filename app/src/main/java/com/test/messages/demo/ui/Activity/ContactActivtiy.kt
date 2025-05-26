@@ -46,7 +46,6 @@ import org.greenrobot.eventbus.EventBus
 @AndroidEntryPoint
 class ContactActivtiy : BaseActivity() {
     private lateinit var binding: ActivityContactBinding
-    private lateinit var contactAdapter: ContactAdapter
     private var selectedContacts = mutableListOf<ContactItem>()
     private val selectedContactViews = mutableMapOf<String, View>()
 
@@ -57,11 +56,13 @@ class ContactActivtiy : BaseActivity() {
     private var isNumberKeyboard = false
     private lateinit var source: String
 
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityContactBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyWindowInsetsToView(binding.rootView)
         messageUtils = MessageUtils(this)
 
         val receivedContacts = intent.getParcelableArrayListExtra<ContactItem>("selectedContacts")
@@ -86,14 +87,18 @@ class ContactActivtiy : BaseActivity() {
         } else if (source.equals(SHARECONTACT)) {
             binding.btmly.visibility = View.GONE
         } else {
-            binding.btmly.visibility = View.VISIBLE
+            if (selectedContacts.isEmpty()) {
+                binding.btmly.visibility = View.GONE
+            } else {
+                binding.btmly.visibility = View.VISIBLE
+            }
         }
         val forwardedMessage = intent.getStringExtra(FORWARDMSGS)
         val contactAdapter = ContactAdapter(allContacts) { contact ->
             when (source) {
                 FORWARD -> {
                     if (source == FORWARD && !forwardedMessage.isNullOrEmpty()) {
-                        val selectedNumber = contact.phoneNumber
+                        val selectedNumber = contact.normalizeNumber
                         val contactName = viewModel.getContactNameOrNumber(selectedNumber)
                         val threadId = getThreadId(setOf(selectedNumber))
 
@@ -113,13 +118,12 @@ class ContactActivtiy : BaseActivity() {
 
                 SHARECONTACT -> {
                     val resultIntent = Intent().apply {
-                        putExtra(SHARECONTACTNUMBER, contact.phoneNumber)
+                        putExtra(SHARECONTACTNUMBER, contact.normalizeNumber)
                         putExtra(SHARECONTACTNAME, contact.name)
                     }
                     setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 }
-
                 else -> {
                     addToSelectedContacts(contact)
                 }
@@ -152,10 +156,19 @@ class ContactActivtiy : BaseActivity() {
         binding.contactRecyclerView.adapter = contactAdapter
 
         viewModel.loadContacts()
+        binding.progressBar.visibility = View.VISIBLE
+        binding.contactRecyclerView.visibility=View.GONE
         viewModel.contacts.observe(this) { contacts ->
-            allContacts = contacts
-            filteredContacts = contacts
+
+            val uniqueContacts = removeDuplicateContacts(contacts)
+            val sortedContacts = sortContactsPutSpecialLast(uniqueContacts)
+
+            allContacts = sortedContacts
+            filteredContacts = sortedContacts
+
             contactAdapter.submitList(filteredContacts)
+            binding.progressBar.visibility = View.GONE
+            binding.contactRecyclerView.visibility=View.VISIBLE
         }
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -168,13 +181,13 @@ class ContactActivtiy : BaseActivity() {
                         it.name?.contains(
                             query,
                             ignoreCase = true
-                        ) == true || it.phoneNumber.contains(query)
+                        ) == true || it.normalizeNumber.contains(query)
                     }
 
                 }
 
                 val isValidNumber = query.matches(Regex("^\\d{1,16}$"))
-                val numberExistsInContacts = allContacts.any { it.phoneNumber == query }
+                val numberExistsInContacts = allContacts.any { it.normalizeNumber == query }
 
                 if (isValidNumber && !numberExistsInContacts) {
                     val newContact = ContactItem(
@@ -208,6 +221,7 @@ class ContactActivtiy : BaseActivity() {
 
     private fun updateSelectedContactsHeader() {
         binding.selectedContactsLayout.removeAllViews()
+        binding.btmly.visibility = View.GONE
         binding.selectedContactsScroll.visibility = View.GONE
         selectedContactViews.clear()
 
@@ -228,8 +242,9 @@ class ContactActivtiy : BaseActivity() {
                 binding.selectedContactsScroll.fullScroll(View.FOCUS_RIGHT)
             }
             binding.selectedContactsScroll.visibility = View.VISIBLE
+            binding.btmly.visibility = View.VISIBLE
 
-            selectedContactViews[contact.phoneNumber] = contactView
+            selectedContactViews[contact.normalizeNumber] = contactView
         }
     }
 
@@ -244,13 +259,14 @@ class ContactActivtiy : BaseActivity() {
     private fun removeFromSelectedContacts(contact: ContactItem) {
         if (!selectedContacts.contains(contact)) return
         selectedContacts.remove(contact)
-        val contactView = selectedContactViews[contact.phoneNumber]
+        val contactView = selectedContactViews[contact.normalizeNumber]
         if (contactView != null) {
             binding.selectedContactsLayout.removeView(contactView)
-            selectedContactViews.remove(contact.phoneNumber) // Remove from map
+            selectedContactViews.remove(contact.normalizeNumber) // Remove from map
         }
         if (selectedContacts.isEmpty()) {
             binding.selectedContactsScroll.visibility = View.GONE
+//            binding.btmly.visibility = View.GONE
         }
     }
 
@@ -274,20 +290,48 @@ class ContactActivtiy : BaseActivity() {
         imm.restartInput(binding.editTextSearch)
     }
 
+    private fun removeDuplicateContacts(contacts: List<ContactItem>): List<ContactItem> {
+        val seen = mutableSetOf<String>()
+        return contacts.filter { contact ->
+            val normalized = contact.normalizeNumber.trim()
+            if (normalized in seen) {
+                false
+            } else {
+                seen.add(normalized)
+                true
+            }
+        }
+    }
+
     override fun onBackPressed() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = currentFocus
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-            view.clearFocus()
-        } else {
             if (source.equals(FORWARD)) {
                 finish()
             } else {
+               /* val resultIntent = Intent()
+                resultIntent.putParcelableArrayListExtra("selectedContacts", ArrayList(selectedContacts))
+                setResult(RESULT_OK, resultIntent)*/
+                binding.editTextSearch.hideKeyboard(this)
                 super.onBackPressed()
             }
+    }
 
-        }
+    private fun sortContactsPutSpecialLast(list: List<ContactItem>): List<ContactItem> {
+        val letterContacts = list.filter {
+            val firstChar = it.name?.trim()?.firstOrNull()
+            firstChar != null && firstChar.isLetter()
+        }.sortedBy { it.name?.lowercase() }
+
+        val digitContacts = list.filter {
+            val firstChar = it.name?.trim()?.firstOrNull()
+            firstChar != null && firstChar.isDigit()
+        }.sortedBy { it.name?.lowercase() }
+
+        val specialContacts = list.filter {
+            val firstChar = it.name?.trim()?.firstOrNull()
+            firstChar == null || (!firstChar.isLetter() && !firstChar.isDigit())
+        }.sortedBy { it.name?.lowercase() }
+
+        return letterContacts + digitContacts + specialContacts
     }
 
     override fun onResume() {

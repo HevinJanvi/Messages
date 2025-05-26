@@ -23,6 +23,7 @@ import com.test.messages.demo.R
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.ViewUtils.copyToClipboard
 import com.test.messages.demo.Util.ViewUtils.extractOtp
+import com.test.messages.demo.data.Model.MessageItem
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -60,20 +61,41 @@ class RecycleBinAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = messages[position]
 
-        val name = getContactName(holder.itemView.context, message.address)
-        if (!name.isNullOrEmpty() && name != message.address) {
-            message.address = name
+        val context = holder.itemView.context
+        val addressList = message.address.split(",")
+        val nameList = addressList.map { number ->
+            val name = getContactName(context, number.trim())
+            if (!name.isNullOrEmpty() && name != number) name else number
         }
+        val finalName = nameList.joinToString(",")
+        message.address = finalName
 
-        holder.senderName.text = message.address
+
+//        val name = getContactName(holder.itemView.context, message.address)
+//        Log.d("TAG", "onBindViewHolder:name "+name)
+//        if (!name.isNullOrEmpty() && name != message.address) {
+//            message.address = name
+//        }
+        Log.d("TAG", "onBindViewHolder:message.address "+message.address)
+
+        holder.senderName.text = finalName
         holder.messageBody.text = message.body
             holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context,message.date)
 
-        val isSelected = selectedMessages.contains(message)
+
+        if (selectedMessages.find { it.threadId == message.threadId } != null) {
+            holder.icSelect.visibility = View.VISIBLE
+            holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
+        } else {
+            holder.icSelect.visibility = View.GONE
+            holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
+        }
+
+       /* val isSelected = selectedMessages.contains(message)
         holder.icSelect.visibility = if (isSelected) View.VISIBLE else View.GONE
         holder.container.setBackgroundColor(
             holder.itemView.context.getColor(if (isSelected) R.color.select_bg else R.color.transparant)
-        )
+        )*/
 
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
@@ -126,12 +148,19 @@ class RecycleBinAdapter(
         }
 
 
+
         holder.itemView.setOnClickListener {
-            if (isMultiSelectionMode) {
+            if (selectedMessages.isNotEmpty()) {
                 toggleSelection(message, holder)
             } else {
                 onBinItemClick?.invoke(message)
             }
+
+          /*  if (isMultiSelectionMode) {
+                toggleSelection(message, holder)
+            } else {
+                onBinItemClick?.invoke(message)
+            }*/
         }
 
         holder.itemView.setOnLongClickListener {
@@ -144,6 +173,21 @@ class RecycleBinAdapter(
     }
 
     private fun toggleSelection(message: DeletedMessage, holder: ViewHolder) {
+        if (selectedMessages.find { it.threadId == message.threadId } != null) {
+            selectedMessages.removeIf { it.threadId == message.threadId }
+            holder.icSelect.visibility = View.INVISIBLE
+            holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
+        } else {
+            selectedMessages.add(message)
+            holder.icSelect.visibility = View.VISIBLE
+            holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
+        }
+//        updateSelectionUI(holder, message)
+        onSelectionChanged(selectedMessages.size)
+        notifyDataSetChanged()
+    }
+
+    /*private fun toggleSelection(message: DeletedMessage, holder: ViewHolder) {
         if (selectedMessages.contains(message)) {
             selectedMessages.remove(message)
         } else {
@@ -157,7 +201,7 @@ class RecycleBinAdapter(
             notifyDataSetChanged()
         }
     }
-
+*/
     private fun updateSelectionUI(holder: ViewHolder, message: DeletedMessage) {
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE
@@ -169,8 +213,8 @@ class RecycleBinAdapter(
     }
 
     fun clearSelection() {
-        isMultiSelectionMode = false
         selectedMessages.clear()
+        isMultiSelectionMode = false
         onSelectionChanged(0)
         notifyDataSetChanged()
     }
@@ -199,32 +243,43 @@ class RecycleBinAdapter(
     fun submitList(newMessages: List<DeletedMessage>) {
         messages.clear()
         messages.addAll(newMessages)
-
-//        messages = newMessages.toMutableList()
         notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int = messages.size
 
-    private fun getContactName(context: Context, phoneNumber: String?): String? {
-        if (phoneNumber.isNullOrEmpty()) {
-            return null
-        }
+    fun getContactName(context: Context, phoneNumber: String): String? {
+        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+        val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
 
-        return try {
-            val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
-            val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
-
-            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
-                }
+        context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0)
             }
-            null
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
+        return null
     }
+
+
+//    private fun getContactName(context: Context, phoneNumber: String?): String? {
+//        if (phoneNumber.isNullOrEmpty()) {
+//            return null
+//        }
+//
+//        return try {
+//            val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+//            val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
+//
+//            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+//                if (cursor.moveToFirst()) {
+//                    return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
+//                }
+//            }
+//            null
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            null
+//        }
+//    }
 
 }

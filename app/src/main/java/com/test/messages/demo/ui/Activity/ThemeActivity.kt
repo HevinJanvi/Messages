@@ -24,6 +24,7 @@ class ThemeActivity : BaseActivity() {
         binding = ActivityThemeBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
 
         val sharedPref = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         editor = sharedPref.edit()

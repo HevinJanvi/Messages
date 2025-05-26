@@ -85,7 +85,7 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.textcolor))
         } else {
             holder.senderName.setTypeface(null, Typeface.NORMAL)
-            holder.blueDot.visibility = View.INVISIBLE
+            holder.blueDot.visibility = View.GONE
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
 
@@ -94,14 +94,14 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         if (message.isPinned) {
             holder.icPin.visibility = View.VISIBLE
         } else {
-            holder.icPin.visibility = View.INVISIBLE
+            holder.icPin.visibility = View.GONE
         }
 
         if (selectedMessages.find { it.threadId == message.threadId } != null) {
             holder.icSelect.visibility = View.VISIBLE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
         } else {
-            holder.icSelect.visibility = View.INVISIBLE
+            holder.icSelect.visibility = View.GONE
             holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
         }
 
@@ -120,7 +120,7 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         }
         if (draftMessages.containsKey(message.threadId)) {
             val (draftText, _) = draftMessages[message.threadId]!!
-            Log.d("TAG", "onBindViewHolder:draft")
+//            Log.d("TAG", "onBindViewHolder:draft")
             val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
             val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
                 setSpan(
@@ -261,4 +261,12 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         this.draftMessages.putAll(drafts)
         notifyDataSetChanged()
     }
+
+    fun getLastMessage():String?{
+        return messages?.lastOrNull()?.body
+    }
+    fun getLastMessageTime():Long?{
+        return messages?.lastOrNull()?.timestamp
+    }
+
 }

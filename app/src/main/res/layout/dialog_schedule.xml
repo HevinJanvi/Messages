@@ -120,7 +120,7 @@
         android:background="@color/drawer_viewcolor" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/lyBlock"
+        android:id="@+id/lyDelete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"

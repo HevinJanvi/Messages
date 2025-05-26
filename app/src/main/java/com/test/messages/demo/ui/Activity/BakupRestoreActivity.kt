@@ -32,6 +32,7 @@ class BakupRestoreActivity : BaseActivity() {
         binding = ActivityBakupRestoreBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
         loadLastBackupTime()
 
         binding.lybackup.visibility = View.VISIBLE
@@ -96,7 +97,7 @@ class BakupRestoreActivity : BaseActivity() {
         val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val currentTime =
-            SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
+            SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH).format(Date())
         editor.putString(CommanConstants.KEY_LAST_BACKUP, currentTime)
         editor.apply()
     }

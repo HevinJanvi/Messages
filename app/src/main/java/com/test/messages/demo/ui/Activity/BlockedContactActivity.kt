@@ -37,7 +37,7 @@ class BlockedContactActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityBlockContactBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        applyWindowInsetsToView(binding.rootView)
         binding.blockContactRecyclerView.layoutManager = LinearLayoutManager(this)
         adapter = BlockedContactAdapter(
             onItemClick = { blockedMessage -> checkAndOpenConversation(blockedMessage) },

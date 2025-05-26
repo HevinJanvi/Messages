@@ -18,6 +18,7 @@ class SwipeActivity : BaseActivity() {
         binding = ActivitySwipeBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
 
         val savedLeftAction = ViewUtils.getSwipeAction(this, false)
         val savedRightAction = ViewUtils.getSwipeAction(this, true)

@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Este es el comienzo de tu conversación, ¡di \nalgo agradable!</string>
     <string name="messages_copied">Mensajes copiados</string>
     <string name="copy">Copiar</string>
-    <string name="can_t_replay">No se puede responder a este código corto. | </string>
-    <string name="learn_more">&#160;&#160;<u>Más información</u></string>
+    <string name="can_t_replay">No se puede responder a este código corto.|&#160; </string>
+    <string name="learn_more">Más información</string>
     <string name="this_sms_is_100_secure">Este SMS es 100% seguro. Los mensajes nunca recopilan datos sin previo consentimiento. Todo se procesa y almacena en tu teléfono.</string>
     <string name="ok">Ok</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Mensajería Fácil</string>
     <string name="intro_txt2"><![CDATA[Programa y Relájate]]></string>
     <string name="intro_txt3">Evita los mensajes no deseados</string>
-    <string name="intro_subtxt1">Mantente conectado con una bandeja de entrada limpia y organizada. ¡Chatea sin esfuerzo en cualquier momento!</string>
+    <string name="intro_subtxt1">Mantente conectado con una bandeja de entrada limpia y organizada.¡Chatea sin esfuerzo en cualquier momento!</string>
     <string name="intro_subtxt2">Programa mensajes para enviarlos automáticamente y nunca olvides un mensaje.</string>
     <string name="intro_subtxt3">Bloquea fácilmente mensajes no deseados y contactos no deseados para mantener tu bandeja de entrada limpia.</string>
     <string name="flag">Bandera</string>
@@ -223,14 +223,14 @@
 
     <string name="language">Idioma</string>
     <string name="copy_otp">Copiar OTP</string>
-    <string name="move_to_recycle_bin">Mover a la papelera de reciclaje</string>
+    <string name="move_to_recycle_bin">Mover a la papelera\nde reciclaje</string>
     <string name="move_this_conversation_to_the_rrecycle_bin">¿Mover esta conversación a la papelera de reciclaje?</string>
     <string name="share">Compartir</string>
     <string name="forward">Reenviar</string>
     <string name="no_messages_selected_to_share">No hay mensajes seleccionados para compartir</string>
     <string name="message_details">Detalles del mensaje</string>
     <string name="type">Tipo</string>
-    <string name="to">Para</string>
+    <string name="to">Para :&#160;</string>
     <string name="sent">Enviado</string>
     <string name="unknown">Desconocido</string>
     <string name="web_type">Tipo web</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">Se encontraron %1$s coincidencias</string>
     <string name="restoring">Restaurando...</string>
     <string name="exit_text">Haga clic en Atrás nuevamente para salir </string>
+
+    <string name="move_to_recycle_bin2">¿Mover a la papelera de reciclaje?</string>
+    <string name="selected_message_move">Los mensajes seleccionados se moverán a la papelera de reciclaje </string>
+    <string name="block_messages_progress">Bloqueando mensajes seleccionados...</string>
+    <string name="pin_limit_reached">Solo puedes fijar hasta 10 mensajes.</string>
+    <string name="no_result_found">No se encontró ningún resultado</string>
+    <string name="move">Mover</string>
+    <string name="move_to_bin">¿Mover a la papelera?</string>
+    <string name="marking_messages_as_read">Marcando mensajes como leídos...</string>
 
 </resources>

@@ -52,9 +52,9 @@
     <string name="no_contacts_selected">Keine Kontakte ausgewählt</string>
     <string name="this_is_the_start_of_your_conversation">Dies ist der Beginn Ihrer Unterhaltung, sagen Sie \netwas Nettes!</string>
     <string name="messages_copied">Nachrichten kopiert</string>
-    <string name="copy">„%1$s“ kopieren</string>
-    <string name="can_t_replay">Auf diesen Kurzwahlcode kann nicht geantwortet werden. | </string>
-    <string name="learn_more">&#160;&#160;<u>Mehr erfahren</u></string>
+    <string name="copy">kopieren</string>
+    <string name="can_t_replay">Auf diesen Kurzwahlcode kann nicht geantwortet werden.|&#160; </string>
+    <string name="learn_more">Mehr erfahren</string>
     <string name="this_sms_is_100_secure">Diese SMS ist zu 100 % sicher. Nachrichten erfassen niemals Daten ohne vorherige Zustimmung. Alles wird auf Ihrem Telefon verarbeitet und gespeichert.</string>
     <string name="ok">Ok</string>
 
@@ -118,7 +118,7 @@
     <string name="intro_txt1">Einfache Nachrichtenübermittlung</string>
     <string name="intro_txt2"><![CDATA[Planen & Entspannen]]></string>
     <string name="intro_txt3">Spam-Nachrichten vermeiden</string>
-    <string name="intro_subtxt1">Bleiben Sie verbunden mit einem übersichtlichen, organisierten Posteingang. Chatten Sie jederzeit mühelos!</string>
+    <string name="intro_subtxt1">Bleiben Sie verbunden mit einem übersichtlichen, organisierten Posteingang.Chatten Sie jederzeit mühelos!</string>
     <string name="intro_subtxt2">Planen Sie Nachrichten zum automatischen Senden – nie wieder eine Nachricht vergessen!</string>
     <string name="intro_subtxt3">Blockieren Sie ganz einfach Spam und unerwünschte Kontakte, um Ihren Posteingang sauber zu halten.</string>
     <string name="flag">Flagge</string>
@@ -224,14 +224,14 @@
 
     <string name="language">Sprache</string>
     <string name="copy_otp">Einmalpasswort kopieren</string>
-    <string name="move_to_recycle_bin">In den Papierkorb verschieben</string>
+    <string name="move_to_recycle_bin">In den Papierkorb\nverschieben</string>
     <string name="move_this_conversation_to_the_rrecycle_bin">Diese Konversation in den Papierkorb verschieben?</string>
     <string name="share">Teilen</string>
     <string name="forward">Weiterleiten</string>
     <string name="no_messages_selected_to_share">Keine Nachrichten zum Teilen ausgewählt</string>
     <string name="message_details">Nachrichtendetails</string>
     <string name="type">Typ</string>
-    <string name="to">An</string>
+    <string name="to">An :&#160;</string>
     <string name="sent">Gesendet</string>
     <string name="unknown">Unbekannt</string>
     <string name="web_type">Webtyp</string>
@@ -269,5 +269,11 @@
     <string name="matches_found">%1$s Übereinstimmungen gefunden</string>
     <string name="restoring">Wird wiederhergestellt...</string>
     <string name="exit_text">Bitte klicken Sie erneut auf Zurück, um zu beenden</string>
+
+    <string name="move_to_recycle_bin2">In den Papierkorb verschieben?</string>
+    <string name="selected_message_move">Ausgewählte Nachrichten werden in den Papierkorb verschoben</string>
+    <string name="block_messages_progress">Ausgewählte Nachrichten werden blockiert... </string>
+    <string name="pin_limit_reached">Sie können nur bis zu 10 Nachrichten anheften.</string>
+    <string name="no_result_found">Kein Ergebnis gefunden</string>
 
 </resources>

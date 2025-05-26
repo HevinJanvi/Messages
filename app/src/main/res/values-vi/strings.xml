@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Đây là phần bắt đầu cuộc trò chuyện của bạn, Hãy nói \nđiều gì đó hay ho!</string>
     <string name="messages_copied">Tin nhắn đã sao chép</string>
     <string name="copy">Sao chép </string>
-    <string name="can_t_replay">Không thể phát lại mã ngắn này. |</string>
-    <string name="learn_more">&#160;&#160;<u>Tìm hiểu thêm</u></string>
+    <string name="can_t_replay">Không thể phát lại mã ngắn này.|&#160;</string>
+    <string name="learn_more">Tìm hiểu thêm</string>
     <string name="this_sms_is_100_secure">Tin nhắn SMS này an toàn 100%. Tin nhắn không bao giờ thu thập dữ liệu mà không có sự đồng ý trước. Mọi thứ đều được xử lý và lưu trữ trên điện thoại của bạn.</string>
     <string name="ok">Ok</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Nhắn tin dễ dàng</string>
     <string name="intro_txt2"><![CDATA[Lên lịch & Thư giãn]]></string>
     <string name="intro_txt3">Tránh Tin nhắn rác</string>
-    <string name="intro_subtxt1">Luôn kết nối với hộp thư đến sạch sẽ, ngăn nắp. Trò chuyện dễ dàng bất cứ lúc nào!</string>
+    <string name="intro_subtxt1">Luôn kết nối với hộp thư đến sạch sẽ, ngăn nắp.Trò chuyện dễ dàng bất cứ lúc nào!</string>
     <string name="intro_subtxt2">Lên lịch gửi tin nhắn tự động—không bao giờ quên tin nhắn!</string>
     <string name="intro_subtxt3">Dễ dàng chặn thư rác và các liên hệ không mong muốn để giữ hộp thư đến của bạn sạch sẽ.</string>
     <string name="flag">cờ</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Không có tin nhắn nào được chọn để chia sẻ</string>
     <string name="message_details">Chi tiết tin nhắn</string>
     <string name="type">Loại</string>
-    <string name="to">Đến</string>
+    <string name="to">Đến :&#160;</string>
     <string name="sent">Đã gửi</string>
     <string name="unknown">Không xác định</string>
     <string name="web_type">Loại web</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">%1$s kết quả phù hợp đã tìm thấy</string>
     <string name="restoring">Đang khôi phục...</string>
     <string name="exit_text">Vui lòng nhấp vào Quay lại lần nữa để thoát</string>
+    <string name="move_to_recycle_bin2">Chuyển đến Thùng rác?</string>
+    <string name="selected_message_move">Các tin nhắn đã chọn sẽ được chuyển vào thùng rác </string>
+    <string name="block_messages_progress">Đang chặn các tin nhắn đã chọn... </string>
+    <string name="pin_limit_reached">Bạn chỉ có thể ghim tối đa 10 tin nhắn.</string>
+    <string name="no_result_found">Không tìm thấy kết quả nào</string>
+
+    <string name="move">Di chuyển</string>
+    <string name="move_to_bin">Chuyển đến thùng rác?</string>
+    <string name="marking_messages_as_read">Đang đánh dấu tin nhắn là đã đọc...</string>
 
 </resources>

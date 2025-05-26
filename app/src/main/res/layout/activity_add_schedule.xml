@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
+    android:id="@+id/rootView"
     tools:context=".ui.Activity.AddScheduleActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -54,6 +55,7 @@
                 android:fontFamily="@font/product_sans_regular"
                 android:hint="@string/type_a_name_or_number"
                 android:inputType="text"
+                android:imeOptions="actionDone"
                 android:textFontWeight="400"
                 android:textSize="15dp"
                 app:layout_constraintBottom_toBottomOf="parent"

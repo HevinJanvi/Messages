@@ -5,8 +5,10 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.provider.Telephony
 import android.provider.Telephony.Sms
 import android.telephony.SmsManager
+import android.util.Log
 import com.klinker.android.send_message.Settings
 import com.test.messages.demo.R
 import com.test.messages.demo.data.SmsException
@@ -27,8 +29,12 @@ class MessageUtils(val context: Context) {
             put(Sms.BODY, text)
 
             if (subId != Settings.DEFAULT_SUBSCRIPTION_ID) {
-                put(Sms.SUBSCRIPTION_ID, subId)
+//                if (columnExists(context, Telephony.Sms.CONTENT_URI, "sub_id")) {
+//                    put("sub_id", subscriptionId)
+                    put(Sms.SUBSCRIPTION_ID, subId)
+//                }
             }
+
 
             if (status != Sms.STATUS_NONE) {
                 put(Sms.STATUS, status)
@@ -55,13 +61,19 @@ class MessageUtils(val context: Context) {
                 response = context.contentResolver.insert(Sms.CONTENT_URI, values)
             }
         } catch (e: Exception) {
+            Log.d("TAG", "insertSmsMessage: exception"+e.message)
             throw SmsException(ERROR_PERSISTING_MESSAGE, e)
 
         }
         return response ?: throw SmsException(ERROR_PERSISTING_MESSAGE)
     }
 
-
+    fun columnExists(context: Context, uri: Uri, columnName: String): Boolean {
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            return cursor.columnNames.contains(columnName)
+        }
+        return false
+    }
 
 
     fun updateSmsMessageSendingStatus(messageUri: Uri?, type: Int) {

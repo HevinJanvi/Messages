@@ -10,23 +10,47 @@ import java.util.concurrent.TimeUnit
 
 object TimeUtils {
 
-    fun formatTimestamp(cntxt: Context,timestamp: Long): String {
-        val context = Locale.getDefault()
+//    fun formatTimestamp(cntxt: Context,timestamp: Long): String {
+//        val context = Locale.getDefault()
+//        val now = Calendar.getInstance()
+//        val messageTime = Calendar.getInstance().apply { timeInMillis = timestamp }
+//
+//        return when {
+//            isSameDay(now, messageTime) -> {
+//                SimpleDateFormat("h:mm a", context).format(messageTime.time)
+//            }
+//            isYesterday(now, messageTime) -> {
+//                cntxt.getString(R.string.yesterday)
+//            }
+//            isSameYear(now, messageTime) -> {
+//                SimpleDateFormat("d MMM", context).format(messageTime.time)
+//            }
+//            else -> {
+//                SimpleDateFormat("d MMM yy", context).format(messageTime.time)
+//            }
+//        }
+//    }
+
+    fun formatTimestamp(cntxt: Context, timestamp: Long): String {
+        val locale = Locale.getDefault()
         val now = Calendar.getInstance()
         val messageTime = Calendar.getInstance().apply { timeInMillis = timestamp }
 
+        val is24Hour = android.text.format.DateFormat.is24HourFormat(cntxt)
+        val timePattern = if (is24Hour) "HH:mm" else "h:mm a"
+
         return when {
             isSameDay(now, messageTime) -> {
-                SimpleDateFormat("h:mm a", context).format(messageTime.time)
+                SimpleDateFormat(timePattern, locale).format(messageTime.time)
             }
             isYesterday(now, messageTime) -> {
                 cntxt.getString(R.string.yesterday)
             }
             isSameYear(now, messageTime) -> {
-                SimpleDateFormat("d MMM", context).format(messageTime.time)
+                SimpleDateFormat("d MMM", locale).format(messageTime.time)
             }
             else -> {
-                SimpleDateFormat("d MMM yy", context).format(messageTime.time)
+                SimpleDateFormat("d MMM yy", locale).format(messageTime.time)
             }
         }
     }
@@ -54,6 +78,30 @@ object TimeUtils {
 
     fun getInitials(name: String): String {
         return name.trim().split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").take(1).uppercase()
+    }
+
+
+    fun getFormattedHeaderTimestamp(context: Context, timestamp: Long): String {
+        val now = Calendar.getInstance()
+        val messageTime = Calendar.getInstance().apply { timeInMillis = timestamp }
+
+        val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+        val timeFormat = if (is24Hour) "HH:mm" else "h:mm a"
+
+        return when {
+            isSameDay(now, messageTime) -> {
+               context.getString(R.string.today) + " " + SimpleDateFormat(timeFormat, Locale.getDefault()).format(messageTime.time)
+            }
+            isYesterday(now.clone() as Calendar, messageTime) -> {
+                context.getString(R.string.yesterday) + " " + SimpleDateFormat(timeFormat, Locale.getDefault()).format(messageTime.time)
+            }
+            isSameYear(now, messageTime) -> {
+                SimpleDateFormat("d MMM", Locale.getDefault()).format(messageTime.time)
+            }
+            else -> {
+                SimpleDateFormat("d MMM yy", Locale.getDefault()).format(messageTime.time)
+            }
+        }
     }
 
     fun getRandomColor(input: String): Int {

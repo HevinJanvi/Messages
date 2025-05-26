@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/rootView">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBar"
@@ -207,6 +208,22 @@
         android:text="@string/your_conversation_will_apper_here"
         android:textColor="@color/gray_txtcolor"
         android:textFontWeight="400"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolBar" />
+
+    <TextView
+        android:id="@+id/textNoResults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:fontFamily="@font/product_sans_regular"
+        android:gravity="center"
+        android:text="@string/no_result_found"
+        android:textColor="@color/gray_txtcolor"
+        android:textFontWeight="400"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

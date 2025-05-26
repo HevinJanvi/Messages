@@ -20,6 +20,7 @@ class SplashActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyWindowInsetsToView(binding.rootView)
 
         lifecycleScope.launch {
             delay(1000)

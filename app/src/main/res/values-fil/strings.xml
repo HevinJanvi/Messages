@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Ito ang simula ng iyong usapan, Magsabi ng \nisang magandang bagay!</string>
     <string name="messages_copied">Nakopya ang mga mensahe</string>
     <string name="copy">Kopyahin</string>
-    <string name="can_t_replay">Hindi maaaring sumagot sa code na ito. | </string>
-    <string name="learn_more">&#160;&#160;<u>Matuto Pa</u></string>
+    <string name="can_t_replay">Hindi maaaring sumagot sa code na ito.|&#160; </string>
+    <string name="learn_more">Matuto Pa</string>
     <string name="this_sms_is_100_secure">Ang SMS na ito ay 100% ligtas. Hindi kailanman nangongolekta ng data ang Mga Mensahe nang walang pahintulot. Ang lahat ay pinoproseso at iniimbak sa iyong telepono.</string>
     <string name="ok">Ok</string>
 
@@ -118,7 +118,7 @@
     <string name="intro_txt1">Ginawang Madali ang Pagmemensahe</string>
     <string name="intro_txt2"><![CDATA[Mag-iskedyul at Mag-relax]]></string>
     <string name="intro_txt3">Iwasan ang Mga Spam na Mensahe</string>
-    <string name="intro_subtxt1">Manatiling konektado gamit ang isang malinis at maayos na inbox. Makipag-chat nang walang hirap anumang oras!</string>
+    <string name="intro_subtxt1">Manatiling konektado gamit ang isang malinis at maayos na inbox.Makipag-chat nang walang hirap anumang oras!</string>
     <string name="intro_subtxt2">Mag-iskedyul ng mga text upang awtomatikong maipadala—huwag nang makalimot ng mensahe!</string>
     <string name="intro_subtxt3">Madaling harangan ang mga spam at hindi gustong contact upang mapanatiling malinis ang iyong inbox.</string>
     <string name="flag">bandila</string>
@@ -231,7 +231,7 @@
     <string name="no_messages_selected_to_share">Walang napiling mga mensahe na ibabahagi</string>
     <string name="message_details">Mga Detalye ng Mensahe</string>
     <string name="type">Uri</string>
-    <string name="to">Upang</string>
+    <string name="to">Upang :&#160;</string>
     <string name="sent">Ipinadala</string>
     <string name="unknown">Hindi kilala</string>
     <string name="web_type">Uri ng web</string>
@@ -269,5 +269,15 @@
     <string name="matches_found">%1$s mga tugma ang nakita</string>
     <string name="restoring">Ine-restore...</string>
     <string name="exit_text">Paki-click muli ang Bumalik upang lumabas</string>
+
+    <string name="move_to_recycle_bin2">Ilipat sa recycle Bin?</string>
+    <string name="selected_message_move">Ang mga napiling mensahe ay ililipat sa recycle bin </string>
+    <string name="block_messages_progress">Bina-block ang mga napiling mensahe... </string>
+    <string name="pin_limit_reached">Maaari kang mag-pin ng hanggang 10 mensahe lamang.</string>
+    <string name="no_result_found">Walang nakitang resulta</string>
+
+    <string name="move">Ilipat</string>
+    <string name="move_to_bin">Ilipat sa Bin?</string>
+    <string name="marking_messages_as_read">Pagmamarka ng mga mensahe bilang nabasa na...</string>
 
 </resources>

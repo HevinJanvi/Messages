@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">นี่คือจุดเริ่มต้นของการสนทนาของคุณ พูดอะไรบางอย่างดีๆ สิ!</string>
     <string name="messages_copied">คัดลอกข้อความแล้ว</string>
     <string name="copy">คัดลอก</string>
-    <string name="can_t_replay">ไม่สามารถเล่นซ้ำรหัสสั้นนี้ได้ |</string>
-    <string name="learn_more">&#160;&#160;<u>เรียนรู้เพิ่มเติม</u></string>
+    <string name="can_t_replay">ไม่สามารถเล่นซ้ำรหัสสั้นนี้ได้|&#160;</string>
+    <string name="learn_more">เรียนรู้เพิ่มเติม</string>
     <string name="this_sms_is_100_secure">SMS นี้ปลอดภัย 100% ข้อความจะไม่รวบรวมข้อมูลโดยไม่ได้รับความยินยอมล่วงหน้า ทุกอย่างจะได้รับการประมวลผลและเก็บไว้ในโทรศัพท์ของคุณ</string>
     <string name="ok">ตกลง</string>
 
@@ -109,7 +109,7 @@
     <string name="schedule_at">กำหนดเวลาที่\n</string>
     <string name="welcome_to_messages">ยินดีต้อนรับสู่ <font fgcolor="#1A73E8">ข้อความ</font></string>
 
-    <string name="to_send_and_receive">หากต้องการส่งและรับข้อความ ให้ตั้งค่า Messages เป็นแอป SMS เริ่มต้นของคุณ</string>
+    <string name="to_send_and_receive">หากต้องการส่งและรับข้อความ ให้ตั้งค่าข้อความเป็นแอป SMS เริ่มต้นของคุณ</string>
     <string name="instant_replies_in_one_tap">ตอบกลับทันทีด้วยการแตะเพียงครั้งเดียว</string>
     <string name="stay_safe_with">ปลอดภัยด้วยระบบส่งข้อความที่ปลอดภัย</string>
     <string name="set_as_default">ตั้งเป็นค่าเริ่มต้น</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">ไม่มีข้อความที่เลือกเพื่อแชร์</string>
     <string name="message_details">รายละเอียดข้อความ</string>
     <string name="type">ประเภท</string>
-    <string name="to">ถึง</string>
+    <string name="to">ถึง :&#160;</string>
     <string name="sent">ส่งแล้ว</string>
     <string name="unknown">ไม่ทราบ</string>
     <string name="web_type">ประเภทเว็บ</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">พบ %1$s รายการ</string>
     <string name="restoring">กำลังคืนค่า...</string>
     <string name="exit_text">กรุณาคลิกย้อนกลับอีกครั้งเพื่อออกจากระบบ</string>
+    <string name="move_to_recycle_bin2">ย้ายไปที่ถังขยะรีไซเคิลหรือไม่</string>
+    <string name="selected_message_move">ข้อความที่เลือกจะถูกย้ายไปยังถังขยะ</string>
+    <string name="block_messages_progress">กำลังบล็อคข้อความที่เลือก... </string>
+    <string name="pin_limit_reached">คุณสามารถปักหมุดข้อความได้สูงสุด 10 ข้อความเท่านั้น</string>
+    <string name="no_result_found">ไม่พบผลลัพธ์</string>
+
+    <string name="move">ย้าย</string>
+    <string name="move_to_bin">ย้ายไปที่ถังขยะหรือไม่</string>
+    <string name="marking_messages_as_read">กำลังทำเครื่องหมายข้อความว่าอ่านแล้ว...</string>
 
 </resources>

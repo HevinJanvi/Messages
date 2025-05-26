@@ -2,6 +2,7 @@ package com.test.messages.demo.ui.Fragment
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.TaskStackBuilder
 import android.content.ContentValues
 import android.content.Context
@@ -22,6 +23,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -80,13 +82,16 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MarkasreadEvent
+import com.test.messages.demo.Util.NewSmsEvent
 import com.test.messages.demo.Util.ViewUtils.autoScrollToStart
 import com.test.messages.demo.data.Model.ConversationItem
+import com.test.messages.demo.ui.Dialogs.BlockProgressDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import com.test.messages.demo.ui.send.hasReadSmsPermission
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -145,6 +150,7 @@ class ConversationFragment : Fragment() {
         unreadMessageListener?.onUnreadMessagesCountUpdated(unreadMessages)
     }
 
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -156,8 +162,8 @@ class ConversationFragment : Fragment() {
         EventBus.getDefault().register(this)
         selectedCategory = requireActivity().getString(R.string.inbox)
 
-        binding.categoryRecyclerView.visibility =
-            if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
+//        binding.categoryRecyclerView.visibility =
+//            if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
 
         if (binding.categoryRecyclerView.visibility == View.VISIBLE) {
             binding.categoryRecyclerView.post {
@@ -173,18 +179,34 @@ class ConversationFragment : Fragment() {
 
         setupCategoryRecyclerView()
         setupRecyclerView()
-        viewModel.loadMessages()
-
         binding.progress.visibility = View.VISIBLE
+        viewModel.loadMessages()
+        updateCategoryVisibility()
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progress.visibility = if (isLoading) View.VISIBLE else View.GONE
+            if (isLoading) {
+                binding.emptyList.visibility = View.GONE
+            }
+        }
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
-            CoroutineScope(Dispatchers.IO).launch {
+
+//            CoroutineScope(Dispatchers.Default).launch {
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                val filterStart = System.currentTimeMillis()
+
                 val filteredMessages = prepareFilteredMessages(messageList)
+                    .filter { !it.sender.isNullOrBlank() }
+
+
+
                 val unreadMessagesCount = filteredMessages.count { !it.isRead }
+
                 val finalSortedList = filteredMessages.sortedWith(
                     compareByDescending<MessageItem> { it.isPinned }
                         .thenByDescending { it.lastMsgDate }
                 )
+
                 withContext(Dispatchers.Main) {
                     binding.progress.visibility = View.GONE
 
@@ -196,7 +218,6 @@ class ConversationFragment : Fragment() {
                     val pinnedIndexes =
                         finalSortedList.indices.filter { adapter.messages[it].isPinned }
                     pinnedIndexes.forEach(adapter::notifyItemChanged)
-
                 }
             }
         }
@@ -298,7 +319,7 @@ class ConversationFragment : Fragment() {
     }
 
     private fun applyCategoryFilter(messageList: List<MessageItem>) {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Default).launch {
             val filteredList = prepareFilteredMessages(messageList)
             val finalSortedList = filteredList.sortedWith(
                 compareByDescending<MessageItem> { it.isPinned }
@@ -329,10 +350,13 @@ class ConversationFragment : Fragment() {
                 (activity as? MainActivity)?.updateBlockUI(!hasGroupSelected)
 
                 if (count > 0) {
-                    binding.categoryRecyclerView.visibility = View.GONE
+//                    binding.categoryRecyclerView.visibility = View.GONE
+                    updateCategoryVisibility()
                     binding.newConversation.visibility = View.GONE
                 } else {
-                    binding.categoryRecyclerView.visibility = View.VISIBLE
+
+//                    binding.categoryRecyclerView.visibility = View.VISIBLE
+                    updateCategoryVisibility()
                     binding.newConversation.visibility = View.VISIBLE
                 }
 
@@ -360,6 +384,7 @@ class ConversationFragment : Fragment() {
                 putExtra(NAME, message.sender)
                 putExtra(ISGROUP, message.isGroupChat)
                 putExtra(PROFILEURL, message.profileImageUrl)
+
             }
 //            conversationResultLauncher.launch(intent)
             startActivity(intent)
@@ -524,11 +549,13 @@ class ConversationFragment : Fragment() {
                 CommanConstants.SWIPE_MARK_READ -> {
                     adapter.selectedMessages.clear()
                     markThreadAsread(message.threadId)
+                    updateMessageList(message.threadId, true)
                 }
 
                 CommanConstants.SWIPE_MARK_UNREAD -> {
                     adapter.selectedMessages.clear()
                     markThreadAsUnread(message.threadId)
+                    updateMessageList(message.threadId, false)
                 }
 
                 else -> {
@@ -566,17 +593,28 @@ class ConversationFragment : Fragment() {
 
     fun toggleSelectAll(selectAll: Boolean) {
         if (selectAll) {
-            adapter.selectedMessages.clear()
+            adapter.clearSelection()
             val allMessages = adapter.getAllMessages()
             adapter.selectedMessages.addAll(allMessages)
-            binding.categoryRecyclerView.visibility = View.GONE
+//            binding.categoryRecyclerView.visibility = View.GONE
+            updateCategoryVisibility()
             binding.newConversation.visibility = View.GONE
 
         } else {
-            adapter.selectedMessages.clear()
-            binding.categoryRecyclerView.visibility = View.VISIBLE
+            adapter.clearSelection()
+//            binding.categoryRecyclerView.visibility = View.VISIBLE
+            updateCategoryVisibility()
             binding.newConversation.visibility = View.VISIBLE
         }
+
+        val selectedMessages = adapter.selectedMessages
+        val mutedCount = selectedMessages.count { it.isMuted }
+        val unmutedCount = selectedMessages.size - mutedCount
+        val shouldUnmute = mutedCount < unmutedCount
+        val hasGroupSelected = selectedMessages.any { it.isGroupChat }
+
+        (activity as? MainActivity)?.updateMuteUnmuteUI(shouldUnmute)
+        (activity as? MainActivity)?.updateBlockUI(!hasGroupSelected)
         onSelectionChanged?.invoke(
             adapter.selectedMessages.size,
             adapter.selectedMessages.count { it.isPinned },
@@ -591,7 +629,15 @@ class ConversationFragment : Fragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onCategoryVisibilityEvent(event: CategoryVisibilityEvent) {
-        binding.categoryRecyclerView.visibility = if (event.isEnabled) View.VISIBLE else View.GONE
+//        binding.categoryRecyclerView.visibility = if (event.isEnabled) View.VISIBLE else View.GONE
+        updateCategoryVisibility()
+
+    }
+
+    private fun updateCategoryVisibility() {
+        val hasSelection = adapter.selectedMessages.isNotEmpty()
+        binding.categoryRecyclerView.visibility =
+            if (!hasSelection && isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -611,13 +657,19 @@ class ConversationFragment : Fragment() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMarkadread(event: MarkasreadEvent) {
+    fun onMarkasdread(event: MarkasreadEvent) {
         if (event.success) {
             Log.d("MessageRepository", "onMarkadread:event ")
             markReadMessages()
             adapter.notifyDataSetChanged()
             viewModel.loadMessages()
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onRecievessagesEvent(event: NewSmsEvent) {
+        viewModel.loadMessages()
+        viewModel.loadConversation(event.threadId)
     }
 
     fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
@@ -660,47 +712,17 @@ class ConversationFragment : Fragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageRestored(event: MessageRestoredEvent) {
-        viewModel.loadMessages()
         updateConversationSnippet(event.threadId, event.lastMessage, event.lastMessageTime)
+        viewModel.loadRestoreMessages()
+
     }
 
-    /*fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
-        Log.d(
-            "SnippetUpdate",
-            "updateConversationSnippet called -> ThreadId: $threadId, LastMessage: $lastMessage, LastTime: $lastMessageTime"
-        )
 
-        val currentList = viewModel.messages.value!!.toMutableList()
-        Log.d("SnippetUpdate", "Current messages count: ${currentList.size}")
-
-        val index = currentList!!.indexOfFirst { it.threadId == threadId }
-        Log.d("SnippetUpdate", "Searching for threadId: $threadId -> Found at index: $index")
-
-        if (index != -1) {
-            val updatedItem = currentList[index].copy(
-                body = lastMessage ?: "",
-                timestamp = lastMessageTime ?: System.currentTimeMillis()
-            )
-            currentList[index] = updatedItem
-            Log.d(
-                "SnippetUpdate",
-                "Updating snippet -> New Body: ${updatedItem.body}, New Timestamp: ${updatedItem.timestamp}"
-            )
-            adapter.submitList(currentList)
-
-        } else {
-            Log.d(
-                "SnippetUpdate",
-                "ThreadId $threadId not found in adapter list. No update performed."
-            )
-        }
-    }
-    */
     @RequiresApi(Build.VERSION_CODES.Q)
     fun deleteSelectedMessages() {
         if (adapter.selectedMessages.isEmpty()) return
         var messages = adapter.selectedMessages.toList()
-        adapter.selectedMessages.clear()
+        adapter.clearSelection()
         val contentResolver = requireActivity().contentResolver
         val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
@@ -713,10 +735,13 @@ class ConversationFragment : Fragment() {
         handler.postDelayed(showDialogRunnable, 300)
 
         Thread {
+
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
                 val existingBodyDatePairs =
                     mutableSetOf<Pair<String, Long>>()
+                val existingThreadMap =
+                    db.getAllRecycleBinAddresses().associate { it.address to it.threadId }
 
                 for (item in messages) {
                     val threadId = item.threadId
@@ -756,11 +781,11 @@ class ConversationFragment : Fragment() {
                             }
 
                             existingBodyDatePairs.add(key)
+                            val finalThreadId = existingThreadMap[address] ?: threadId
                             val isGroup = address.contains(",")
-                            Log.d("TAG", "deleteSelectedMessages:isGroup " + isGroup)
                             val deletedMessage = DeletedMessage(
                                 messageId = messageId,
-                                threadId = threadId,
+                                threadId = finalThreadId,
                                 address = address,
                                 date = date,
                                 body = body,
@@ -798,11 +823,10 @@ class ConversationFragment : Fragment() {
                 Handler(Looper.getMainLooper()).post {
                     handler.removeCallbacks(showDialogRunnable)
                     deleteDialog.dismiss()
-//                    adapter.selectedMessages.clear()
                     viewModel.loadMessages()
                     onSelectionChanged?.invoke(0, 0, 0)
                     updateMessageCount()
-                    refreshMessages()
+//                    refreshMessages()
                 }
 
             } catch (e: Exception) {
@@ -815,31 +839,123 @@ class ConversationFragment : Fragment() {
         }.start()
     }
 
+    /*@RequiresApi(Build.VERSION_CODES.Q)
+    fun BlockMessages() {
+        val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
+        if (selectedGroups.isNotEmpty()) {
+            Log.d("BlockMessages", "Blocking not allowed for groups.")
+            return
+        }
+
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        val blockDialog = BlockDialog(requireContext()) {
+            // This block will be executed when the user clicks on "Proceed" in the BlockDialog
+
+            // Show the progress dialog
+            val progressDialog = DeleteProgressDialog(requireContext())
+            progressDialog.show("Blocking selected messages...")  // Custom message for the progress
+
+
+            try {
+                viewModel.blockSelectedConversations(selectedIds)
+
+                // Update the UI once the blocking is complete
+                withContext(Dispatchers.Main) {
+//                        val updatedList = adapter.getAllMessages().toMutableList()
+//                        updatedList.removeAll { selectedIds.contains(it.threadId) }
+//                        adapter.submitList(updatedList)
+                    adapter.clearSelection()
+
+                    // Update message count and refresh the list
+                    updateMessageCount()
+                    refreshMessages()
+
+                    // Dismiss the progress dialog
+                    progressDialog.dismiss()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                progressDialog.dismiss()
+
+            }
+
+        }
+
+        blockDialog.show()
+    }*/
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun BlockMessages() {
+        val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
+        if (selectedGroups.isNotEmpty()) {
+            Log.d("BlockMessages", "Blocking not allowed for groups.")
+            return
+        }
+
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        val blockDialog = BlockDialog(requireContext()) {
+            if (selectedIds.size > 10) {
+                val progressDialog = BlockProgressDialog(requireContext())
+                requireActivity().runOnUiThread {
+                    progressDialog.show(getString(R.string.block_messages_progress))
+                }
+                viewModel.blockSelectedConversations(selectedIds) {
+                    adapter.clearSelection()
+                    updateMessageCount()
+//                    refreshMessages()
+                    progressDialog.dismiss()
+                }
+            } else {
+                viewModel.blockSelectedConversations(selectedIds)
+                adapter.clearSelection()
+                updateMessageCount()
+//                refreshMessages()
+            }
+
+        }
+
+        blockDialog.show()
+    }
 
     fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
-        val currentList = adapter.getAllMessages().toMutableList()
-        //        Log.d("SnippetUpdate", "Current messages count: ${currentList.size}")
-        val index = currentList.indexOfFirst { it.threadId == threadId }
-        Log.d("SnippetUpdate", "Searching for threadId: $threadId -> Found at index: $index")
-        if (index != -1) {
-            val updatedItem = currentList[index].copy(
-                body = lastMessage ?: "",
-                timestamp = lastMessageTime ?: System.currentTimeMillis()
-            )
-            currentList[index] = updatedItem
-            Log.d(
-                "TAG",
-                "Updating snippet -> New Body: ${updatedItem.body}, New Timestamp: ${updatedItem.timestamp}"
-            )
-            adapter.submitList(currentList)
-
-        } else {
-            Log.d(
-                "SnippetUpdate",
-                "ThreadId $threadId not found in adapter list. No update performed."
-            )
+        val currentList = adapter.getAllMessages()
+        val updatedList = currentList.map {
+            if (it.threadId == threadId) {
+                it.copy(
+                    body = lastMessage ?: "",
+                    timestamp = lastMessageTime ?: System.currentTimeMillis()
+                )
+            } else it
         }
+
+        adapter.submitList(updatedList)
     }
+
+
+//    fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
+//        val currentList = adapter.getAllMessages().toMutableList()
+//        //        Log.d("SnippetUpdate", "Current messages count: ${currentList.size}")
+//        val index = currentList.indexOfFirst { it.threadId == threadId }
+//        Log.d("SnippetUpdate", "Searching for threadId: $threadId -> Found at index: $index")
+//        if (index != -1) {
+//            val updatedItem = currentList[index].copy(
+//                body = lastMessage ?: "",
+//                timestamp = lastMessageTime ?: System.currentTimeMillis()
+//            )
+//            currentList[index] = updatedItem
+//            Log.d(
+//                "TAG",
+//                "Updating snippet -> New Body: ${updatedItem.body}, New Timestamp: ${updatedItem.timestamp}"
+//            )
+//            adapter.submitList(currentList)
+//
+//        } else {
+//            Log.d(
+//                "SnippetUpdate",
+//                "ThreadId $threadId not found in adapter list. No update performed."
+//            )
+//        }
+//    }
 
     private fun fetchAllThreadIds(): List<Long> {
         val threadIds = mutableListOf<Long>()
@@ -860,33 +976,22 @@ class ConversationFragment : Fragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDraftUpdateEvent(event: DraftChangedEvent) {
-        Log.d("TAG", "onDraftchangeEvent: ")
-        binding.conversationList.scrollToPosition(0)
-        draftViewModel.saveDraft(event.threadId, event.draft)
-//        draftViewModel.loadAllDrafts()
+//        Log.d("TAG", "onDraftUpdateEvent: " + event)
+        draftViewModel.loadAllDrafts()
         viewModel.loadMessages()
+        try {
+            Handler(Looper.getMainLooper()).postDelayed({
+                draftViewModel.loadAllDrafts()
+                viewModel.loadMessages()
+            }, 500)
+        } catch (e: Exception) {
+        }
+
     }
-
-
-    /* @RequiresApi(Build.VERSION_CODES.Q)
-     private val conversationResultLauncher = registerForActivityResult(
-         ActivityResultContracts.StartActivityForResult()
-     ) { result ->
-         if (result.resultCode == Activity.RESULT_OK) {
-             val data: Intent? = result.data
-             if (data != null) {
-                 Log.d("TAG", "onresult fragment: ")
-                 adapter.notifyDataSetChanged()
-                 draftViewModel.loadAllDrafts()
-                 viewModel.loadMessages()
-             }
-         }
-     }*/
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun unarchiveMessages(messages: List<MessageItem>) {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Default).launch {
             viewModel.unarchiveConversations(messages.map { it.threadId })
             withContext(Dispatchers.Main) {
                 val currentList = adapter.getAllMessages().toMutableList()
@@ -894,7 +999,6 @@ class ConversationFragment : Fragment() {
 //                adapter.submitList(restoredList)
             }
         }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -918,81 +1022,27 @@ class ConversationFragment : Fragment() {
         refreshMessages()
     }
 
-
-    /* @RequiresApi(Build.VERSION_CODES.Q)
-     fun pinMessages() {
-         val selectedIds = adapter.selectedMessages.map { it.threadId }
-         CoroutineScope(Dispatchers.IO).launch {
-             val pinnedIds =
-                 selectedIds.filter { viewModel.isPinned(it) }
-             val unpinnedIds =
-                 selectedIds.filterNot { viewModel.isPinned(it) }
-             when {
-                 pinnedIds.isNotEmpty() && unpinnedIds.isNotEmpty() -> {
-                     if (pinnedIds.size > unpinnedIds.size) {
-                         viewModel.togglePin(pinnedIds)
-                     }
-                 }
-
-                 pinnedIds.isNotEmpty() -> {
-                     viewModel.togglePin(pinnedIds)
-                 }
-
-                 unpinnedIds.isNotEmpty() -> {
-                     viewModel.togglePin(unpinnedIds)
-                 }
-             }
-
-             pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
-             val updatedPinnedThreadIds = pinnedThreadIds.toMutableSet()
-
-             selectedIds.forEach { id ->
-                 if (updatedPinnedThreadIds.contains(id)) {
-                     // Unpin
-                     updatedPinnedThreadIds.remove(id)
-                 } else {
-                     // Pin
-                     updatedPinnedThreadIds.add(id)
-                 }
-             }
-             Log.d("TAG", "pinMessages: ${updatedPinnedThreadIds.joinToString(",")}")
-             withContext(Dispatchers.Main) {
-                 adapter.clearSelection()
-
-                 val updatedList = adapter.messages.map {
-                     it.copy(
-                         isPinned = updatedPinnedThreadIds.contains(it.threadId),
-    //                        isMuted = mutedThreadIds.contains(it.threadId)
-                     )
-                 }?.sortedWith(
-                     compareByDescending<MessageItem> { it.isPinned }
-                         .thenByDescending { it.lastMsgDate }
-                 ) ?: emptyList()
-                 val pinnedIndexes = updatedList.mapIndexedNotNull { index, message ->
-                     if (message.isPinned) index else null
-                 }
-                 pinnedIndexes.forEach {
-                     adapter.notifyItemChanged(it)
-                 }
-                 Log.d(
-                     "TAG",
-                     "pinMessages:--- " + updatedList.filter { it.isPinned }.map { it.threadId }
-                         .joinToString { "," })
-                 Log.d(
-                     "TAG",
-                     "pinMessages muted:--- " + updatedList.filter { it.isMuted }.map { it.threadId }
-                         .joinToString { "," })
-                 adapter.submitList(updatedList)
-                 Handler(Looper.getMainLooper()).postDelayed({
-                     adapter.notifyDataSetChanged()
-                 }, 500)
-             }
-         }
-     }*/
     @RequiresApi(Build.VERSION_CODES.Q)
     fun pinMessages() {
-        val selectedIds = adapter.selectedMessages.map { it.threadId }
-        adapter.selectedMessages.filter { it.isPinned }.map { it.threadId }
+        val selectedMessages = adapter.selectedMessages
+        val selectedIds = selectedMessages.map { it.threadId }
+        // Already pinned threads
+        val alreadyPinned = viewModel.getPinnedThreadIds() ?: emptyList()
+
+        // Only count items that are NOT already pinned
+        val newPins = selectedMessages.filter { !it.isPinned }
+
+        if (alreadyPinned.size + newPins.size > 10) {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.pin_limit_reached),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+//        val selectedIds = adapter.selectedMessages.map { it.threadId }
+//        adapter.selectedMessages.filter { it.isPinned }.map { it.threadId }
         viewModel.togglePin(selectedIds) {
             pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
             val updatedPinnedThreadIds = pinnedThreadIds.toMutableSet()
@@ -1009,9 +1059,9 @@ class ConversationFragment : Fragment() {
                 adapter.notifyItemChanged(it)
             }
             adapter.submitList(updatedList)
-            Handler(Looper.getMainLooper()).postDelayed({
-                adapter.notifyDataSetChanged()
-            }, 500)
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                adapter.notifyDataSetChanged()
+//            }, 500)
 
         }
     }
@@ -1044,37 +1094,6 @@ class ConversationFragment : Fragment() {
 
     }
 
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun muteMessages() {
-        val selectedIds = adapter.selectedMessages.map { it.threadId }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val notificationDao = AppDatabase.getDatabase(requireContext()).notificationDao()
-            val mutedThreads = viewModel.getMutedThreadIds()
-            val mutedCount = selectedIds.count { it in mutedThreads }
-            val unmutedCount = selectedIds.size - mutedCount
-            val shouldUnmute = mutedCount >= unmutedCount
-            selectedIds.forEach { threadId ->
-                notificationDao.updateNotificationStatus(threadId, !shouldUnmute)
-            }
-
-            val updatedMutedThreads = viewModel.getMutedThreadIds()
-
-            val updatedMessages = adapter.getAllMessages().map { message ->
-                message.copy(isMuted = updatedMutedThreads.contains(message.threadId))
-            }
-
-            withContext(Dispatchers.Main) {
-                adapter.submitList(updatedMessages)
-                adapter.notifyDataSetChanged()
-                adapter.clearSelection()
-
-                (activity as? MainActivity)?.updateMuteUnmuteUI(shouldUnmute)
-            }
-        }
-    }
-
     /*@RequiresApi(Build.VERSION_CODES.Q)
     fun BlockMessages() {
         val selectedMessages = adapter.selectedMessages.toList()
@@ -1084,32 +1103,34 @@ class ConversationFragment : Fragment() {
         }
     }*/
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun BlockMessages() {
-        val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
-        if (selectedGroups.isNotEmpty()) {
-            Log.d("BlockMessages", "Blocking not allowed for groups.")
-            return
-        }
-        val selectedIds = adapter.selectedMessages.map { it.threadId }
 
-        val blockDialog = BlockDialog(requireContext()) {
-            CoroutineScope(Dispatchers.IO).launch {
-                viewModel.blockSelectedConversations(selectedIds)
-                withContext(Dispatchers.Main) {
-                    val updatedList = adapter.getAllMessages().toMutableList()
-                    updatedList.removeAll { selectedIds.contains(it.threadId) }
-                    adapter.submitList(updatedList)
-                    adapter.clearSelection()
-                    updateMessageCount()
-                    refreshMessages()
-                }
-            }
-        }
-        blockDialog.show()
-    }
+    /*   @RequiresApi(Build.VERSION_CODES.Q)
+       fun BlockMessages() {
+           val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
+           if (selectedGroups.isNotEmpty()) {
+               Log.d("BlockMessages", "Blocking not allowed for groups.")
+               return
+           }
+           val selectedIds = adapter.selectedMessages.map { it.threadId }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+           val blockDialog = BlockDialog(requireContext()) {
+               CoroutineScope(Dispatchers.IO).launch {
+                   viewModel.blockSelectedConversations(selectedIds)
+
+                   withContext(Dispatchers.Main) {
+                       val updatedList = adapter.getAllMessages().toMutableList()
+                       updatedList.removeAll { selectedIds.contains(it.threadId) }
+                       adapter.submitList(updatedList)
+                       adapter.clearSelection()
+                       updateMessageCount()
+                       refreshMessages()
+                   }
+               }
+           }
+           blockDialog.show()
+       }
+  */
+   /* @RequiresApi(Build.VERSION_CODES.Q)
     fun markReadMessages() {
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -1120,7 +1141,58 @@ class ConversationFragment : Fragment() {
 
             val contentValues = ContentValues().apply {
                 put(Telephony.Sms.READ, 1)
-                put(Telephony.Sms.SEEN, 1)
+//                put(Telephony.Sms.SEEN, 1)
+            }
+            val updatedSubset = unreadMessages.map { it.copy(isRead = true) }
+
+            withContext(Dispatchers.Main) {
+                adapter.updateSubset(updatedSubset)
+                unreadMessageCount()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    adapter.notifyDataSetChanged()
+                }, 100)
+            }
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
+            requireContext().contentResolver.update(
+                Telephony.Sms.CONTENT_URI, contentValues, null, null
+            )
+        }
+    }*/
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun markReadMessages() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
+        val tvMessage = dialogView.findViewById<TextView>(R.id.tvProgressMessage)
+        tvMessage.text = getString(R.string.marking_messages_as_read)
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+        dialog.window?.apply {
+            setGravity(Gravity.BOTTOM)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        dialog.show()
+
+        val startTime = System.currentTimeMillis()
+
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val updatedList = adapter.getAllMessages().toMutableList()
+            val unreadMessages = updatedList.filter { !it.isRead }
+            if (unreadMessages.isEmpty()) {
+                withContext(Dispatchers.Main) { dialog.dismiss() }
+                return@launch
+            }
+            val unreadThreadIds = unreadMessages.map { it.threadId }.distinct()
+
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, 1)
             }
             val updatedSubset = unreadMessages.map { it.copy(isRead = true) }
 
@@ -1135,8 +1207,17 @@ class ConversationFragment : Fragment() {
             requireContext().contentResolver.update(
                 Telephony.Sms.CONTENT_URI, contentValues, selection, null
             )
+
+            val elapsed = System.currentTimeMillis() - startTime
+            val remainingTime = 1000 - elapsed
+            if (remainingTime > 0) delay(remainingTime)
+
+            withContext(Dispatchers.Main) {
+                dialog.dismiss()
+            }
         }
     }
+
 
     private fun updateMessageList(threadId: Long, isRead: Boolean) {
         val position = adapter.getPositionForThreadId(threadId)
@@ -1152,30 +1233,42 @@ class ConversationFragment : Fragment() {
 
     private fun markThreadAsUnread(threadId: Long) {
         if (threadId == -1L) return
-        val contentValues = ContentValues().apply {
-            put(Telephony.Sms.READ, 0)
-            put(Telephony.Sms.SEEN, 0)
+        CoroutineScope(Dispatchers.IO).launch {
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, 0)
+                put(Telephony.Sms.SEEN, 0)
+            }
+            val uri = Telephony.Sms.CONTENT_URI
+            val selection = "${Telephony.Sms.THREAD_ID} = ?"
+            val selectionArgs = arrayOf(threadId.toString())
+            val updatedRows = requireContext().contentResolver.update(
+                uri,
+                contentValues,
+                selection,
+                selectionArgs
+            )
+
         }
-        val uri = Telephony.Sms.CONTENT_URI
-        val selection = "${Telephony.Sms.THREAD_ID} = ?"
-        val selectionArgs = arrayOf(threadId.toString())
-        val updatedRows =
-            requireContext().contentResolver.update(uri, contentValues, selection, selectionArgs)
-        updateMessageList(threadId, false)
     }
 
     private fun markThreadAsread(threadId: Long) {
         if (threadId == -1L) return
-        val contentValues = ContentValues().apply {
-            put(Telephony.Sms.READ, 1)
-            put(Telephony.Sms.SEEN, 1)
+        CoroutineScope(Dispatchers.IO).launch {
+            val contentValues = ContentValues().apply {
+                put(Telephony.Sms.READ, 1)
+                put(Telephony.Sms.SEEN, 1)
+            }
+            val uri = Telephony.Sms.CONTENT_URI
+            val selection = "${Telephony.Sms.THREAD_ID} = ?"
+            val selectionArgs = arrayOf(threadId.toString())
+            val updatedRows =
+                requireContext().contentResolver.update(
+                    uri,
+                    contentValues,
+                    selection,
+                    selectionArgs
+                )
         }
-        val uri = Telephony.Sms.CONTENT_URI
-        val selection = "${Telephony.Sms.THREAD_ID} = ?"
-        val selectionArgs = arrayOf(threadId.toString())
-        val updatedRows =
-            requireContext().contentResolver.update(uri, contentValues, selection, selectionArgs)
-        updateMessageList(threadId, true)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

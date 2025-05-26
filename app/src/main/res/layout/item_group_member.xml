@@ -13,26 +13,86 @@
         app:layout_constraintTop_toTopOf="parent"
         android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/profileImage"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_user" />
+        <FrameLayout
+            android:id="@+id/imageContainer"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/nameText"
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:id="@+id/icUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_user"
+                android:visibility="visible"
+                app:riv_corner_radius="25dp" />
+
+            <RelativeLayout
+                android:id="@+id/profileContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/circle_background"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/initialsTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/icSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_selected"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/senderLy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:paddingStart="15dp"
-            android:text="group"
-            android:textDirection="locale"
             android:layout_marginEnd="10dp"
-            android:textFontWeight="400"
-            android:fontFamily="@font/product_sans_medium"
-            android:textSize="17sp" />
+            android:layout_weight="1"
+            app:layout_constraintEnd_toStartOf="@+id/date"
+            app:layout_constraintStart_toEndOf="@+id/imageContainer"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/nameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/product_sans_medium"
+                android:singleLine="true"
+                android:text="@string/app_name"
+                android:textColor="@color/textcolor"
+                android:textDirection="ltr"
+                android:textFontWeight="500"
+                android:textSize="17sp" />
+
+        </FrameLayout>
+
+<!--        <TextView-->
+<!--            android:id="@+id/nameText"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:paddingStart="15dp"-->
+<!--            android:text="group"-->
+<!--            android:textDirection="locale"-->
+<!--            android:layout_marginEnd="10dp"-->
+<!--            android:textFontWeight="400"-->
+<!--            android:fontFamily="@font/product_sans_medium"-->
+<!--            android:textSize="17sp" />-->
 
         <ImageView
             android:id="@+id/callButton"

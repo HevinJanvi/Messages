@@ -6,6 +6,7 @@ import android.app.Application
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import androidx.core.content.ContextCompat
@@ -42,6 +43,35 @@ fun Context.getThreadId(addresses: Set<String>): Long {
     return try {
         Telephony.Threads.getOrCreateThreadId(this, addresses)
     } catch (e: Exception) {
+        0L
+    }
+}
+
+@SuppressLint("NewApi")
+fun Context.getThreadIdSingle(addresses: String): Long {
+    return try {
+        Telephony.Threads.getOrCreateThreadId(this, addresses)
+    } catch (e: Exception) {
+        0L
+    }
+}
+
+fun Context.queryThreadIdForSingleAddress(address: String): Long {
+    val uri = Uri.parse("content://mms-sms/threadID")
+    val encodedAddress = Uri.encode(address)
+    val fullUri = Uri.withAppendedPath(uri, encodedAddress)
+
+    return try {
+        contentResolver.query(fullUri, arrayOf("_id"), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                cursor.getLong(cursor.getColumnIndexOrThrow("_id"))
+            } else {
+                // fallback if thread doesn't exist
+                Telephony.Threads.getOrCreateThreadId(this, address)
+            }
+        } ?: 0L
+    } catch (e: Exception) {
+        e.printStackTrace()
         0L
     }
 }

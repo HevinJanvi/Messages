@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
@@ -36,24 +37,30 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/address"
+            <FrameLayout
+                android:id="@+id/senderLy"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="8dp"
-                android:fontFamily="@font/product_sans_medium"
-                android:singleLine="true"
-                android:text=""
-                android:textColor="@color/textcolor"
-                android:textDirection="locale"
-                android:textFontWeight="500"
-                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnCall"
                 app:layout_constraintStart_toEndOf="@+id/icBack"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="8dp"
+                    android:fontFamily="@font/product_sans_medium"
+                    android:singleLine="true"
+                    android:textColor="@color/textcolor"
+                    android:textDirection="ltr"
+                    android:textFontWeight="500"
+                    android:textSize="20sp" />
+
+            </FrameLayout>
+
 
             <ImageView
                 android:id="@+id/btnCall"
@@ -101,9 +108,9 @@
                 android:layout_marginStart="7dp"
                 android:layout_marginTop="4dp"
                 android:adjustViewBounds="true"
+                android:background="@drawable/ripple_effect_round"
                 android:padding="7dp"
                 android:src="@drawable/ic_close"
-                android:background="@drawable/ripple_effect_round"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -283,12 +290,12 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_gravity="center"
-        android:visibility="gone"
         android:layout_margin="15dp"
         android:indeterminateTint="@color/colorPrimary"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/blockLy"/>
+        app:layout_constraintTop_toBottomOf="@+id/blockLy" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewConversation"
@@ -296,8 +303,8 @@
         android:layout_height="0dp"
         android:layout_marginTop="6dp"
         android:clipToPadding="false"
-        android:paddingBottom="8dp"
         android:overScrollMode="never"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/secureLy"
         app:layout_constraintTop_toBottomOf="@+id/blockLy"
         tools:listitem="@layout/item_message_incoming" />
@@ -369,107 +376,105 @@
                 android:id="@+id/buttonAdd"
                 android:layout_width="62dp"
                 android:layout_height="62dp"
-                android:padding="6dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/ripple_effect_round"
+                android:padding="6dp"
                 android:src="@drawable/ic_add_disable" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/send_msg_bg"
+                android:orientation="vertical">
 
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/schedulLy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/selectedTimeTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingExtra="2dp"
+                        android:paddingStart="15dp"
+                        android:paddingTop="10dp"
+                        android:text=""
+                        android:textSize="15dp"
+                        app:layout_constraintEnd_toStartOf="@+id/close"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/close"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:adjustViewBounds="true"
+                        android:padding="3dp"
+                        android:src="@drawable/ic_close"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height=".5dp"
+                        android:layout_marginHorizontal="10dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/subtext_color"
+                        app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/send_msg_bg"
-                    android:orientation="vertical">
+                    android:orientation="horizontal">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/schedulLy"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:visibility="gone">
-
-                        <TextView
-                            android:id="@+id/selectedTimeTextView"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:lineSpacingExtra="2dp"
-                            android:paddingStart="15dp"
-                            android:paddingTop="10dp"
-                            android:text=""
-                            android:textSize="15dp"
-                            app:layout_constraintEnd_toStartOf="@+id/close"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <ImageView
-                            android:id="@+id/close"
-                            android:layout_width="25dp"
-                            android:layout_height="25dp"
-                            android:layout_gravity="end"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginEnd="12dp"
-                            android:adjustViewBounds="true"
-                            android:padding="3dp"
-                            android:src="@drawable/ic_close"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height=".5dp"
-                            android:layout_marginHorizontal="10dp"
-                            android:layout_marginTop="10dp"
-                            android:background="@color/subtext_color"
-                            app:layout_constraintTop_toBottomOf="@+id/selectedTimeTextView" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <LinearLayout
+                    <EditText
+                        android:id="@+id/editTextMessage"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="horizontal">
+                        android:background="@null"
+                        android:fontFamily="@font/product_sans_regular"
+                        android:hint="@string/write_a_message"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapSentences|textMultiLine"
+                        android:maxLines="4"
+                        android:paddingHorizontal="15dp"
+                        android:paddingVertical="17dp"
+                        android:textColor="@color/textcolor"
+                        android:textColorHint="@color/gray_txtcolor"
+                        android:textDirection="locale"
+                        android:textFontWeight="400"
+                        android:textSize="15dp" />
 
-                        <EditText
-                            android:id="@+id/editTextMessage"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:fontFamily="@font/product_sans_regular"
-                            android:hint="@string/write_a_message"
-                            android:imeOptions="actionNext"
-                            android:maxLines="4"
-                            android:inputType="textCapSentences|textMultiLine"
-                            android:paddingHorizontal="15dp"
-                            android:paddingVertical="17dp"
-                            android:textColor="@color/textcolor"
-                            android:textColorHint="@color/gray_txtcolor"
-                            android:textFontWeight="400"
-                            android:textSize="15dp" />
-
-                        <ImageView
-                            android:id="@+id/imageSimSwitch"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:src="@drawable/sim_1"
-                            android:layout_marginEnd="10dp"
-                            android:layout_marginStart="5dp"
-                            android:visibility="gone"
-                            android:layout_gravity="center"/>
-                    </LinearLayout>
-
+                    <ImageView
+                        android:id="@+id/imageSimSwitch"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/sim_1"
+                        android:visibility="gone" />
                 </LinearLayout>
 
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/buttonSend"
                 android:layout_width="62dp"
                 android:layout_height="62dp"
-                android:padding="6dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/ripple_effect_round"
+                android:padding="6dp"
                 android:src="@drawable/ic_send_disable" />
         </LinearLayout>
 
@@ -507,6 +512,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:fontFamily="@font/product_sans_regular"
+                    android:gravity="center"
                     android:text="@string/schedule_sms"
                     android:textColor="@color/textcolor"
                     android:textFontWeight="400"
@@ -537,6 +543,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:fontFamily="@font/product_sans_regular"
+                    android:gravity="center"
                     android:text="@string/share_contact"
                     android:textColor="@color/textcolor"
                     android:textFontWeight="400"
@@ -552,45 +559,40 @@
             android:layout_height="wrap_content"
             android:background="@color/send_bg_color"
             android:paddingHorizontal="16dp"
-            android:visibility="gone"
-            android:paddingVertical="20dp">
-
-            <androidx.constraintlayout.helper.widget.Flow
-                android:id="@+id/flowLearn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:constraint_referenced_ids="txtCantReply,learnMore"
-                app:flow_horizontalGap="4dp"
-                app:flow_horizontalStyle="spread_inside"
-                app:flow_wrapMode="chain"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+            android:paddingVertical="20dp"
+            android:visibility="visible">
 
             <TextView
                 android:id="@+id/txtCantReply"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/product_sans_regular"
+                android:clickable="true"
+                android:ellipsize="none"
+                android:focusable="true"
+                android:gravity="center"
+                android:maxLines="2"
                 android:text="@string/can_t_replay"
                 android:textColor="@color/textcolor"
                 android:textFontWeight="400"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/learnMore"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/product_sans_medium"
-                android:text="@string/learn_more"
-                android:gravity="start"
-                android:textColor="@color/colorPrimary"
-                android:textFontWeight="500"
-                android:textSize="14sp" />
+            <!--            <TextView-->
+            <!--                android:id="@+id/learnMore"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:fontFamily="@font/product_sans_medium"-->
+            <!--                android:text="@string/learn_more"-->
+            <!--                android:gravity="start"-->
+            <!--                android:visibility="gone"-->
+            <!--                android:textColor="@color/colorPrimary"-->
+            <!--                android:textFontWeight="500"-->
+            <!--                android:textSize="14sp" -->
+            <!--                app:layout_constraintStart_toStartOf="parent"/>-->
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 
 
     </LinearLayout>

@@ -109,7 +109,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val reciptids = messageItem.reciptids.trim()
 //                Log.d("DEBUG", " Receipt IDs: ${messageItem.threadId} Sender:${messageItem.sender}  Body:${messageItem.body}")
 
-                if (messageItem.body.isNullOrBlank() || messageItem.sender == null) continue
+                if (messageItem.body.isNullOrBlank() || messageItem.sender == null ) continue
 //                Log.d("TAG", "getMessages: " + reciptids)
                 val isGroupChat = reciptids.contains(" ")
 
@@ -165,10 +165,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         contactInfo?.profileImageUrl ?: ""
                     )
                 }
-               /* Log.d(
-                    "TAG",
-                    "getMessages:thread " + messageItem.threadId + "---isgrpoup-----" + isGroupChat
-                )*/
+                /* Log.d(
+                     "TAG",
+                     "getMessages:thread " + messageItem.threadId + "---isgrpoup-----" + isGroupChat
+                 )*/
                 newMsgList.add(
                     messageItem.copy(
                         sender = displayName,
@@ -188,15 +188,47 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         }
     }
 
+    fun getLatestMessagesPerThread(context: Context): Map<Long, String> {
+        val uri = Telephony.Sms.CONTENT_URI
+        val projection = arrayOf(
+            Telephony.Sms._ID,
+            Telephony.Sms.THREAD_ID,
+            Telephony.Sms.BODY,
+            Telephony.Sms.DATE
+        )
+        val sortOrder = "${Telephony.Sms.DATE} DESC"
+
+        val threadMessageMap = mutableMapOf<Long, String>()
+        Log.d("TAG", "getLatestMessagesPerThread:---- ")
+        context.contentResolver.query(uri, projection, null, null, sortOrder)?.use { cursor ->
+            val threadIdIndex = cursor.getColumnIndex(Telephony.Sms.THREAD_ID)
+            val bodyIndex = cursor.getColumnIndex(Telephony.Sms.BODY)
+
+            while (cursor.moveToNext()) {
+                val threadId = cursor.getLong(threadIdIndex)
+                val body = cursor.getString(bodyIndex)
+
+                // If not already present, insert the first (i.e., latest) message for the thread
+                if (!threadMessageMap.containsKey(threadId)) {
+                    threadMessageMap[threadId] = body
+                }
+            }
+
+        }
+        Log.d("TAG", "getLatestMessagesPerThread:111---- ")
+
+        return threadMessageMap
+    }
+
     fun emptyConversation() {
         Log.d("TAG", "emptyConversation: ")
         _conversation.postValue(null)
     }
 
     fun getConversation(threadId: Long): List<ConversationItem> {
-        Log.d("TAG", "getConversation:thread id " + threadId)
+        Log.d("SEND_MSG", "getConversation:thread id " + threadId)
         val updatedConversation = getConversationDetails(threadId)
-        Log.d("TAG", "getConversation:------- ")
+        Log.d("SEND_MSG", "getConversation:------- ")
 
         _conversation.postValue(updatedConversation)
         return updatedConversation
@@ -245,13 +277,13 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 val senderName = ""
                 val profileImageUrl = ""
-                Log.d("TAG", "getConversations:messageCount "+messageCount)
+//                Log.d("TAG", "getConversations:snnipet " + lastMessage + "---thread----" + threadId)
                 if (lastMessage != null && messageCount > 0) {
                     conversations.add(
                         MessageItem(
                             threadId,
                             senderName, "",
-                            lastMessage,
+                            messageMap[threadId]?.body ?: lastMessage,
                             lastMessageTimestamp,
                             isRead = isRead,
                             reciptid,
@@ -270,7 +302,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
 
         }
-        Log.d("ObserverDebug", "getConversations: " + conversations.size)
+//        Log.d("ObserverDebug", "getConversations: " + conversations.size)
         val conversationList = getLastLatestMessage()
 //        Log.d("ObserverDebug", "Unique threads count: ${conversationList.size}")
         return conversations
@@ -463,15 +495,16 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 )
             }
         }
-//        Log.d("TAG", "Conversation loaded. Messages found:1 ${conversationList.size}")
+        Log.d("TAG", "Conversation loaded. Messages found:1 ${conversationList.size}")
 
         return conversationList
     }
 
     fun getLastLatestMessage(): MutableMap<Long, ConversationItem> {
         val threadMessageMap = mutableMapOf<Long, ConversationItem>()
-        if (!context.hasReadContactsPermission() || !Build.MANUFACTURER.equals("motorola")
-        ) {
+//        Log.d("TAG", "getLastLatestMessage:Build.MANUFACTURER " + Build.MANUFACTURER)
+        if (!context.hasReadContactsPermission() || (!Build.MANUFACTURER.equals("motorola") && !Build.MANUFACTURER.equals(
+                "Google") && !Build.MANUFACTURER.equals("vivo"))) {
             return threadMessageMap
         }
         val uri = Telephony.Sms.CONTENT_URI
@@ -668,6 +701,11 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
         }
     }
+    suspend fun deleteArchiveConversations(conversationIds: List<Long>) {
+        conversationIds.forEach {
+            AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
+        }
+    }
 
     fun getPinnedThreadIds(): List<Long> {
         return AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
@@ -713,8 +751,11 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         dao.updateNotificationSetting(threadId, 0)
     }
 
-    suspend fun getBlockConversations(): List<BlockConversation> {
-        return AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
+    //    suspend fun getBlockConversations(): List<BlockConversation> {
+//        return AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
+//    }
+    suspend fun getBlockConversations(): List<BlockConversation> = withContext(Dispatchers.IO) {
+        AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
     }
 
     suspend fun getBlockedThreadId(phoneNumber: String): Long? {
@@ -769,21 +810,21 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    fun getPhoneNumberForThread(threadId: Long): String? {
+    suspend fun getPhoneNumberForThread(threadId: Long): String? = withContext(Dispatchers.IO) {
         val projection = arrayOf(Telephony.Sms.ADDRESS)
         val selection = "${Telephony.Sms.THREAD_ID} = ?"
         val selectionArgs = arrayOf(threadId.toString())
 
-        val cursor: Cursor? = context.contentResolver.query(
+        val cursor = context.contentResolver.query(
             Telephony.Sms.CONTENT_URI, projection, selection, selectionArgs, null
         )
 
         cursor?.use {
             if (it.moveToFirst()) {
-                return it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
+                return@withContext it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
             }
         }
-        return null
+        return@withContext null
     }
 
 

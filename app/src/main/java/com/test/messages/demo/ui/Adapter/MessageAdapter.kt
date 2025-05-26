@@ -69,7 +69,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(holder.itemView.context,message.lastMsgDate)
-
+//        Log.d("DARFT", "onBindViewHolder: "+ holder.messageBody.text)
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
@@ -104,9 +104,11 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
             holder.messageBody.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
 
-        if (draftMessages.containsKey(message.threadId)) {
-            val (draftText, _) = draftMessages[message.threadId]!!
-
+        val draftText: String?
+        val isDraft = draftMessages.containsKey(message.threadId)
+        if (isDraft) {
+            val (text, _) = draftMessages[message.threadId]!!
+            draftText = text
             val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
             val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
                 setSpan(
@@ -138,7 +140,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         }
 
         val otp = message.body.extractOtp()
-        if (!otp.isNullOrEmpty()) {
+        if (!otp.isNullOrEmpty() && !isDraft) {
             holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_otp)
             holder.otpTextView.visibility = View.VISIBLE
             holder.otpTextView.setOnClickListener {
@@ -191,7 +193,9 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
                 val allSelected = selectedMessages.size == getAllMessages().size
                 onSelectAllStateChanged?.invoke(allSelected)
             } else {
+                message.isRead=true
                 onItemClickListener?.invoke(message)
+                notifyItemChanged(holder.adapterPosition)
             }
         }
 

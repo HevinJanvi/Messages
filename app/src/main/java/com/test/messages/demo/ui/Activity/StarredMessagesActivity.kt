@@ -48,6 +48,8 @@ class StarredMessagesActivity : BaseActivity() {
         binding = ActivityStarredMessagesBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(binding.rootView)
+
         EventBus.getDefault().register(this)
         binding.recyclerViewStarred.layoutManager = LinearLayoutManager(this)
 

@@ -1,6 +1,7 @@
 package com.test.messages.demo.data.reciever
 
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.ContentValues
 import android.content.Context
@@ -16,8 +17,9 @@ import com.test.messages.demo.Util.CommanConstants.DROPMSG
 import com.test.messages.demo.Util.ConversationOpenedEvent
 import com.test.messages.demo.Util.NewSmsEvent
 import com.test.messages.demo.Util.RefreshMessagesEvent
-import com.test.messages.demo.Util.ViewUtils.getThreadId
 import com.test.messages.demo.data.repository.MessageRepository
+import com.test.messages.demo.ui.send.getThreadId
+import com.test.messages.demo.ui.send.getThreadIdSingle
 import com.test.messages.demo.ui.send.notificationHelper
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
@@ -67,7 +69,7 @@ class SmsReceiver : BroadcastReceiver() {
                     if (isDropMessagesEnabled) {
                         return@launch
                     }
-                    threadId = getThreadId(context, address)
+                    threadId = context.getThreadId(setOf( address))
                     insertMessageIntoSystemDatabase(
                         context,
                         address,
@@ -80,7 +82,7 @@ class SmsReceiver : BroadcastReceiver() {
                         subscriptionId,
                         status
                     )
-                    threadId = getThreadId(context, address)
+                    threadId = context.getThreadId(setOf( address))
                     val isAlreadyBlocked = repository.isBlockedConversation(threadId)
                     if (!isAlreadyBlocked) {
                         repository.blockConversation(threadId, address)
@@ -88,7 +90,9 @@ class SmsReceiver : BroadcastReceiver() {
                     }
 
                 } else {
-                    threadId = getThreadId(context, address)
+                    Log.d("TAG", "onReceive:receiver1 "+address)
+
+                   threadId = context.getThreadIdSingle(address)
                     val insertedUri = insertMessageIntoSystemDatabase(
                         context,
                         address,
@@ -110,6 +114,7 @@ class SmsReceiver : BroadcastReceiver() {
                     EventBus.getDefault().post(NewSmsEvent(threadId))
                 }
 
+                Log.d("TAG", "onReceive:receiver2 "+threadId)
                 val database = AppDatabase.getDatabase(context)
                 val notificationDao = database.notificationDao()
                 val isMuted = notificationDao.getNotificationStatus(threadId) ?: false
@@ -117,8 +122,9 @@ class SmsReceiver : BroadcastReceiver() {
                 val isWakeScreenEnabled = wakeSetting?.isWakeScreenOn ?: true
 
                 if (!isMuted) {
-//                    Log.d("TAG", "Wake Screen DB Value: $isWakeScreenEnabled")
+                    Log.d("SmsReceiver", "Wake Screen DB Value: $isWakeScreenEnabled")
                     if (isWakeScreenEnabled) {
+                        Log.d("SmsReceiver", "Wake Screen DB Value:1111 $isWakeScreenEnabled")
                         wakeUpScreen(context)
                     }
                 } else {
@@ -141,11 +147,16 @@ class SmsReceiver : BroadcastReceiver() {
                     incrementMessageCount(threadId)
                     val contactUri = repository.getPhotoUriFromPhoneNumber(address)
                     val bitmap = repository.getNotificationBitmap(context,contactUri)
-//                    Log.d("TAG", "onReceive:bitmap "+bitmap)
+//                  Log.d("TAG", "onReceive:bitmap "+bitmap)
+                    if (isChannelBlocked(context, CommanConstants.KEY_SMS_CHANNEL)) {
+                        return@launch
+                    }
                     context.notificationHelper.showMessageNotification(messageId, address, body, threadId, bitmap, displayName, alertOnlyOnce = true)
                 }
-                repository.getMessages()
-//                repository.getConversation(threadId)
+                CoroutineScope(Dispatchers.IO).launch {
+                    repository.getMessages()
+                }
+
             }
         }
     }
@@ -170,6 +181,14 @@ class SmsReceiver : BroadcastReceiver() {
         messageCounts[threadId] = count + 1
     }
 
+    fun isChannelBlocked(context: Context, channelId: String): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = context.getSystemService(NotificationManager::class.java)
+            val channel = manager.getNotificationChannel(channelId)
+            return channel?.importance == NotificationManager.IMPORTANCE_NONE
+        }
+        return false
+    }
 
 
     private fun insertMessageIntoSystemDatabase(

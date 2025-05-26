@@ -26,7 +26,7 @@ class SettingsActivity : BaseActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-
+        applyWindowInsetsToView(binding.rootView)
         binding.icBack.setOnClickListener {
             onBackPressed()
         }

@@ -57,10 +57,10 @@ class ScheduledMessageAdapter(private val onItemClick: (ScheduledMessage) -> Uni
         val profileContainer: RelativeLayout = itemView.findViewById(R.id.profileContainer)
         val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
         fun bind(message: ScheduledMessage) {
-            recipientView.text = message.recipient
+            recipientView.text = message.recipientName
             messageView.text = message.message
             timeView.text = formatTimestamp(itemView.context,message.scheduledTime)
-            val firstChar = message.recipient.trim().firstOrNull()
+            val firstChar = message.recipientName.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
             if (message.profileUrl != null && message.profileUrl.isNotEmpty() || startsWithSpecialChar) {
                 icUser.visibility = View.VISIBLE
@@ -72,9 +72,9 @@ class ScheduledMessageAdapter(private val onItemClick: (ScheduledMessage) -> Uni
             } else {
                 icUser.visibility = View.GONE
                 initialsTextView.visibility = View.VISIBLE
-                initialsTextView.text = getInitials(message.recipient)
+                initialsTextView.text = getInitials(message.recipientName)
                 profileContainer.backgroundTintList =
-                    ColorStateList.valueOf(getRandomColor(message.recipient))
+                    ColorStateList.valueOf(getRandomColor(message.recipientName))
             }
         }
     }

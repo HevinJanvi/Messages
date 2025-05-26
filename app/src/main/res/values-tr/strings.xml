@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Bu konuşmanızın başlangıcı, \ngüzel bir şey söyle!</string>
     <string name="messages_copied">Mesajlar kopyalandı</string>
     <string name="copy">Kopyala \"%1$s\"</string>
-    <string name="can_t_replay">Bu kısa koda tekrar oynatılamıyor. |</string>
-    <string name="learn_more">&#160;&#160;<u>Daha Fazla Bilgi Edinin</u></string>
+    <string name="can_t_replay">Bu kısa koda tekrar oynatılamıyor.|&#160;</string>
+    <string name="learn_more">Daha Fazla Bilgi Edinin</string>
     <string name="this_sms_is_100_secure">Bu SMS %100 güvenlidir. Mesajlar önceden izin alınmadan asla veri toplamaz. Her şey telefonunuzda işlenir ve saklanır.</string>
     <string name="ok">Tamam</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Mesajlaşma Kolaylaştırıldı</string>
     <string name="intro_txt2"><![CDATA[Planla ve Rahatla]]></string>
     <string name="intro_txt3">Spam Mesajlarından Kaçının</string>
-    <string name="intro_subtxt1">Temiz, düzenli bir gelen kutusuyla bağlantıda kalın. İstediğiniz zaman zahmetsizce sohbet edin!</string>
+    <string name="intro_subtxt1">Temiz, düzenli bir gelen kutusuyla bağlantıda kalın.İstediğiniz zaman zahmetsizce sohbet edin!</string>
     <string name="intro_subtxt2">Mesajları otomatik olarak gönderilecek şekilde planlayın; hiçbir mesajı unutmayın!</string>
     <string name="intro_subtxt3">Gelen kutunuzu temiz tutmak için spam ve istenmeyen kişileri kolayca engelleyin.</string>
     <string name="flag">bayrak</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Paylaşmak için mesaj seçilmedi</string>
     <string name="message_details">Mesaj Ayrıntıları</string>
     <string name="type">Tür</string>
-    <string name="to">Kime</string>
+    <string name="to">Kime:&#160;</string>
     <string name="sent">Gönderildi</string>
     <string name="unknown">Bilinmiyor</string>
     <string name="web_type">Web türü</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">%1$s eşleşme bulundu</string>
     <string name="restoring">Geri yükleniyor...</string>
     <string name="exit_text">Lütfen çıkmak için tekrar Geri\'ye tıklayın</string>
+    <string name="move_to_recycle_bin2">Geri Dönüşüm Kutusu\'na taşınsın mı?</string>
+    <string name="selected_message_move">Seçilen iletiler geri dönüşüm kutusuna taşınacak</string>
+    <string name="block_messages_progress">Seçili mesajlar engelleniyor... </string>
+    <string name="pin_limit_reached">En fazla 10 mesajı sabitleyebilirsiniz.</string>
+    <string name="no_result_found">Hiçbir sonuç bulunamadı</string>
+
+    <string name="move">Taşı</string>
+    <string name="move_to_bin">Çöp Kutusuna Taşı?</string>
+    <string name="marking_messages_as_read">Mesajlar okundu olarak işaretleniyor...</string>
 
 </resources>

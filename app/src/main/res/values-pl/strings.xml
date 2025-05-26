@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">To początek Twojej konwersacji, powiedz \ncoś miłego!</string>
     <string name="messages_copied">Wiadomości skopiowane</string>
     <string name="copy">Kopiuj</string>
-    <string name="can_t_replay">Nie można odtworzyć tego krótkiego kodu. |</string>
-    <string name="learn_more">&#160;&#160;<u>Dowiedz się więcej</u></string>
+    <string name="can_t_replay">Nie można odtworzyć tego krótkiego kodu.|&#160;</string>
+    <string name="learn_more">Dowiedz się więcej</string>
     <string name="this_sms_is_100_secure">Ten SMS jest w 100% bezpieczny. Wiadomości nigdy nie zbierają danych bez uprzedniej zgody. Wszystko jest przetwarzane i przechowywane na Twoim telefonie.</string>
     <string name="ok">Ok</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Łatwe przesyłanie wiadomości</string>
     <string name="intro_txt2"><![CDATA[Planowanie i relaks]]></string>
     <string name="intro_txt3">Unikaj wiadomości spamowych</string>
-    <string name="intro_subtxt1">Pozostań w kontakcie dzięki czystej, zorganizowanej skrzynce odbiorczej. Czatuj bez wysiłku w dowolnym momencie!</string>
+    <string name="intro_subtxt1">Pozostań w kontakcie dzięki czystej, zorganizowanej skrzynce odbiorczej.Czatuj bez wysiłku w dowolnym momencie!</string>
     <string name="intro_subtxt2">Zaplanuj automatyczne wysyłanie wiadomości tekstowych — nigdy nie zapomnij wiadomości!</string>
     <string name="intro_subtxt3">Łatwo blokuj spam i niechciane kontakty, aby zachować czystość skrzynki odbiorczej.</string>
     <string name="flag">flaga</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Nie wybrano żadnych wiadomości do udostępnienia</string>
     <string name="message_details">Szczegóły wiadomości</string>
     <string name="type">Typ</string>
-    <string name="to">Do</string>
+    <string name="to">Do :&#160;</string>
     <string name="sent">Wysłane</string>
     <string name="unknown">Nieznane</string>
     <string name="web_type">Typ sieci Web</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">Znaleziono %1$s dopasowań</string>
     <string name="restoring">Przywracanie...</string>
     <string name="exit_text">Kliknij Wstecz ponownie, aby wyjść</string>
+    <string name="move_to_recycle_bin2">Przenieść do Kosza?</string>
+    <string name="selected_message_move">Wybrane wiadomości zostaną przeniesione do kosza </string>
+    <string name="block_messages_progress">Blokowanie wybranych wiadomości... </string>
+    <string name="pin_limit_reached">Możesz przypiąć maksymalnie 10 wiadomości.</string>
+    <string name="no_result_found">Nie znaleziono wyników</string>
+
+    <string name="move">Przenieś</string>
+    <string name="move_to_bin">Przenieść do kosza?</string>
+    <string name="marking_messages_as_read">Oznaczanie wiadomości jako przeczytanych...</string>
 
 </resources>

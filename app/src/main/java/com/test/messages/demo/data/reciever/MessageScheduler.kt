@@ -13,14 +13,11 @@ object MessageScheduler {
     @RequiresApi(Build.VERSION_CODES.S)
     fun scheduleMessage(context: Context, message: ScheduledMessage) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                return
-            }
-        }*/
 
         val intent = Intent(context, MessageSenderReceiver::class.java).apply {
             putExtra("threadId", message.threadId)
+            putExtra("messageId", message.id)
+
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -29,6 +26,7 @@ object MessageScheduler {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        Log.d("ScheduleDebug", "Scheduling message for threadId: ${message.threadId}, id: ${message.id}, time: ${message.scheduledTime}")
         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, message.scheduledTime, pendingIntent)
     }
 }

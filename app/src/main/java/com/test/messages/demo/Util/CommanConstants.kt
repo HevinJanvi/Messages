@@ -16,6 +16,7 @@ object CommanConstants {
     const val BACKUP_FILE = "messages_backup.json"
 
     //prefs keys
+    const val SIM_SELECT = "selected_sim_id"
     const val FONT_SIZE_KEY = "font_size"
     const val KEY_LAST_BACKUP = "last_backup_time"
     const val KEY_LEFT_SWIPE_ACTION = "left_swipe_action"
@@ -39,6 +40,7 @@ object CommanConstants {
     const val MARK_AS_READ =  "mark_as_read"
     const val REPLY =  "reply"
 
+    const val EXTRA_TXT = ""
     const val IS_MMS = "IS_MMS"
     const val MESSAGE_ID = "MESSAGE_ID"
     const val EXTRA_THREAD_ID = "EXTRA_THREAD_ID"

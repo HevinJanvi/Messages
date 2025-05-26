@@ -21,8 +21,9 @@ data class MessageItem(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is MessageItem) return false
-        return threadId == other.threadId && body == other.body && isMuted == other.isMuted && isPinned == other.isPinned
-                && isRead == other.isRead
+        return threadId == other.threadId && sender == other.sender &&
+                body == other.body && isMuted == other.isMuted && isPinned == other.isPinned
+                && isRead == other.isRead && profileImageUrl == other.profileImageUrl
     }
 
     override fun hashCode(): Int {

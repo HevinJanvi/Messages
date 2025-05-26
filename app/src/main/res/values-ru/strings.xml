@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Это начало вашего разговора, скажите\nчто-нибудь приятное!</string>
     <string name="messages_copied">Сообщения скопированы</string>
     <string name="copy">Копировать</string>
-    <string name="can_t_replay">Невозможно воспроизвести на этот короткий номер. |</string>
-    <string name="learn_more">&#160;&#160;<u>Подробнее</u></string>
+    <string name="can_t_replay">Невозможно воспроизвести на этот короткий номер.|&#160;</string>
+    <string name="learn_more">Подробнее</string>
     <string name="this_sms_is_100_secure">Это SMS на 100% безопасно. Сообщения никогда не собирают данные без предварительного согласия. Все обрабатывается и хранится на вашем телефоне.</string>
     <string name="ok">ОК</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">Обмен сообщениями стал проще</string>
     <string name="intro_txt2">Расписание и отдых></string>
     <string name="intro_txt3">Избегайте спама</string>
-    <string name="intro_subtxt1">Оставайтесь на связи с чистым, организованным почтовым ящиком. Общайтесь без усилий в любое время!</string>
+    <string name="intro_subtxt1">Оставайтесь на связи с чистым, организованным почтовым ящиком.Общайтесь без усилий в любое время!</string>
     <string name="intro_subtxt2">Запланируйте автоматическую отправку текстовых сообщений — никогда не забывайте о сообщении!</string>
     <string name="intro_subtxt3">Легко блокируйте спам и нежелательные контакты, чтобы поддерживать чистоту почтового ящика.</string>
     <string name="flag">flag</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Не выбрано ни одного сообщения для отправки</string>
     <string name="message_details">Сведения о сообщении</string>
     <string name="type">Тип</string>
-    <string name="to">Кому</string>
+    <string name="to">Кому :&#160;</string>
     <string name="sent">Отправлено</string>
     <string name="unknown">Неизвестно</string>
     <string name="web_type">Тип веб-сайта</string>
@@ -268,5 +268,14 @@
     <string name="matches_found">Найдено %1$s совпадений</string>
     <string name="restoring">Восстановление...</string>
     <string name="exit_text">Чтобы выйти, нажмите «Назад» еще раз </string>
+    <string name="move_to_recycle_bin2">Переместить в корзину?</string>
+    <string name="selected_message_move">Выбранные сообщения будут перемещены в корзину</string>
+    <string name="block_messages_progress">Блокировка выбранных сообщений... </string>
+    <string name="pin_limit_reached">Вы можете закрепить не более 10 сообщений.</string>
+    <string name="no_result_found">Результатов не найдено</string>
+
+    <string name="move">Переместить</string>
+    <string name="move_to_bin">Переместить в корзину?</string>
+    <string name="marking_messages_as_read">Отметка сообщений как прочитанных...</string>
 
 </resources>

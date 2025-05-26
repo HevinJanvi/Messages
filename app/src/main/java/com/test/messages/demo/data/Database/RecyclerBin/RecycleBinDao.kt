@@ -2,6 +2,7 @@ package easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databa
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.test.messages.demo.data.Database.RecyclerBin.RecycleBinAddressThread
 
 @Dao
 interface RecycleBinDao {
@@ -56,4 +57,8 @@ interface RecycleBinDao {
 
     @Query("DELETE FROM recycle_bin")
     suspend fun clearRecycleBin()
+
+    @Query("SELECT DISTINCT address, thread_id FROM recycle_bin")
+    fun getAllRecycleBinAddresses(): List<RecycleBinAddressThread>
+
 }

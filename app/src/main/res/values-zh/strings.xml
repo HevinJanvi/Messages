@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">这是您对话的开始，说些好话吧！</string>
     <string name="messages_copied">消息已复制</string>
     <string name="copy">复制</string>
-    <string name="can_t_replay">无法重播此短代码。|</string>
-    <string name="learn_more">&#160;&#160;<u>了解更多</u></string>
+    <string name="can_t_replay">无法重播此短代码。|&#160;</string>
+    <string name="learn_more">了解更多</string>
     <string name="this_sms_is_100_secure">此短信 100% 安全。未经事先同意，消息绝不会收集数据。所有内容都经过处理并存储在您的手机上。</string>
     <string name="ok">确定</string>
 
@@ -117,7 +117,7 @@
     <string name="intro_txt1">轻松发送消息</string>
     <string name="intro_txt2">安排和放松</string>
     <string name="intro_txt3">避免垃圾邮件</string>
-    <string name="intro_subtxt1">通过干净、有序的收件箱保持联系。随时轻松聊天！</string>
+    <string name="intro_subtxt1">通过干净、有序的收件箱保持联系 随时轻松聊天！</string>
     <string name="intro_subtxt2">安排文本自动发送 - 永远不会忘记消息！</string>
     <string name="intro_subtxt3">轻松阻止垃圾邮件和不需要的联系人，以保持您的收件箱干净。</string>
     <string name="flag">标志</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">未选择要分享的消息</string>
     <string name="message_details">消息详情</string>
     <string name="type">类型</string>
-    <string name="to">收件人</string>
+    <string name="to">收件人 :&#160;</string>
     <string name="sent">已发送</string>
     <string name="unknown">未知</string>
     <string name="web_type">网页类型</string>
@@ -268,5 +268,12 @@
     <string name="matches_found">找到 %1$s 条匹配结果</string>
     <string name="restoring">正在恢复...</string>
     <string name="exit_text">请再次单击“返回”退出</string>
-
+    <string name="move_to_recycle_bin2">移至回收站？</string>
+    <string name="selected_message_move">选定的邮件将被移至回收站</string>
+    <string name="block_messages_progress">正在阻止选定的消息... </string>
+    <string name="pin_limit_reached">您最多只能固定 10 条消息。</string>
+    <string name="no_result_found">​​未找到结果</string>
+    <string name="move">移动</string>
+    <string name="move_to_bin">移至垃圾箱？</string>
+    <string name="marking_messages_as_read">将消息标记为已读...</string>
 </resources>

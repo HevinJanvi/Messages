@@ -5,12 +5,20 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.Telephony
 import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
+import androidx.core.os.postDelayed
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.R
@@ -26,21 +34,30 @@ import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class ScheduleActivity : BaseActivity() {
     private lateinit var binding: ActivityScheduleBinding
     private lateinit var adapter: ScheduledMessageAdapter
     private val viewModel: MessageViewModel by viewModels()
+    private var scheduleDialog: ScheduleDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityScheduleBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
-
+        applyWindowInsetsToView(binding.rootView)
         adapter = ScheduledMessageAdapter { message ->
-            showScheduleDialog(message)
+//            showScheduleDialog(message)
+               Handler(Looper.getMainLooper()).postDelayed({
+                   showScheduleDialog(message)
+               },200)
+
         }
         binding.scheduleRecycleview.layoutManager = LinearLayoutManager(this)
         binding.scheduleRecycleview.adapter = adapter
@@ -74,12 +91,17 @@ class ScheduleActivity : BaseActivity() {
     }
 
     private fun showScheduleDialog(message: ScheduledMessage) {
-        ScheduleDialog(
+//        if (scheduleDialog?.isShowing == true) {
+//            return  // Avoid showing dialog again if already visible
+//        }
+        scheduleDialog = ScheduleDialog(
+
             context = this,
             onDeleteConfirmed = {
                 Thread {
                     AppDatabase.getDatabase(this).scheduledMessageDao().delete(message)
-                    runOnUiThread { loadScheduledMessages() }
+                    runOnUiThread {
+                        loadScheduledMessages() }
 
                 }.start()
             },
@@ -89,53 +111,111 @@ class ScheduleActivity : BaseActivity() {
             onCopyText = {
                 copyToClipboard(message.message)
             }
-        ).show()
+        )
+        scheduleDialog?.show()
+
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun sendMessageImmediately(message: ScheduledMessage) {
         val messagingUtils = MessageUtils(this)
-        Log.d("TAG", "sendMessageImmediately: ")
-        Thread {
-            val message =
-                AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
-//            val scheduledMsg = AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
 
-            message?.let {
-                Log.d("TAG", "sendMessageImmediately:- ")
-                val subId = SmsManager.getDefaultSmsSubscriptionId()
+        lifecycleScope.launch {
+            val scheduledMessage = withContext(Dispatchers.IO) {
+                AppDatabase.getDatabase(this@ScheduleActivity).scheduledMessageDao().getMessageById1(message.id)
+            }
+
+            scheduledMessage?.let {
                 val personalThreadId = it.threadId.toLongOrNull() ?: -1L
-
                 val messageUri = messagingUtils.insertSmsMessage(
-                    subId = subId,
-                    dest = it.recipient,
+                    subId = it.subscriptionId,
+                    dest = it.recipientNumber,
                     text = it.message,
                     timestamp = System.currentTimeMillis(),
                     threadId = personalThreadId,
+                    status = Telephony.Sms.Sent.STATUS_COMPLETE,
+                    type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
+                    messageId = null
                 )
 
                 try {
-                    SmsSender.getInstance(applicationContext as Application).sendMessage(
-                        subId = subId,
-                        destination = it.recipient,
-                        body = it.message,
-                        serviceCenter = null,
-                        requireDeliveryReport = false,
-                        messageUri = messageUri
-                    )
-                    val threadId = message.threadId
-                    Log.d("TAG", "Deleting scheduled message for threadId: ${threadId}")
+                    withContext(Dispatchers.IO) {
+                        SmsSender.getInstance(applicationContext as Application).sendMessage(
+                            subId = it.subscriptionId,
+                            destination = it.recipientNumber,
+                            body = it.message,
+                            serviceCenter = null,
+                            requireDeliveryReport = false,
+                            messageUri = messageUri
+                        )
 
-                    AppDatabase.getDatabase(this).scheduledMessageDao().deleteByThreadId(it.threadId.toLong())
-                    runOnUiThread {
-                        viewModel.loadMessages()
-                        loadScheduledMessages() // refresh list
+                        // IMPORTANT: change this delete method to delete by message ID (see explanation below)
+                        AppDatabase.getDatabase(this@ScheduleActivity).scheduledMessageDao()
+                            .deleteById(it.id)
                     }
 
+                    viewModel.loadMessages()
+                    loadScheduledMessages()
+
                 } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
-        }.start()
+        }
     }
+
+//    private fun sendMessageImmediately(message: ScheduledMessage) {
+//        val messagingUtils = MessageUtils(this)
+//        Log.d("TAG", "sendMessageImmediately: ")
+//        Thread {
+//            val message =
+//                AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById1(message.id)
+////            val scheduledMsg = AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
+//
+//            message?.let {
+//                val personalThreadId = it.threadId.toLongOrNull() ?: -1L
+//
+//                /* val messageUri = messagingUtils.insertSmsMessage(
+//                     subId = message.subscriptionId,
+//                     dest = it.recipient,
+//                     text = it.message,
+//                     timestamp = System.currentTimeMillis(),
+//                     threadId = personalThreadId,
+//                 )*/
+//                val messageUri = messagingUtils.insertSmsMessage(
+//                    subId = message.subscriptionId,
+//                    dest = it.recipientNumber,
+//                    text = it.message,
+//                    timestamp = System.currentTimeMillis(),
+//                    threadId = personalThreadId,
+//                    status = Telephony.Sms.Sent.STATUS_COMPLETE,
+//                    type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
+//                    messageId = null
+//                )
+//                try {
+//                    SmsSender.getInstance(applicationContext as Application).sendMessage(
+//                        subId = message.subscriptionId,
+//                        destination = it.recipientNumber,
+//                        body = it.message,
+//                        serviceCenter = null,
+//                        requireDeliveryReport = false,
+//                        messageUri = messageUri
+//                    )
+//                    val threadId = message.threadId
+//                    Log.d("TAG", "Deleting scheduled message for threadId: ${threadId}")
+//
+//                    AppDatabase.getDatabase(this).scheduledMessageDao()
+//                        .deleteByThreadId(it.threadId.toLong())
+//                    runOnUiThread {
+//                        viewModel.loadMessages()
+//                        loadScheduledMessages() // refresh list
+//                    }
+//
+//                } catch (e: Exception) {
+//                }
+//            }
+//        }.start()
+//    }
 
     private fun copyToClipboard(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

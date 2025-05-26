@@ -6,6 +6,7 @@
     android:background="@color/bg">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rootView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/bg">
@@ -188,7 +189,7 @@
                         android:padding="3dp"
                         android:src="@drawable/ic_pin" />
 
-                    <TextView
+                    <com.test.messages.demo.Util.MarqueeTextView
                         android:id="@+id/txtPin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -216,7 +217,7 @@
                         android:padding="3dp"
                         android:src="@drawable/ic_mute" />
 
-                    <TextView
+                    <com.test.messages.demo.Util.MarqueeTextView
                         android:id="@+id/txtMute"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -245,7 +246,7 @@
                         android:padding="3dp"
                         android:src="@drawable/ic_archive" />
 
-                    <TextView
+                    <com.test.messages.demo.Util.MarqueeTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/product_sans_regular"
@@ -272,7 +273,7 @@
                         android:padding="3dp"
                         android:src="@drawable/ic_delete" />
 
-                    <TextView
+                    <com.test.messages.demo.Util.MarqueeTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/product_sans_regular"
@@ -300,7 +301,8 @@
                         android:padding="3dp"
                         android:src="@drawable/ic_block" />
 
-                    <TextView
+                    <com.test.messages.demo.Util.MarqueeTextView
+                        android:id="@+id/txtblock"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/product_sans_regular"

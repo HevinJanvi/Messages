@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">会話の始まりです。何か良いことを言ってください!</string>
     <string name="messages_copied">メッセージをコピーしました</string>
     <string name="copy">」をコピーしました</string>
-    <string name="can_t_replay">このショート コードに再生できません。 |</string>
-    <string name="learn_more">&#160;&#160;<u>詳細</u></string>
+    <string name="can_t_replay">このショート コードに再生できません。|&#160;</string>
+    <string name="learn_more">詳細</string>
     <string name="this_sms_is_100_secure">この SMS は 100% 安全です。事前の同意なしにメッセージがデータを収集することはありません。すべては携帯電話で処理され、保存されます。</string>
     <string name="ok">OK</string>
 
@@ -110,14 +110,14 @@
     <string name="welcome_to_messages"><font fgcolor="#1A73E8">メッセージ</font> へようこそ</string>
 
     <string name="to_send_and_receive">メッセージを送受信するには、メッセージをデフォルトの SMS アプリとして設定します。</string>
-    <string name="instant_replies_in_one_tap">1 回のタップですぐに返信できます。</string>
+    <string name="instant_replies_in_one_tap">ワンタップで即座に返信します。</string>
     <string name="stay_safe_with">安全なメッセージングで安全を確保します。</string>
     <string name="set_as_default">デフォルトとして設定</string>
     <string name="skip">スキップ</string>
     <string name="intro_txt1">メッセージングが簡単になりました</string>
     <string name="intro_txt2"><![CDATA[スケジュールとリラックス]]></string>
     <string name="intro_txt3">スパム メッセージを回避</string>
-    <string name="intro_subtxt1">整理された受信トレイでつながりを保ちます。 いつでも簡単にチャットできます。</string>
+    <string name="intro_subtxt1">整理された受信トレイでつながりを保ちます。いつでも簡単にチャットできます。</string>
     <string name="intro_subtxt2">テキストを自動的に送信するようにスケジュール設定して、メッセージを忘れないようにします。</string>
     <string name="intro_subtxt3">スパムや不要な連絡先を簡単にブロックして、受信トレイを整理します。</string>
     <string name="flag">フラグ</string>
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">共有するメッセージが選択されていません</string>
     <string name="message_details">メッセージの詳細</string>
     <string name="type">種類</string>
-    <string name="to">宛先</string>
+    <string name="to">宛先 :&#160;</string>
     <string name="sent">送信先</string>
     <string name="unknown">不明</string>
     <string name="web_type">Webタイプ</string>
@@ -268,5 +268,15 @@
     <string name="matches_found">%1$s件の一致が見つかりました</string>
     <string name="restoring">復元しています...</string>
     <string name="exit_text">終了するには、もう一度 [戻る] をクリックしてください</string>
+
+    <string name="move_to_recycle_bin2">ごみ箱に移動しますか?</string>
+    <string name="selected_message_move">選択したメッセージはごみ箱に移動されます</string>
+    <string name="block_messages_progress">選択したメッセージをブロックしています... </string>
+    <string name="pin_limit_reached">ピン留めできるメッセージは最大 10 件までです。</string>
+    <string name="no_result_found">​​結果が見つかりません</string>
+
+    <string name="move">移動</string>
+    <string name="move_to_bin">ビンに移動しますか?</string>
+    <string name="marking_messages_as_read">メッセージを既読としてマークしています...</string>
 
 </resources>

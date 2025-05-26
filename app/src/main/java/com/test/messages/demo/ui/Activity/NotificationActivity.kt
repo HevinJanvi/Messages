@@ -27,10 +27,12 @@ import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @AndroidEntryPoint
 class NotificationActivity : BaseActivity(){
 
@@ -41,12 +43,11 @@ class NotificationActivity : BaseActivity(){
     private lateinit var notificationDao: NotificationDao
     private val viewModel: MessageViewModel by viewModels()
 
-
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNotificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyWindowInsetsToView(binding.rootView)
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
         number = intent.getStringExtra(NUMBER).toString()
         name = intent.getStringExtra(NAME).toString()
@@ -55,7 +56,6 @@ class NotificationActivity : BaseActivity(){
         binding.icBack.setOnClickListener {
             onBackPressed()
         }
-
         viewModel.updateOrInsertThread(threadId)
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -121,14 +121,14 @@ class NotificationActivity : BaseActivity(){
 
     }
 
+
     private fun updatePreviewText(option: Int) {
         val text = when (option) {
-            0 -> getString(R.string.show_name_and_message)
+            0 -> getString(R.string.show_sender_message)
             1 -> getString(R.string.show_only_sender)
             2 -> getString(R.string.show_nothing)
-            else -> getString(R.string.show_name_and_message)
+            else -> getString(R.string.show_sender_message)
         }
-        Log.d("TAG", "updatePreviewText: "+text)
         binding.selectedOpt.text = text
     }
 
@@ -160,7 +160,6 @@ class NotificationActivity : BaseActivity(){
     }
 
     fun openSmsNotificationGlobalSettings(context: Context) {
-//        val channelId = "sms_channel_"
         val channelId = "${CommanConstants.KEY_SMS_CHANNEL}"
 
         val notificationManager = context.getSystemService(NotificationManager::class.java)

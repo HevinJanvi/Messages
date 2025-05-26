@@ -52,8 +52,8 @@
     <string name="this_is_the_start_of_your_conversation">Questo è l\'inizio della tua conversazione, di\' \nqualcosa di carino!</string>
     <string name="messages_copied">Messaggi copiati</string>
     <string name="copy">Copia </string>
-    <string name="can_t_replay">Impossibile rispondere a questo codice breve. |</string>
-    <string name="learn_more">&#160;&#160;<u>Scopri di più</u></string>
+    <string name="can_t_replay">Impossibile rispondere a questo codice breve.|&#160;</string>
+    <string name="learn_more">Scopri di più</string>
     <string name="this_sms_is_100_secure">Questo SMS è sicuro al 100%. I messaggi non raccolgono mai dati senza previo consenso. Tutto viene elaborato e archiviato sul tuo telefono.</string>
     <string name="ok">Ok</string>
 
@@ -230,7 +230,7 @@
     <string name="no_messages_selected_to_share">Nessun messaggio selezionato da condividere</string>
     <string name="message_details">Dettagli del messaggio</string>
     <string name="type">Tipo</string>
-    <string name="to">A</string>
+    <string name="to">A :&#160;</string>
     <string name="sent">Inviato</string>
     <string name="unknown">Sconosciuto</string>
     <string name="web_type">Tipo di sito web</string>
@@ -269,5 +269,14 @@
     <string name="restoring">Ripristino...</string>
     <string name="exit_text">Fai clic di nuovo su Indietro per uscire</string>
 
+    <string name="move_to_recycle_bin2">Spostare nel Cestino?</string>
+    <string name="selected_message_move">I messaggi selezionati verranno spostati nel cestino</string>
+    <string name="block_messages_progress">Blocco dei messaggi selezionati... </string>
+    <string name="pin_limit_reached">Puoi aggiungere fino a 10 messaggi.</string>
+    <string name="no_result_found">Nessun risultato trovato</string>
+
+    <string name="move">Sposta</string>
+    <string name="move_to_bin">Vuoi spostare nel cestino?</string>
+    <string name="marking_messages_as_read">Contrassegna i messaggi come letti...</string>
 
 </resources>

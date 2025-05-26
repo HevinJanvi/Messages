@@ -30,7 +30,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewGroupCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.LanguageChangeEvent
 import com.test.messages.demo.Util.MessageRestoredEvent
@@ -44,6 +46,7 @@ import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.send.notificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -86,6 +89,13 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view: View = binding.getRoot()
         setContentView(view)
+        applyWindowInsetsToView(findViewById(R.id.rootView))
+//        applyWindowInsetsToView(binding.include.rootViewdrawer)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            val layoutParams =  binding.include.header.layoutParams as ConstraintLayout.LayoutParams
+            layoutParams.setMargins(0,100,0,0)
+            binding.include.header.layoutParams = layoutParams
+        }
 
         EventBus.getDefault().register(this)
 
@@ -142,7 +152,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             startActivity(intent)
         }
 
-        binding.icDelete.setOnClickListener {
+        binding.deleteLayout.setOnClickListener {
             val deleteDialog = DeleteDialog(this, "mainscreen", true) {
                 val fragment =
                     supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
@@ -181,6 +191,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
         binding.include.lyRead.setOnClickListener {
+            notificationManager.cancelAll()
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
             fragment?.markReadMessages()
@@ -293,7 +304,9 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     fun updateBlockUI(shouldEnable: Boolean) {
         runOnUiThread {
             binding.blockLayout.isEnabled = shouldEnable
-            binding.blockLayout.alpha = if (shouldEnable) 1f else 0.5f
+            binding.blockLayout.alpha = if (shouldEnable) 1f else 0.7f
+            binding.icblock.alpha = if (shouldEnable) 1f else 0.5f
+            binding.txtblock.alpha = if (shouldEnable) 1f else 0.5f
         }
     }
 

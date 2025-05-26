@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import com.test.messages.demo.data.Model.DraftModel
 import com.test.messages.demo.data.repository.DraftRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,19 +22,22 @@ class DraftViewModel(application: Application) : AndroidViewModel(application) {
         CoroutineScope(Dispatchers.IO).launch{
             repository.getAllDrafts()
         }
-
     }
 
-    fun getDraft(threadId: Long): LiveData<String> = liveData(Dispatchers.IO) {
-        val draft = repository.getDraft(threadId) // suspend function
-        emit(draft ?: "")
+    fun getDraft(threadId: Long): LiveData<DraftModel?> = liveData(Dispatchers.IO) {
+        val draft = repository.getDraft(threadId)
+        if (draft != null) {
+            emit(draft)
+        } else {
+            emit(null)
+        }
     }
 
     fun saveDraft(threadId: Long, draftText: String) {
         repository.saveDraft(threadId, draftText)
     }
 
-    fun deleteDraft(threadId: Long) {
-        repository.deleteDraft(threadId)
+    fun deleteDraft(messageId: Int) {
+        repository.deleteDraft(messageId)
     }
 }
