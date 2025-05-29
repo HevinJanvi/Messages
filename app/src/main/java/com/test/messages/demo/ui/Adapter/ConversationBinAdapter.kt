@@ -300,12 +300,13 @@ class ConversationBinAdapter(
                     val matchedText = matcher.group()
                     spannableString.setSpan(object : ClickableSpan() {
                         override fun onClick(widget: View) {
-                            if (!isContactSaved && conversationItem.isIncoming()) {
+                            onClick(matchedText)
+                          /*  if (!isContactSaved && conversationItem.isIncoming()) {
 
                                 ExternalLinkDialog(widget.context, matchedText).show()
                             } else {
                                 onClick(matchedText)
-                            }
+                            }*/
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
@@ -423,6 +424,7 @@ class ConversationBinAdapter(
                 itemView.context.getString(R.string.otp_copied), Toast.LENGTH_SHORT
             ).show()
         }
+
 
     }
 

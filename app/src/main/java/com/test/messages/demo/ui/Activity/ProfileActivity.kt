@@ -243,7 +243,7 @@ class ProfileActivity : BaseActivity() {
         binding.deleteLy.setOnClickListener {
             val deleteDialog = DeleteDialog(this, "profile", true) {
                 deleteMessagesForCurrentThread(threadId)
-//                isThreadDelete = true
+                viewModel.deleteStarredMessagesForThread(threadId)
             }
             deleteDialog.show()
         }

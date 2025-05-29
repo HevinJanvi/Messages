@@ -48,7 +48,7 @@ open class BaseActivity : AppCompatActivity() {
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
 
-           v.setBackgroundColor(resources.getColor(R.color.bg))
+//           v.setBackgroundColor(resources.getColor(R.color.bg))
             v.setPadding(
                 bars.left,
                 bars.top,

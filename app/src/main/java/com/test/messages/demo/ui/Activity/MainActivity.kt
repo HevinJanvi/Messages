@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Activity
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -33,6 +34,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewGroupCompat
+import androidx.core.widget.ImageViewCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.LanguageChangeEvent
 import com.test.messages.demo.Util.MessageRestoredEvent
@@ -90,7 +92,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         val view: View = binding.getRoot()
         setContentView(view)
         applyWindowInsetsToView(findViewById(R.id.rootView))
-//        applyWindowInsetsToView(binding.include.rootViewdrawer)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             val layoutParams =  binding.include.header.layoutParams as ConstraintLayout.LayoutParams
             layoutParams.setMargins(0,100,0,0)
@@ -209,7 +210,7 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
 
         binding.include.lySchedule.setOnClickListener {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 //                if (!alarmManager.canScheduleExactAlarms()) {
 //                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
@@ -304,9 +305,21 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     fun updateBlockUI(shouldEnable: Boolean) {
         runOnUiThread {
             binding.blockLayout.isEnabled = shouldEnable
-            binding.blockLayout.alpha = if (shouldEnable) 1f else 0.7f
-            binding.icblock.alpha = if (shouldEnable) 1f else 0.5f
-            binding.txtblock.alpha = if (shouldEnable) 1f else 0.5f
+            val color = if (shouldEnable) {
+                ContextCompat.getColor(this, R.color.red)
+            } else {
+                ContextCompat.getColor(this, R.color.default_shadow_color)
+            }
+            ImageViewCompat.setImageTintList(binding.icblock, ColorStateList.valueOf(color))
+            if(shouldEnable){
+                binding.txtblock.setTextColor(resources.getColor(R.color.gray_txtcolor))
+            }else{
+                binding.txtblock.setTextColor(resources.getColor(R.color.default_shadow_color))
+            }
+
+//            binding.blockLayout.alpha = if (shouldEnable) 1f else 0.7f
+//            binding.icblock.alpha = if (shouldEnable) 1f else 0.5f
+//            binding.txtblock.alpha = if (shouldEnable) 1f else 0.5f
         }
     }
 

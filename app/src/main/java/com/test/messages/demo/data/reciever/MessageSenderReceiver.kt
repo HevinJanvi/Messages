@@ -76,7 +76,6 @@ class MessageSenderReceiver : BroadcastReceiver() {
                     )
                 }
 
-
 //                val groupThreadId = message.threadId  // Make sure this was stored when scheduling
                 val groupRecipientSet = recipients.toSet()
                 val groupThreadIdActual = Telephony.Threads.getOrCreateThreadId(context, groupRecipientSet)
@@ -101,11 +100,6 @@ class MessageSenderReceiver : BroadcastReceiver() {
                 )
 
 
-
-
-
-
-
                 // After sending to all recipients, delete the scheduled message from DB
                 db.scheduledMessageDao().delete(message)
                 EventBus.getDefault().post(MessagesRestoredEvent(true))
@@ -121,105 +115,3 @@ class MessageSenderReceiver : BroadcastReceiver() {
 
 
 }
-
-/*
-class MessageSenderReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        val id = intent.getIntExtra("messageId", -1)
-        Log.d("ScheduleDebug", "Receiver triggered with ID: $id")
-
-        if (id == -1) {
-            Log.e("ScheduleDebug", "Invalid ID in intent")
-            return
-        }
-
-        Thread {
-            try {
-                val db = AppDatabase.getDatabase(context)
-                val message = db.scheduledMessageDao().getMessageById1(id)
-
-                if (message == null) {
-                    Log.e("ScheduleDebug", "Message not found for ID: $id")
-                    return@Thread
-                }
-
-                Log.d("ScheduleDebug", "Message found: ${message.message} to ${message.recipientNumber}")
-
-                val messagingUtils = MessageUtils(context)
-                val subId = message.subscriptionId
-                val messageUri = messagingUtils.insertSmsMessage(
-                    subId = subId,
-                    dest = message.recipientNumber,
-                    text = message.message,
-                    timestamp = System.currentTimeMillis(),
-                    threadId = message.threadId.toLongOrNull() ?: -1L,
-                    status = Telephony.Sms.Sent.STATUS_COMPLETE,
-                    type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
-                    messageId = null
-                )
-
-                SmsSender.getInstance(context.applicationContext as Application).sendMessage(
-                    subId = subId,
-                    destination = message.recipientNumber,
-                    body = message.message,
-                    serviceCenter = null,
-                    requireDeliveryReport = false,
-                    messageUri = messageUri
-                )
-
-                db.scheduledMessageDao().delete(message)
-                EventBus.getDefault().post(MessagesRestoredEvent(true))
-
-                Log.d("ScheduleDebug", "Message sent & deleted from DB")
-
-            } catch (e: Exception) {
-                Log.e("ScheduleDebug", "Failed to send scheduled message", e)
-            }
-        }.start()
-    }
-}
-*/
-
-/*
-class MessageSenderReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        val threadId = intent.getStringExtra("threadId") ?: return
-
-        val messagingUtils = MessageUtils(context)
-
-        Thread {
-            val message = AppDatabase.getDatabase(context).scheduledMessageDao().getMessageById(threadId)
-            message?.let {
-                val subId = message.subscriptionId
-                val personalThreadId = it.threadId.toLongOrNull() ?: -1L
-
-                val messageUri = messagingUtils.insertSmsMessage(
-                    subId = subId,
-                    dest = it.recipientNumber,
-                    text = it.message,
-                    timestamp = System.currentTimeMillis(),
-                    threadId = personalThreadId,
-                    status = Telephony.Sms.Sent.STATUS_COMPLETE,
-                    type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
-                    messageId = null
-                )
-
-                try {
-                    SmsSender.getInstance(context.applicationContext as Application).sendMessage(
-                        subId = subId,
-                        destination = it.recipientNumber,
-                        body = it.message,
-                        serviceCenter = null,
-                        requireDeliveryReport = false,
-                        messageUri = messageUri
-                    )
-                    Log.d("TAG", "onReceive:delete db ")
-                    AppDatabase.getDatabase(context).scheduledMessageDao().delete(it)
-                    EventBus.getDefault().post(MessagesRestoredEvent(true))
-
-                } catch (e: Exception) {
-                }
-            }
-        }.start()
-    }
-}*/

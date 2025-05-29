@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.send
+package com.test.messages.demo.data.reciever
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -34,7 +34,8 @@ abstract class SendStatusReceiver : BroadcastReceiver() {
         const val SMS_SENT_ACTION = "receiver.SMS_SENT"
         const val EXTRA_ERROR_CODE = "errorCode"
         const val EXTRA_SUB_ID = "subId"
-//        const val EXTRA_SUB_ID = "sub_id"
+        const val EXTRA_GROUP_ID = "groupId"
+        const val EXTRA_GROUP_URI = "groupUri"
         const val NO_ERROR_CODE = -1
     }
 }

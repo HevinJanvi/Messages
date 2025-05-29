@@ -367,7 +367,6 @@ object ViewUtils {
         return sharedPref.getInt(FONT_SIZE_KEY, CommanConstants.ACTION_NORMAL)
     }
 
-
     fun getLanguageName(context: Context, languageCode: String?): String {
         return when (languageCode) {
             "en" -> context.getString(R.string.subtext_english)

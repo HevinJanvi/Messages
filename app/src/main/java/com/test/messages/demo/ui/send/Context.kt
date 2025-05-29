@@ -10,6 +10,7 @@ import android.net.Uri
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import androidx.core.content.ContextCompat
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.NotificationHelper
 import com.test.messages.demo.Util.SmsSender
 
@@ -75,3 +76,6 @@ fun Context.queryThreadIdForSingleAddress(address: String): Long {
         0L
     }
 }
+
+
+

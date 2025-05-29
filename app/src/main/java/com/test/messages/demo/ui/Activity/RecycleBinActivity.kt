@@ -2,6 +2,7 @@ package com.test.messages.demo.ui.Activity
 
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -24,10 +25,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.ISDELETED
 import com.test.messages.demo.Util.CommanConstants.ISGROUP
 import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
 import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
@@ -146,11 +149,9 @@ class RecycleBinActivity : BaseActivity() {
                 updateEmptyState(groupedMessages.isEmpty())
 
                 if (groupedMessages.isEmpty()) {
-                    Log.d("TAG", "loadGroupedMessages:if ")
                     binding.emptyList.visibility = View.VISIBLE
                     binding.recycleBinRecyclerView.visibility = View.GONE
                 } else {
-                    Log.d("TAG", "loadGroupedMessages:else ")
                     binding.emptyList.visibility = View.GONE
                     binding.recycleBinRecyclerView.visibility = View.VISIBLE
                 }
@@ -225,6 +226,8 @@ class RecycleBinActivity : BaseActivity() {
 
                 for (deletedMessage in reversedList) {
                     var threadId = getThreadId(setOf(deletedMessage.address))
+                    val originalThreadId = deletedMessage.threadId
+
                     if (!isThreadExists(threadId)) {
                         threadId = if (deletedMessage.isGroupChat) {
                             val normalizedAddress = deletedMessage.address
@@ -235,6 +238,18 @@ class RecycleBinActivity : BaseActivity() {
                             createNewGroupThread(normalizedAddress)
                         } else {
                             getThreadId(setOf(deletedMessage.address))
+                        }
+
+
+                        if (deletedMessage.isGroupChat) {
+                            val sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                            val oldKey = "${CommanConstants.GROUP_NAME_KEY}${originalThreadId}"
+                            val newKey = "${CommanConstants.GROUP_NAME_KEY}$threadId"
+                            val oldGroupName = sharedPrefs.getString(oldKey, null)
+                            if (!oldGroupName.isNullOrEmpty()) {
+                                sharedPrefs.edit().putString(newKey, oldGroupName).apply()
+                                Log.d("GroupRestore", "Copied group name from $oldKey to $newKey")
+                            }
                         }
                     }
 
@@ -344,15 +359,27 @@ class RecycleBinActivity : BaseActivity() {
     }
 
     private fun isThreadExists(threadId: Long): Boolean {
-        val uri = Telephony.Threads.CONTENT_URI
+        try {
+            val uri = Telephony.Threads.CONTENT_URI
 //        val uri =  Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
-        val projection = arrayOf(Telephony.Threads._ID)
-        val selection = "${Telephony.Threads._ID} = ?"
-        val selectionArgs = arrayOf(threadId.toString())
+            val projection = arrayOf(Telephony.Threads._ID)
+            val selection = "${Telephony.Threads._ID} = ?"
+            val selectionArgs = arrayOf(threadId.toString())
 
-        contentResolver.query(uri, projection, selection, selectionArgs, null).use { cursor ->
-            return cursor != null && cursor.moveToFirst()
+            contentResolver.query(uri, projection, selection, selectionArgs, null).use { cursor ->
+                return cursor != null && cursor.moveToFirst()
+            }
+        }catch (e:Exception){
+//            val uri = Telephony.Threads.CONTENT_URI
+        val uri =  Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
+            val projection = arrayOf(Telephony.Threads._ID)
+            val selection = "${Telephony.Threads._ID} = ?"
+            val selectionArgs = arrayOf(threadId.toString())
+            contentResolver.query(uri, projection, selection, selectionArgs, null).use { cursor ->
+                return cursor != null && cursor.moveToFirst()
+            }
         }
+
     }
 
     private fun updateActionLayout(selectedCount: Int) {

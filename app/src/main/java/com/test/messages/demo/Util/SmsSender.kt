@@ -11,8 +11,8 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import com.test.messages.demo.data.SmsException
 import com.test.messages.demo.data.SmsException.Companion.EMPTY_DESTINATION_ADDRESS
 import com.test.messages.demo.data.SmsException.Companion.ERROR_SENDING_MESSAGE
-import com.test.messages.demo.ui.send.SendStatusReceiver
-import com.test.messages.demo.ui.send.SmsStatusSentReceiver
+import com.test.messages.demo.data.reciever.SendStatusReceiver
+import com.test.messages.demo.data.reciever.SmsStatusSentReceiver
 import com.test.messages.demo.ui.send.getSmsManager
 
 class SmsSender(val app: Application) {
@@ -20,13 +20,14 @@ class SmsSender(val app: Application) {
     private val sendMultipartSmsAsSeparateMessages = false
     fun sendMessage(
         subId: Int, destination: String, body: String, serviceCenter: String?,
-        requireDeliveryReport: Boolean, messageUri: Uri
+        requireDeliveryReport: Boolean, messageUri: Uri,groupId:Long=-1L,groupUri:Uri?=null
     ) {
         var dest = destination
         if (body.isEmpty()) {
             throw IllegalArgumentException("SmsSender: empty text message")
         }
-//        Log.d("TAG", "sendMessage:dest11 "+ dest)
+//        Log.d("TAG", "sendMessage:dest11 "+ groupId)
+//        Log.d("TAG", "sendMessage:dest22 "+ groupUri)
 
         dest = PhoneNumberUtils.stripSeparators(dest)
 //        Log.d("TAG", "sendMessage:dest "+ dest)
@@ -41,7 +42,7 @@ class SmsSender(val app: Application) {
             throw SmsException(ERROR_SENDING_MESSAGE)
         }
         sendInternal(
-            subId, dest, messages, serviceCenter, requireDeliveryReport, messageUri
+            subId, dest, messages, serviceCenter, requireDeliveryReport, messageUri,groupId,groupUri
         )
     }
 
@@ -51,7 +52,7 @@ class SmsSender(val app: Application) {
     private fun sendInternal(
         subId: Int, dest: String,
         messages: ArrayList<String>, serviceCenter: String?,
-        requireDeliveryReport: Boolean, messageUri: Uri
+        requireDeliveryReport: Boolean, messageUri: Uri,groupId:Long=-1L,groupUri:Uri?=null
     ) {
         val smsManager = getSmsManager(subId)
         val messageCount = messages.size
@@ -75,7 +76,7 @@ class SmsSender(val app: Application) {
                 PendingIntent.getBroadcast(
                     app,
                     partId,
-                    getSendStatusIntent(messageUri, subId),
+                    getSendStatusIntent(messageUri, subId,groupId,groupUri),
                     flags
                 )
             )
@@ -105,12 +106,14 @@ class SmsSender(val app: Application) {
         }
     }
 
-    private fun getSendStatusIntent(requestUri: Uri, subId: Int): Intent {
+    private fun getSendStatusIntent(requestUri: Uri, subId: Int,groupId:Long=-1L,groupUri:Uri?=null): Intent {
         val intent = Intent(SendStatusReceiver.SMS_SENT_ACTION, requestUri, app, SmsStatusSentReceiver::class.java)
         intent.putExtra(SendStatusReceiver.EXTRA_SUB_ID, subId)
+        intent.putExtra(SendStatusReceiver.EXTRA_GROUP_ID, groupId)
+        if(groupUri!=null)
+            intent.putExtra(SendStatusReceiver.EXTRA_GROUP_URI, groupUri.toString())
         return intent
     }
-
 
     companion object {
         private var instance: SmsSender? = null

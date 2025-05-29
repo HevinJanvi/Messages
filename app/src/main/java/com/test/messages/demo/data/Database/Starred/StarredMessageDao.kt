@@ -12,9 +12,6 @@ interface StarredMessageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertStarredMessage(starredMessage: StarredMessage)
 
-    @Query("SELECT message_id FROM starred_messages")
-    suspend fun getStarredMessageIds(): List<Long>
-
     @Query("SELECT * FROM starred_messages WHERE message_id = :messageId")
     suspend fun getStarredMessage(messageId: Long): StarredMessage?
 
@@ -23,9 +20,14 @@ interface StarredMessageDao {
 
     @Query("SELECT * FROM starred_messages")
     fun getAllStarredMessages(): List<StarredMessage>
+
     @Query("DELETE FROM starred_messages WHERE message_id = :messageId")
     suspend fun deleteStarredMessageById(messageId: Long)
 
     @Query("DELETE FROM starred_messages WHERE message_id IN (:messageIds)")
     suspend fun deleteStarredMessagesByIds(messageIds: List<Long>)
+
+    @Query("DELETE FROM starred_messages WHERE thread_id = :threadId")
+    suspend fun deleteStarredMessagesByThreadId(threadId: Long)
+
 }

@@ -74,44 +74,6 @@
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!--  <TextView
-              android:id="@+id/messageContent"
-              android:layout_width="0dp"
-              android:layout_height="wrap_content"
-              android:layout_marginStart="20dp"
-              android:layout_marginTop="2dp"
-              android:layout_marginEnd="5dp"
-              android:fontFamily="@font/product_sans_regular"
-              android:maxLines="2"
-              android:text=""
-              android:textColor="@color/gray_txtcolor"
-              android:textFontWeight="400"
-              android:textSize="13dp"
-              app:layout_constraintEnd_toStartOf="@+id/lyExtra"
-              app:layout_constraintStart_toEndOf="@+id/imageContainer"
-              app:layout_constraintTop_toBottomOf="@id/senderName" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/otpTextView"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginStart="16dp"-->
-<!--            android:layout_marginTop="7dp"-->
-<!--            android:clickable="true"-->
-<!--            android:drawableLeft="@drawable/ic_copy2"-->
-<!--            android:drawablePadding="3dp"-->
-<!--            android:focusable="true"-->
-<!--            android:fontFamily="@font/product_sans_medium"-->
-<!--            android:gravity="center_vertical"-->
-<!--            android:text="@string/copy_otp"-->
-<!--            android:textColor="@color/colorPrimary"-->
-<!--            android:textFontWeight="500"-->
-<!--            android:textSize="13sp"-->
-<!--            android:visibility="gone"-->
-<!--            app:layout_constraintStart_toEndOf="@+id/imageContainer"-->
-<!--             />-->
-
-
         <TextView
             android:id="@+id/date"
             android:layout_width="wrap_content"
@@ -144,6 +106,25 @@
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toBottomOf="@id/senderName" />
 
+        <TextView
+            android:id="@+id/otpTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="7dp"
+            android:clickable="true"
+            android:drawableLeft="@drawable/ic_copy2"
+            android:drawablePadding="3dp"
+            android:focusable="true"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="center_vertical"
+            android:text="@string/copy_otp"
+            android:textColor="@color/colorPrimary"
+            android:textFontWeight="500"
+            android:textSize="13sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toEndOf="@+id/imageContainer"
+            app:layout_constraintTop_toBottomOf="@+id/messageContent" />
 
         <ImageView
             android:id="@+id/icStar"

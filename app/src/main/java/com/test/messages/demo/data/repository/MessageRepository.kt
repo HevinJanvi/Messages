@@ -123,6 +123,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                     val rawPhoneNumbers = receiptIdList.map { id -> recipientMap[id] ?: id }
 //                    Log.d("DEBUG", "Mapped phone numbers: $rawPhoneNumbers")
+                    val key = "${GROUP_NAME_KEY}${messageItem.threadId}"
 
                     val savedGroupName =
                         sharedPreferences.getString(
@@ -130,6 +131,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             null
                         )
 //                    Log.d("DEBUG", "Saved group name for thread ${messageItem.threadId}: $savedGroupName")
+                    Log.d("GroupNameCheck", "Checking SharedPreferences for key R : $key")
+                    Log.d("GroupNameCheck", "Value for  R = $savedGroupName")
 
                     val groupName = savedGroupName ?: rawPhoneNumbers.map { number ->
                         contactDetails[number]?.name
@@ -433,10 +436,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     fun getConversationDetails(threadId: Long): List<ConversationItem> {
         val conversationList = mutableListOf<ConversationItem>()
-        Log.d("TAG", "getConversationDetails:- " + threadId)
+//        Log.d("TAG", "getConversationDetails:- " + threadId)
         if (!context.hasReadContactsPermission()
         ) {
-            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
+//            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
             return conversationList
         }
         val projection = arrayOf(
@@ -495,7 +498,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 )
             }
         }
-        Log.d("TAG", "Conversation loaded. Messages found:1 ${conversationList.size}")
+//        Log.d("TAG", "Conversation loaded. Messages found:1 ${conversationList.size}")
 
         return conversationList
     }
@@ -944,21 +947,19 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         return blockedNumbers
     }
 
-    fun getAllStarredMessages(): List<StarredMessage> {
-        return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessages()
+    fun getAllStarredMessages(): LiveData<List<StarredMessage>> {
+        return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessagesLiveData()
     }
 
     suspend fun getAllStarredMessagesNew(): Set<Long> {
         return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessages()
             .map { it.message_id }.toSet()
     }
+    suspend fun deleteStarredMessagesByThreadId(threadId: Long) {
+        AppDatabase.getDatabase(context).starredMessageDao().deleteStarredMessagesByThreadId(threadId)
+    }
 
-    suspend fun insertStarredMessage(messageId: Long, threadId: Long, messageBody: String) {
-        val starredMessage = StarredMessage(
-            message_id = messageId,
-            thread_id = threadId,
-            message = messageBody
-        )
+    suspend fun insertStarredMessage(starredMessage: StarredMessage) {
         AppDatabase.getDatabase(context).starredMessageDao().insertStarredMessage(starredMessage)
     }
 
@@ -967,6 +968,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         AppDatabase.getDatabase(context).starredMessageDao().deleteStarredMessageById(messageId)
     }
 
+    suspend fun deleteScheduledByThreadId(threadId: Long) {
+        AppDatabase.getDatabase(context).scheduledMessageDao()
+            .deleteByThreadId(threadId.toString())
+    }
 
     fun getAllSearchConversation(): List<ConversationItem> {
         val messages = mutableListOf<ConversationItem>()

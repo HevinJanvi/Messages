@@ -93,7 +93,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
                         SmsUtils.markThreadAsRead(context, threadId)
                         repository.getMessages()
 //                    }, 500)
-                    EventBus.getDefault().post(MarkasreadEvent(true))
+                    EventBus.getDefault().post(MarkasreadEvent(threadId,true))
     
                 } catch (e: Exception) {
                     e.printStackTrace()

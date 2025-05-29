@@ -21,7 +21,7 @@ data class SwipeActionEvent(val action: Int, val isRightSwipe: Boolean)
 
 data class MessagesRestoredEvent(val success: Boolean)
 data class MessagesRefreshEvent(val success: Boolean)
-data class MarkasreadEvent(val success: Boolean)
+data class MarkasreadEvent(val threadId: Long,val success: Boolean)
 
 data class MessageRestoredEvent(
     val threadId: Long,

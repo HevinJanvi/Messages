@@ -1,4 +1,5 @@
 package com.test.messages.demo.ui.Activity
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -83,7 +84,7 @@ class BlockMessageActivity : BaseActivity() {
             intent.putExtra(EXTRA_THREAD_ID, message.threadId)
             intent.putExtra(NUMBER, message.number)
             intent.putExtra(NAME, message.sender)
-            intent.putExtra(FROMBLOCK,true)
+            intent.putExtra(FROMBLOCK, true)
             startActivity(intent)
 //            conversationResultLauncher.launch(intent)
 
@@ -171,11 +172,12 @@ class BlockMessageActivity : BaseActivity() {
             blockDialog.show()
         }
         binding.btnDelete.setOnClickListener {
-            val deleteDialog = DeleteDialog(this,"block",true) {
+            val deleteDialog = DeleteDialog(this, "block", true) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
                     deleteMessages()
 //                    deleteMessages(selectedThreadIds)
+                    viewModel.deleteblockConversations(selectedThreadIds)
                     adapter?.removeItems(selectedThreadIds)
                     adapter?.clearSelection()
                 }
@@ -260,7 +262,7 @@ class BlockMessageActivity : BaseActivity() {
                             val date = it.getLong(dateIndex)
                             val key = body to date
                             if (!existingBodyDatePairs.add(key)) continue
-
+                            val subscriptionId = if (subIdIndex != -1) it.getInt(subIdIndex) else -1
                             val deletedMessage = DeletedMessage(
                                 messageId = messageId,
                                 threadId = threadId,
@@ -269,7 +271,7 @@ class BlockMessageActivity : BaseActivity() {
                                 body = body,
                                 type = it.getInt(typeIndex),
                                 read = it.getInt(readIndex) == 1,
-                                subscriptionId = it.getInt(subIdIndex),
+                                subscriptionId = subscriptionId,
                                 deletedTime = System.currentTimeMillis(),
                                 isGroupChat = address.contains(","),
                                 profileImageUrl = ""

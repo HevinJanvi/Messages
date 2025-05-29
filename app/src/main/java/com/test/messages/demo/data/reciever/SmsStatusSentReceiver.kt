@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.send
+package com.test.messages.demo.data.reciever
 
 import android.app.Activity
 import android.content.Context
@@ -7,9 +7,11 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony.Sms
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.test.messages.demo.Util.RefreshMessagesEvent
+import com.test.messages.demo.ui.send.MessageUtils
 
 import org.greenrobot.eventbus.EventBus
 
@@ -19,6 +21,12 @@ class SmsStatusSentReceiver : SendStatusReceiver() {
         val messageUri: Uri? = intent.data
         val resultCode = resultCode
         val messagingUtils = MessageUtils(context)
+        val groupId = intent.getLongExtra(SendStatusReceiver.EXTRA_GROUP_ID, -1L)
+        val uri = intent.getStringExtra(SendStatusReceiver.EXTRA_GROUP_URI)
+        var groupUri:Uri?=null
+        if(uri!=null) {
+            groupUri = Uri.parse(uri)
+        }
 
         val type = if (resultCode == Activity.RESULT_OK) {
             Sms.MESSAGE_TYPE_SENT
@@ -26,10 +34,11 @@ class SmsStatusSentReceiver : SendStatusReceiver() {
             Sms.MESSAGE_TYPE_FAILED
         }
         messagingUtils.updateSmsMessageSendingStatus(messageUri, type)
-        messagingUtils.maybeShowErrorToast(
-            resultCode = resultCode,
-            errorCode = intent.getIntExtra(EXTRA_ERROR_CODE, NO_ERROR_CODE)
-        )
+        if(groupId!=-1L&&groupUri!=null){
+            Log.e("TAG", "updateAndroidDatabase: $groupUri : $type")
+            messagingUtils.updateSmsMessageSendingStatus(groupUri,type)
+        }
+
     }
 
     override fun updateAppDatabase(context: Context, intent: Intent, receiverResultCode: Int) {

@@ -225,7 +225,7 @@
     <string name="language">Wika</string>
     <string name="copy_otp">Kopyahin ang OTP</string>
     <string name="move_to_recycle_bin">Ilipat sa recycle bin</string>
-    <string name="move_this_conversation_to_the_rrecycle_bin">Ilipat ang pag-uusap na ito sa Rrecycle bin?</string>
+    <string name="move_this_conversation_to_the_rrecycle_bin">Ilipat ang pag-uusap na ito sa recycle bin?</string>
     <string name="share">Ibahagi</string>
     <string name="forward">Pasulong</string>
     <string name="no_messages_selected_to_share">Walang napiling mga mensahe na ibabahagi</string>

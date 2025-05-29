@@ -221,6 +221,10 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         notifyDataSetChanged()
     }
 
+    fun isAllSelected(): Boolean {
+
+        return messages.isNotEmpty() && selectedMessages.size == messages.size
+    }
     fun clearSelection() {
         selectedMessages.clear()
         notifyDataSetChanged()
@@ -231,7 +235,10 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         messages.removeAt(position)
         notifyItemRemoved(position)
     }
-
+    fun removeMessages(toRemove: List<MessageItem>) {
+        messages.removeAll(toRemove)
+        notifyDataSetChanged()
+    }
 
     override fun getItemCount(): Int = messages.size
     fun getAllMessages(): List<MessageItem> = messages

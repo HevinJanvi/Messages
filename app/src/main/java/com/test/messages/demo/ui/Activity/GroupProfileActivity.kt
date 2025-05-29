@@ -83,6 +83,8 @@ class GroupProfileActivity : BaseActivity() {
         binding.deleteLy.setOnClickListener {
             val deleteDialog = DeleteDialog(this, "group", true) {
                 deleteMessagesForCurrentThread(threadId)
+                viewModel.deleteStarredMessagesForThread(threadId)
+
             }
             deleteDialog.show()
         }
@@ -190,22 +192,6 @@ class GroupProfileActivity : BaseActivity() {
         }.start()
     }
 
-    /* @RequiresApi(Build.VERSION_CODES.Q)
-     fun deleteMessage() {
-         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
-         Thread {
-             try {
-                 val uri = Uri.parse("content://sms/conversations/$threadId")
-                 val deletedRows = contentResolver.delete(uri, null, null)
-                 if (deletedRows > 0) {
-                     updatedList.removeAll { it.threadId == threadId }
-                     refreshListStatus()
-                 }
-             } catch (e: Exception) {
-             }
-         }.start()
-     }
- */
     private fun refreshListStatus() {
         Handler(Looper.getMainLooper()).postDelayed({
             val intent = Intent(this, MainActivity::class.java)
@@ -229,6 +215,10 @@ class GroupProfileActivity : BaseActivity() {
         val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         sharedPreferences.edit().putString("${GROUP_NAME_KEY}$threadId", newName).apply()
         binding.textGroupName.text = newName
+
+        Log.d("GroupNameCheck", "Checking SharedPreferences for key g : ${GROUP_NAME_KEY}$threadId")
+        Log.d("GroupNameCheck", "Value for  g = $newName")
+
         EventBus.getDefault().post(UpdateGroupNameEvent(threadId, newName))
     }
 

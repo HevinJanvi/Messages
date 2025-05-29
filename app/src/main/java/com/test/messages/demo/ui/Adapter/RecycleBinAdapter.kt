@@ -20,6 +20,8 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.ViewUtils.copyToClipboard
 import com.test.messages.demo.Util.ViewUtils.extractOtp
@@ -62,12 +64,25 @@ class RecycleBinAdapter(
         val message = messages[position]
 
         val context = holder.itemView.context
-        val addressList = message.address.split(",")
-        val nameList = addressList.map { number ->
-            val name = getContactName(context, number.trim())
-            if (!name.isNullOrEmpty() && name != number) name else number
+        val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}${message.threadId}", null)
+        val finalName = if (!savedGroupName.isNullOrEmpty()) {
+            savedGroupName
+        } else {
+
+            val addressList = message.address.split(",")
+            val nameList = addressList.map { number ->
+                val name = getContactName(context, number.trim())
+                if (!name.isNullOrEmpty() && name != number) name else number
+            }
+            nameList.joinToString(",")
         }
-        val finalName = nameList.joinToString(",")
+//        val addressList = message.address.split(",")
+//        val nameList = addressList.map { number ->
+//            val name = getContactName(context, number.trim())
+//            if (!name.isNullOrEmpty() && name != number) name else number
+//        }
+//        val finalName = nameList.joinToString(",")
         message.address = finalName
 
 

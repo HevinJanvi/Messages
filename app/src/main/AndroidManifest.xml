@@ -178,7 +178,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".ui.send.MmsReceiver"
+            android:name=".data.reciever.MmsReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BROADCAST_WAP_PUSH"
@@ -266,7 +266,7 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"/>
 
-        <receiver android:name=".ui.send.SmsStatusSentReceiver" />
+        <receiver android:name=".data.reciever.SmsStatusSentReceiver" />
         <receiver
             android:name=".data.reciever.NotificationReceiver"
             android:exported="false">

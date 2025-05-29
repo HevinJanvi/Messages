@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.provider.Telephony
 import android.provider.Telephony.Sms
 import android.telephony.SmsManager
 import android.util.Log
@@ -13,6 +12,7 @@ import com.klinker.android.send_message.Settings
 import com.test.messages.demo.R
 import com.test.messages.demo.data.SmsException
 import com.test.messages.demo.data.SmsException.Companion.ERROR_PERSISTING_MESSAGE
+import com.test.messages.demo.data.reciever.SendStatusReceiver
 
 class MessageUtils(val context: Context) {
 
@@ -103,6 +103,42 @@ class MessageUtils(val context: Context) {
     }
 
 
+//    @Deprecated("TODO: Move/rewrite MMS code into the app.")
+//    fun sendMmsMessage(text: String, addresses: List<String>, attachment: Attachment?, settings: Settings, messageId: Long? = null) {
+//        val transaction = Transaction(context, settings)
+//        val message = Message(text, addresses.toTypedArray())
+//
+//        if (attachment != null) {
+//            try {
+//                val uri = attachment.getUri()
+//                context.contentResolver.openInputStream(uri)?.use {
+//                    val bytes = it.readBytes()
+//                    val mimeType = if (attachment.mimetype.isPlainTextMimeType()) {
+//                        "application/txt"
+//                    } else {
+//                        attachment.mimetype
+//                    }
+//                    val name = attachment.filename
+//                    message.addMedia(bytes, mimeType, name)
+//                }
+//            } catch (e: Exception) {
+////                context.showErrorToast(e)
+//            } catch (e: Error) {
+////                context.showErrorToast(e.localizedMessage ?: context.getString(com.simplemobiletools.commons.R.string.unknown_error_occurred))
+//            }
+//        }
+//
+//        val mmsSentIntent = Intent(context, MmsSentReceiver::class.java)
+//        mmsSentIntent.putExtra(MmsSentReceiver.EXTRA_ORIGINAL_RESENT_MESSAGE_ID, messageId)
+//        transaction.setExplicitBroadcastForSentMms(mmsSentIntent)
+//
+//        try {
+//            transaction.sendNewMessage(message,messageId!!)
+//        } catch (e: Exception) {
+////            context.showErrorToast(e)
+//        }
+//    }
+
     fun maybeShowErrorToast(resultCode: Int, errorCode: Int) {
         if (resultCode != Activity.RESULT_OK) {
             val msg = if (errorCode != SendStatusReceiver.NO_ERROR_CODE) {
@@ -117,6 +153,8 @@ class MessageUtils(val context: Context) {
 
         }
     }
-
+    companion object {
+        const val ADDRESS_SEPARATOR = "|"
+    }
 
 }

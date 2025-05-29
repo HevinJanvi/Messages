@@ -27,7 +27,7 @@ class MarkAsReadReceiver : BroadcastReceiver() {
                 val threadId = intent.getLongExtra(EXTRA_THREAD_ID, 0L)
                 context.notificationManager.cancel(threadId.hashCode())
                 SmsUtils.markThreadAsRead(context, threadId)
-                EventBus.getDefault().post(MarkasreadEvent(true))
+                EventBus.getDefault().post(MarkasreadEvent(threadId,true))
             }
         }
     }

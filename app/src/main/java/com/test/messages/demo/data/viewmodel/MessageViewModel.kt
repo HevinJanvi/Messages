@@ -7,11 +7,15 @@ import android.provider.Telephony
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+//import com.test.messages.demo.Util.toMessageItem
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Block.BlockConversation
+import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.MessageItem
@@ -70,6 +74,7 @@ class MessageViewModel @Inject constructor(
     }
 
     val isLoading = MutableLiveData<Boolean>()
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun loadRestoreMessages(showLoading: Boolean = false) {
         viewModelScope.launch {
@@ -105,12 +110,10 @@ class MessageViewModel @Inject constructor(
     }
 
 
-
-
     fun loadConversation(threadId: Long) {
         job?.cancel()
         job = CoroutineScope(Dispatchers.IO).launch {
-           repository.getConversation(threadId)
+            repository.getConversation(threadId)
 
         }
     }
@@ -164,18 +167,10 @@ class MessageViewModel @Inject constructor(
     }
 
 
-    /*@RequiresApi(Build.VERSION_CODES.Q)
-    fun archiveSelectedConversations(conversationIds: List<Long>) {
-        viewModelScope.launch {
-            repository.archiveConversations(conversationIds)
-        }
-    }*/
-
     @RequiresApi(Build.VERSION_CODES.Q)
     fun archiveSelectedConversations(conversationIds: List<Long>) {
         viewModelScope.launch {
             repository.archiveConversations(conversationIds)
-
             // Ensure the updated messages are fetched and posted
             val updatedMessages = repository.getMessages()
             (repository.messages as MutableLiveData).postValue(updatedMessages)
@@ -195,7 +190,9 @@ class MessageViewModel @Inject constructor(
             repository.unarchiveConversations(conversationIds)
             val updatedArchivedIds =
                 _archivedThreadIds.value?.filterNot { it in conversationIds }?.toSet()
-            _archivedThreadIds.postValue(updatedArchivedIds)
+            _archivedThreadIds.postValue(
+                updatedArchivedIds
+            )
             val updatedMessages = repository.getMessages()
             (repository.messages as MutableLiveData).postValue(updatedMessages)
         }
@@ -311,7 +308,6 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-
     suspend fun getBlockedNumbers(): List<String> {
         return repository.getBlockedNumbers()
     }
@@ -347,22 +343,26 @@ class MessageViewModel @Inject constructor(
         return repository.getBlockConversations()
     }
 
-//    @RequiresApi(Build.VERSION_CODES.Q)
-//    fun blockSelectedConversations(conversationIds: List<Long>) {
-//        viewModelScope.launch {
-//            withContext(Dispatchers.IO) {
-//                repository.blockConversations(conversationIds)
-//            }
-//        }
-//    }
+    fun deleteblockConversations(conversationIds: List<Long>) {
+        viewModelScope.launch {
+            repository.unblockConversations(conversationIds)
+        }
+    }
 
-    fun blockSelectedConversations(conversationIds: List<Long>, callback: () -> Unit) {
+    fun blockSelectedConversations(
+        conversationIds: List<Long>,
+        callback: () -> Unit
+    ) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 repository.blockConversations(conversationIds)
                 val updatedBlockIds =
                     repository.getBlockConversations().map { it.conversationId }.toSet()
                 _blockThreadIds.postValue(updatedBlockIds.toSet())
+
+                conversationIds.forEach {
+                   deleteScheduledForThread(it)
+                }
                 val updatedMessages = repository.getMessages()
                 (repository.messages as MutableLiveData).postValue(updatedMessages)
                 withContext(Dispatchers.Main) {
@@ -380,6 +380,12 @@ class MessageViewModel @Inject constructor(
                 val updatedBlockIds =
                     repository.getBlockConversations().map { it.conversationId }.toSet()
                 _blockThreadIds.postValue(updatedBlockIds.toSet())
+
+//                val scheduledDao = AppDatabase.getDatabase(context).scheduledMessageDao()
+                conversationIds.forEach {
+//                    scheduledDao.deleteByThreadId(it.toString())
+                    deleteScheduledForThread(it)
+                }
                 val updatedMessages = repository.getMessages()
                 (repository.messages as MutableLiveData).postValue(updatedMessages)
             }
@@ -388,68 +394,25 @@ class MessageViewModel @Inject constructor(
     }
 
 
-//    @RequiresApi(Build.VERSION_CODES.Q)
-//    fun blockSelectedConversations(conversationIds: List<Long>) {
-//        viewModelScope.launch {
-//            withContext(Dispatchers.IO) {
-//                repository.blockConversations(conversationIds)
-//
-//                val updatedBlockIds =
-//                    _blockThreadIds.value?.filterNot { it in conversationIds }?.toSet()
-//                _blockThreadIds.postValue(updatedBlockIds)
-//
-//                val updatedMessages = repository.getMessages()
-//                (repository.messages as MutableLiveData).postValue(updatedMessages)
-//            }
-//
-//        }
-//    }
-
     fun unblockConversations(conversationIds: List<Long>) {
         CoroutineScope(Dispatchers.IO).launch {
 
-                repository.unblockConversations(conversationIds)
-                val updatedBlockIds =
-                    _blockThreadIds.value?.filterNot { it in conversationIds }?.toSet()
-                _blockThreadIds.postValue(updatedBlockIds)
+            repository.unblockConversations(conversationIds)
+            val updatedBlockIds =
+                _blockThreadIds.value?.filterNot { it in conversationIds }?.toSet()
+            _blockThreadIds.postValue(updatedBlockIds)
 
-                val updatedMessages = repository.getMessages()
-                (repository.messages as MutableLiveData).postValue(updatedMessages)
-        }
-    }
-
-//    @RequiresApi(Build.VERSION_CODES.Q)
-//    fun unblockConversations(conversationIds: List<Long>) {
-//        viewModelScope.launch {
-//            repository.unblockConversations(conversationIds)
-//            val updatedBlockIds =
-//                _blockThreadIds.value?.filterNot { it in conversationIds }?.toSet()
-//            _blockThreadIds.postValue(updatedBlockIds)
-//            val updatedMessages = repository.getMessages()
-//            (repository.messages as MutableLiveData).postValue(updatedMessages)
-//        }
-//    }
-
-
-    private val _lastStarredMessages = MutableLiveData<Map<Long, String>>()
-    val lastStarredMessages: LiveData<Map<Long, String>> get() = _lastStarredMessages
-
-
-    //starred
-    fun loadLastStarredMessages() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val starredMessages = repository.getAllStarredMessages()
-            val lastStarredMessagesMap = starredMessages
-                .groupBy { it.thread_id }
-                .mapValues { (_, messages) ->
-                    messages.maxByOrNull { it.message_id }?.message ?: ""
-                }
-            _lastStarredMessages.postValue(lastStarredMessagesMap)
+            val updatedMessages = repository.getMessages()
+            (repository.messages as MutableLiveData).postValue(updatedMessages)
         }
     }
 
     private val _starredMessageIds = MutableLiveData<Set<Long>>()
     val starredMessageIds: LiveData<Set<Long>> get() = _starredMessageIds
+    fun getAllStarredMessages(): LiveData<List<StarredMessage>> {
+        return repository.getAllStarredMessages()
+    }
+
 
     fun loadStarredMessages() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -460,20 +423,52 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    // Star or unstar selected messages
-    fun toggleStarredMessage(messageId: Long, threadId: Long, messageBody: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (_starredMessageIds.value?.contains(messageId) == true) {
-                repository.deleteStarredMessageById(messageId)
-            } else {
-                repository.insertStarredMessage(messageId, threadId, messageBody)
-            }
-            loadStarredMessages()
+    fun deleteStarredMessagesForThread(threadId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteStarredMessagesByThreadId(threadId)
         }
     }
 
+
+    fun toggleStarredMessage(
+        messageId: Long,
+        threadId: Long,
+        messageBody: String,
+        timestamp: Long,
+        currentStarred: Boolean,
+        isGroupChat: Boolean,
+        profileImageUrl: String?,
+        senderNumber: String,
+        senderName: String
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (_starredMessageIds.value?.contains(messageId) == true || currentStarred) {
+                repository.deleteStarredMessageById(messageId)
+            } else {
+                val starredMessage = StarredMessage(
+                    message_id = messageId,
+                    thread_id = threadId,
+                    body = messageBody,
+                    timestamp = timestamp,
+                    starred = true,
+                    is_group_chat = isGroupChat,
+                    profile_image = profileImageUrl,
+                    number = senderNumber,
+                    sender = senderName
+                )
+                repository.insertStarredMessage(starredMessage)
+            }
+//            loadStarredMessages()
+            val starredMessages = repository.getAllStarredMessagesNew()
+            withContext(Dispatchers.Main) {
+                _starredMessageIds.value = starredMessages
+            }
+        }
+    }
+
+
     // Star multiple selected messages
-    fun starSelectedMessages(selectedItems: List<ConversationItem>) {
+    fun starSelectedMessages(selectedItems: List<ConversationItem>, name: String, number: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val currentStarredIds = _starredMessageIds.value ?: emptySet()
 
@@ -482,15 +477,22 @@ class MessageViewModel @Inject constructor(
                     repository.deleteStarredMessageById(message.id)
                     message.starred = false
                 } else {
+                    val isGroup = message.address.contains(",")
                     repository.insertStarredMessage(
-                        message.id,
-                        message.threadId,
-                        message.body
+                        StarredMessage(
+                            message_id = message.id,
+                            thread_id = message.threadId,
+                            body = message.body,
+                            sender = name ?: message.address,
+                            number = number ?: message.address,
+                            timestamp = message.date,
+                            is_group_chat =isGroup,
+                            profile_image = message.profileImageUrl
+                        )
                     )
                     message.starred = true
                 }
             }
-//            loadStarredMessages()
             val starredMessages =
                 repository.getAllStarredMessagesNew() // This should be done in the background
             withContext(Dispatchers.Main) {
@@ -499,37 +501,6 @@ class MessageViewModel @Inject constructor(
             }
         }
     }
-
-
-    //search
-
-    /* private val _fmessages = MutableLiveData<List<MessageItem>>()
-     val Filetrmessages: LiveData<List<MessageItem>> get() = _fmessages
-
-
-     fun setFilteredMessages(newList: List<MessageItem>) {
-         _fmessages.value = newList
-     }
-
-     fun searchMessages(context: Context,query: String, threadId: String?) {
-         viewModelScope.launch(Dispatchers.IO) {
-             val filteredMessages = repository.getAllSearchConversation()
-             // Group by number (or threadId if needed), but only include groups where ANY message matches the query
-             val groupedMessages = filteredMessages
-                 .filter { it.number != null }
-                 .groupBy { it.number }
-                 .mapNotNull { (_, messages) ->
-                     // Only pick last message IF it also contains the keyword
-                     val lastMatchingMessage = messages.lastOrNull { it.body.contains(query, ignoreCase = true) }
-                     lastMatchingMessage
-                 }
-
-             withContext(Dispatchers.Main) {
-                 _fmessages.value = groupedMessages
-             }
-         }
-     }*/
-
 
     //working
     private val _fmessages = MutableLiveData<List<ConversationItem>>()
@@ -543,118 +514,6 @@ class MessageViewModel @Inject constructor(
         return repository.getAllSearchConversation()
     }
 
-    fun filterMessagesByKeyword(context: Context, keyword: String) {
-        val allMessages = getAllMessages(context)
-
-        val lowerKeyword = keyword.trim().lowercase()
-        val latestMessagesMap = mutableMapOf<Long, ConversationItem>()
-
-        for (message in allMessages) {
-            if (message.body.lowercase().contains(lowerKeyword)) {
-                val existing = latestMessagesMap[message.threadId]
-
-                if (existing == null || message.date > existing.date) {
-                    latestMessagesMap[message.threadId] = message
-                }
-            }
-        }
-
-        val filteredList = latestMessagesMap.values.sortedByDescending { it.date }
-        setFilteredMessages(filteredList)
-    }
-
-
-    /*fun searchMessages(context: Context, query: String, threadId: String?) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val allMessages = repository.getAllSearchConversation(threadId)
-
-            // Filter + last message per address
-            val filtered = allMessages
-                .asSequence()
-                .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
-                .groupBy { it.address }
-                .mapNotNull { (_, messages) ->
-                    messages.maxByOrNull { it.date }
-                }.toList()
-
-            // Get contacts
-            val contactMap = repository.getContactDetails().associateBy { it.phoneNumber }
-
-            // Enrich with contact name
-            val enriched = filtered.map { msg ->
-                val normalized = msg.address.replace(" ", "")
-                val contact = contactMap[normalized]
-                    ?: contactMap[normalized.removePrefix("+91")]
-                    ?: contactMap[normalized.removePrefix("+")] // fallback
-                msg.copy(address = contact?.name ?: msg.address)
-            }
-
-            withContext(Dispatchers.Main) {
-                _fmessages.value = enriched
-            }
-        }
-    }*/
-
-//    fun searchMessages(context: Context, query: String, threadId: String?, isExpanded: Boolean) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            val allMessages = repository.getAllSearchConversation(threadId)
-//
-//            // Filter by query first
-//            val filtered = allMessages
-//                .asSequence()
-//                .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
-//                .groupBy { it.threadId } // Faster grouping if threads are your UI basis
-//                .mapNotNull { (_, messages) -> messages.maxByOrNull { it.date } }
-//                .let { if (isExpanded) it else it.take(3) }
-//                .toList()
-//
-//            withContext(Dispatchers.Main) {
-//                _fmessages.value = filtered
-//            }
-//        }
-//    }
-
-
-    /* fun searchMessages(context: Context, query: String, threadId: String?) {
-         viewModelScope.launch(Dispatchers.IO) {
-             if (query.isBlank()) {
-                 withContext(Dispatchers.Main) {
-                     _fmessages.value = emptyList()
-                 }
-                 return@launch
-             }
-
-             val allMessages = repository.getAllSearchConversation(threadId)
-
-             // Filter messages by query and non-empty address
-             val filtered = allMessages
-                 .asSequence()
-                 .filter { it.body.contains(query, ignoreCase = true) && it.address.isNotEmpty() }
-                 .groupBy { it.address }
-                 .mapNotNull { (_, messages) ->
-                     messages.maxByOrNull { it.date } // Get latest message per address
-                 }.toList()
-
-             // Fetch contacts
-             val contactMap = repository.getContactDetails()
-                 .associateBy { it.phoneNumber.replace(" ", "") }
-
-             // Enrich messages with contact name (fallback if not found)
-             val enriched = filtered.map { msg ->
-                 val normalized = msg.address.replace(" ", "")
-                 val contact = contactMap[normalized]
-                     ?: contactMap[normalized.removePrefix("+91")]
-                     ?: contactMap[normalized.removePrefix("+")]
-                 msg.copy(address = contact?.name ?: msg.address)
-             }
-
-             withContext(Dispatchers.Main) {
-                 _fmessages.value = enriched
-             }
-         }
-     }*/
-
-
     private val _filteredContacts = MutableLiveData<List<ContactItem>>()
     val filteredContacts: LiveData<List<ContactItem>> get() = _filteredContacts
 
@@ -666,34 +525,6 @@ class MessageViewModel @Inject constructor(
         return repository.getAllContacts(context)
     }
 
-    fun searchContacts(query: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val allContacts = repository.getContactDetails()
-            val filteredContacts = allContacts.filter {
-                it.name?.contains(query, ignoreCase = true) == true ||
-                        it.phoneNumber.contains(query, ignoreCase = true)
-            }
-            withContext(Dispatchers.Main) {
-                _filteredContacts.value = filteredContacts
-            }
-        }
-    }
-
-
-    /*fun searchContacts(query: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val allContacts = repository.getContactDetails()
-            val filteredContacts = allContacts.filter {
-                it.name!!.contains(query, ignoreCase = true) || it.phoneNumber.contains(query, ignoreCase = true)
-            }
-
-            withContext(Dispatchers.Main) {
-                _filteredContacts.value = filteredContacts
-            }
-        }
-    }*/
-
-
     fun insertMissingThreadIds(threadIds: List<Long>) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertMissingThreadIds(threadIds)
@@ -702,8 +533,8 @@ class MessageViewModel @Inject constructor(
 
     fun updateOrInsertThread(threadId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
-                repository.updateOrInsertThread(threadId)
-            }
+            repository.updateOrInsertThread(threadId)
+        }
     }
 
 
@@ -734,6 +565,12 @@ class MessageViewModel @Inject constructor(
 
     fun getContactNumber(context: Context, address: String): String {
         return repository.getPhoneNumber(context, address)
+    }
+
+    fun deleteScheduledForThread(threadId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteScheduledByThreadId(threadId)
+        }
     }
 
     fun deleteSelectedMessages(

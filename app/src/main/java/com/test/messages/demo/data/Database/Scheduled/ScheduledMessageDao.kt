@@ -28,6 +28,13 @@ interface ScheduledMessageDao {
 
     @Query("DELETE FROM scheduled_messages WHERE id = :id")
     fun deleteById(id: Int)
+
+    @Query("SELECT * FROM scheduled_messages WHERE threadId = :threadId")
+    fun getMessagesByThreadId(threadId: Long): List<ScheduledMessage>
+    @Query("DELETE FROM scheduled_messages WHERE threadId = :threadId")
+    fun deleteByThreadId(threadId: String)
+
+
 //    @Query("DELETE FROM scheduled_messages WHERE threadId = :threadId")
 //    fun deleteByThreadId(threadId: Long)
 }

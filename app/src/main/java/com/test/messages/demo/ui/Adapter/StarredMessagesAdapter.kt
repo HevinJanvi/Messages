@@ -18,21 +18,21 @@ import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.Util.TimeUtils.formatTimestamp
 import com.test.messages.demo.Util.TimeUtils.getInitials
 import com.test.messages.demo.Util.TimeUtils.getRandomColor
+import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.ViewUtils.extractOtp
+import com.test.messages.demo.data.Database.Starred.StarredMessage
+import com.test.messages.demo.data.Model.StarredDiffCallback
 
 
 class StarredMessagesAdapter :
     RecyclerView.Adapter<StarredMessagesAdapter.ViewHolder>() {
 
-    var onItemClickListener: ((MessageItem) -> Unit)? = null
-    private var messages: MutableList<MessageItem> = mutableListOf()
+    var onItemClickListener: ((StarredMessage) -> Unit)? = null
+    private var messages: MutableList<StarredMessage> = mutableListOf()
 
-    val selectedMessages = mutableSetOf<MessageItem>()
+    val selectedMessages = mutableSetOf<StarredMessage>()
     private var lastStarredMessages: Map<Long, String> = emptyMap()
 
-    fun setLastStarredMessages(messages: Map<Long, String>) {
-        lastStarredMessages = messages
-        notifyDataSetChanged()
-    }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderName: TextView = itemView.findViewById(R.id.senderName)
@@ -43,6 +43,7 @@ class StarredMessagesAdapter :
         val initialsTextView: TextView = itemView.findViewById(R.id.initialsTextView)
         val icSelect: ImageView = itemView.findViewById(R.id.icSelect)
         val itemContainer: ConstraintLayout = itemView.findViewById(R.id.itemContainer)
+        val otpTextView: TextView = itemView.findViewById(R.id.otpTextView)
 
     }
 
@@ -54,14 +55,14 @@ class StarredMessagesAdapter :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = messages[position]
         holder.senderName.text = message.sender
-        val lastStarredMessage = lastStarredMessages[message.threadId] ?: message.body
+        val lastStarredMessage = lastStarredMessages[message.thread_id] ?: message.body
         holder.messageBody.text = lastStarredMessage ?: message.body
         holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
-        if (message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+        if (message.profile_image != null && message.profile_image.isNotEmpty()) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
             Glide.with(holder.itemView.context)
-                .load(message.profileImageUrl)
+                .load(message.profile_image)
                 .placeholder(R.drawable.ic_user)
                 .into(holder.icUser)
         } else {
@@ -83,15 +84,36 @@ class StarredMessagesAdapter :
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(message)
         }
+        val displayedBody = lastStarredMessages[message.thread_id] ?: message.body
+        val otp = displayedBody.extractOtp()
+        if (!otp.isNullOrEmpty()) {
+            holder.otpTextView.text = holder.itemView.context.getString(R.string.copy_otp)
+            holder.otpTextView.visibility = View.VISIBLE
+            holder.otpTextView.setOnClickListener {
+                ViewUtils.copyToClipboard(holder.itemView.context, otp)
+                holder.otpTextView.animate()
+                    .alpha(0.5f)
+                    .setDuration(100)
+                    .withEndAction {
+                        holder.otpTextView.animate()
+                            .alpha(1f)
+                            .setDuration(100)
+                            .start()
+                    }
+                    .start()
+            }
+        } else {
+            holder.otpTextView.visibility = View.GONE
+        }
     }
 
-    fun getAllMessages(): List<MessageItem> {
+    fun getAllMessages(): List<StarredMessage> {
         return messages.toList()
     }
 
     override fun getItemCount(): Int = messages.size
-    fun submitList(newMessages: List<MessageItem>) {
-        val diffCallback = MessageDiffCallback(messages, newMessages)
+    fun submitList(newMessages: List<StarredMessage>) {
+        val diffCallback = StarredDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messages.clear()
         messages.addAll(newMessages)

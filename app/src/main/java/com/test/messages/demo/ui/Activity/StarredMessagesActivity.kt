@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.CommanConstants.ISGROUP
@@ -51,62 +52,63 @@ class StarredMessagesActivity : BaseActivity() {
         applyWindowInsetsToView(binding.rootView)
 
         EventBus.getDefault().register(this)
-        binding.recyclerViewStarred.layoutManager = LinearLayoutManager(this)
 
         adapter = StarredMessagesAdapter()
+        binding.recyclerViewStarred.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewStarred.adapter = adapter
+
         val database = AppDatabase.getDatabase(this)
-
         starredMessageDao = database.starredMessageDao()
-        viewModel.messages.observe(this) { messageList ->
-            filterAndShowMessages(messageList)
-        }
-        viewModel.lastStarredMessages.observe(this) { lastStarredMessages ->
-            adapter.setLastStarredMessages(lastStarredMessages)
-            binding.recyclerViewStarred.post {
-                adapter.notifyDataSetChanged()
-            }
+
+        viewModel.getAllStarredMessages().observe(this) { messages ->
+            val latestStarredMessagesPerThread = messages
+                .groupBy { it.thread_id }
+                .mapNotNull { (_, starredMessages) ->
+                    starredMessages.maxByOrNull { it.timestamp }
+                }
+
+            adapter.submitList(latestStarredMessagesPerThread)
         }
 
-        viewModel.loadLastStarredMessages()
         adapter.onItemClickListener = { message ->
             val intent = Intent(this, ConversationActivity::class.java)
-            intent.putExtra(EXTRA_THREAD_ID, message.threadId)
+            intent.putExtra(EXTRA_THREAD_ID, message.thread_id)
             intent.putExtra(NUMBER, message.number)
             intent.putExtra(NAME, message.sender)
-            intent.putExtra(ISGROUP, message.isGroupChat)
+            intent.putExtra(ISGROUP, message.is_group_chat)
             intent.putExtra(ISSTARRED, true)
             startActivity(intent)
         }
-
         binding.icBack.setOnClickListener {
             onBackPressed()
         }
 
     }
 
+
     @RequiresApi(Build.VERSION_CODES.Q)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageUnstarred(event: MessageDeletedEvent) {
-        updateConversationSnippet(event.threadId, event.lastMessage, event.lastMessageTime)
-        viewModel.loadLastStarredMessages()
-        viewModel.loadMessages()
+        Log.d("TAG", "onMessageUnstarred: ")
+//        viewModel.loadStarredGroupedMessages()
+//       updateConversationSnippet(event.threadId, event.lastMessage, event.lastMessageTime)
+
     }
 
-    fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
-        adapter.notifyDataSetChanged()
-        val currentList = adapter.getAllMessages().toMutableList()
-        val index = currentList.indexOfFirst { it.threadId == threadId }
-        if (index != -1) {
-            val updatedItem = currentList[index].copy(
-                body = lastMessage ?: "",
-                timestamp = lastMessageTime ?: System.currentTimeMillis()
-            )
-            currentList[index] = updatedItem
-            adapter.submitList(currentList)
-
-        }
-    }
+//    fun updateConversationSnippet(threadId: Long, lastMessage: String?, lastMessageTime: Long?) {
+//        adapter.notifyDataSetChanged()
+//        val currentList = adapter.getAllMessages().toMutableList()
+//        val index = currentList.indexOfFirst { it.threadId == threadId }
+//        if (index != -1) {
+//            val updatedItem = currentList[index].copy(
+//                body = lastMessage ?: "",
+//                timestamp = lastMessageTime ?: System.currentTimeMillis()
+//            )
+//            currentList[index] = updatedItem
+//            adapter.submitList(currentList)
+//
+//        }
+//    }
 
    /* @RequiresApi(Build.VERSION_CODES.Q)
     private fun loadFilteredMessages() {
@@ -132,12 +134,24 @@ class StarredMessagesActivity : BaseActivity() {
     private fun filterAndShowMessages(messageList: List<MessageItem>) {
         CoroutineScope(Dispatchers.IO).launch {
             val starredMessages = starredMessageDao.getAllStarredMessages()
+
             val starredThreadIds = starredMessages.map { it.thread_id }.toSet()
+
             val filteredList = messageList.filter { it.threadId in starredThreadIds }
+
+//            viewModel.loadLastStarredMessages()
+            val lastStarredMessagesMap = starredMessages
+                .groupBy { it.thread_id }
+                .mapValues { (_, messages) ->
+//                    messages.maxByOrNull { it.message_id }?.message ?: ""
+                }
             withContext(Dispatchers.Main) {
-                adapter.submitList(filteredList)
+//                viewModel.setLastStarredMessages(lastStarredMessagesMap) // New function
+
+//                adapter.submitList(filteredList)
                 binding.emptyList.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
                 binding.recyclerViewStarred.visibility = if (filteredList.isEmpty()) View.GONE else View.VISIBLE
+
             }
         }
     }
