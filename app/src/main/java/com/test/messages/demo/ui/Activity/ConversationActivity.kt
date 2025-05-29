@@ -218,6 +218,7 @@ class ConversationActivity : BaseActivity() {
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
         number = intent.getStringExtra(NUMBER).toString()
         name = intent.getStringExtra(NAME).toString()
+        binding.address.text = name
         profileUrl = intent.getStringExtra(PROFILEURL).toString()
         isfromBlock = intent.getBooleanExtra(FROMBLOCK, false)
         isfromArchive = intent.getBooleanExtra(FROMARCHIVE, false)
@@ -556,7 +557,13 @@ class ConversationActivity : BaseActivity() {
                 viewModel.toggleStarredMessage(
                     conversation.id,
                     conversation.threadId,
-                    conversation.body
+                    conversation.body,
+                    conversation.date,
+                    conversation.starred,
+                    isGroup,
+                    profileUrl,
+                    number,
+                    name
                 )
                 adapter.clearSelection()
                 updateSnnipet()
@@ -613,10 +620,10 @@ class ConversationActivity : BaseActivity() {
             binding.recyclerViewConversation.postDelayed({
                 binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
             }, 300)
-        }else{
-            if(highlightQuery.isNotEmpty()){
+        } else {
+            if (highlightQuery.isNotEmpty()) {
 
-            }else{
+            } else {
                 binding.recyclerViewConversation.postDelayed({
                     binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
                 }, 300)
@@ -660,7 +667,7 @@ class ConversationActivity : BaseActivity() {
             }
 
             var conversationList = conversation
-            Log.d("TAG", "Received conversation list size: ${conversationList.size}")
+//            Log.d("TAG", "Received conversation list size: ${conversationList.size}")
 
             CoroutineScope(Dispatchers.IO).launch {
                 val filteredList =
@@ -740,6 +747,13 @@ class ConversationActivity : BaseActivity() {
                             )
                             val savedGroupName =
                                 sharedPreferences.getString("${GROUP_NAME_KEY}$threadId", null)
+
+                            Log.d(
+                                "GroupNameCheck",
+                                "Checking SharedPreferences for key C : ${GROUP_NAME_KEY}$threadId"
+                            )
+                            Log.d("GroupNameCheck", "Value for  C = $savedGroupName")
+
                             val contactName = savedGroupName ?: name
 
                             withContext(Dispatchers.Main) {
@@ -754,12 +768,12 @@ class ConversationActivity : BaseActivity() {
 //                        { Log.d("MessageRepository", "observeViewModel:read ")
 //                            viewModel.loadMessages()
 //                        }
-
                     } else {
-                        binding.emptyText.visibility = View.VISIBLE
-                        binding.loader.visibility = View.GONE
-                        binding.address.text = name
-                        updateLyouts(ViewUtils.isShortCodeWithLetters(number), isGroup)
+                            binding.emptyText.visibility = View.VISIBLE
+                            binding.loader.visibility = View.GONE
+                            binding.address.text = name
+                            updateLyouts(ViewUtils.isShortCodeWithLetters(number), isGroup)
+
                     }
                 }
             }
@@ -811,7 +825,6 @@ class ConversationActivity : BaseActivity() {
             /*currentDraft?.let {
                 draftViewModel.deleteDraft(it.msg_id)
                 Log.d("SEND_MSG", "Deleted draft with id: ${it.msg_id}")
-
             }
             withContext(Dispatchers.Main) {
                 chnageDrfat(false)
@@ -820,7 +833,11 @@ class ConversationActivity : BaseActivity() {
 
             val sendingTime = System.currentTimeMillis()
             // Insert group message
+            var groupId = -1L
+            var groupUri: Uri? = null
             if (numbersSet.size > 1) {
+                val groupThreadId = getThreadId(numbersSet.toSet())
+                groupId = groupThreadId
                 val tempId = -sendingTime + numbersSet.first().hashCode()
                 var tempMessage = ConversationItem(
                     id = tempId,
@@ -828,7 +845,7 @@ class ConversationActivity : BaseActivity() {
                     address = numbersSet.joinToString(","),
                     body = text,
                     date = sendingTime,
-                    type = Telephony.Sms.MESSAGE_TYPE_SENT,
+                    type = Telephony.Sms.MESSAGE_TYPE_OUTBOX,
                     read = true,
                     subscriptionId = subscriptionId,
                     profileImageUrl = "",
@@ -841,7 +858,7 @@ class ConversationActivity : BaseActivity() {
                     scrolltoBottom()
                     Log.d("SEND_MSG", "Temp messages added to adapter and UI updated")
                 }
-                var messageUri = messagingUtils.insertSmsMessage(
+                var groupUri = messagingUtils.insertSmsMessage(
                     subId = selectedSimId,
                     dest = numbersSet.joinToString(","),
                     text = text,
@@ -857,7 +874,9 @@ class ConversationActivity : BaseActivity() {
                         addresses = numbersSet,
                         subId = subscriptionId,
                         requireDeliveryReport = false,
-                        messageId = null
+                        messageId = null,
+                        groupId, groupUri
+
                     )
                 } catch (e: Exception) {
                     Log.e("SendMessage", "Failed to send to ${numbersSet.first()}", e)
@@ -882,7 +901,7 @@ class ConversationActivity : BaseActivity() {
                     tempMessages.add(tempMessage)
                     adapter.addMessages(listOf(tempMessage))
                     adapter.setSearchQuery("")
-                    highlightQuery=""
+                    highlightQuery = ""
                     searchAndScroll(highlightQuery)
                     scrolltoBottom()
 
@@ -926,7 +945,8 @@ class ConversationActivity : BaseActivity() {
         addresses: Set<String>,
         subId: Int,
         requireDeliveryReport: Boolean,
-        messageId: Long? = null
+        messageId: Long? = null,
+        groupId: Long = -1L, groupUri: Uri? = null
     ) {
         if (addresses.isEmpty()) return
 
@@ -950,7 +970,9 @@ class ConversationActivity : BaseActivity() {
                         body = text,
                         serviceCenter = null,
                         requireDeliveryReport = requireDeliveryReport,
-                        messageUri = messageUri
+                        messageUri = messageUri,
+                        groupId,
+                        groupUri
                     )
 
                     /*if (isfromSearch) {
@@ -978,7 +1000,7 @@ class ConversationActivity : BaseActivity() {
             selection,
             selectionArgs
         )
-        viewModel.loadConversation(threadId)
+
 
         val addresses = number.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
@@ -1002,6 +1024,9 @@ class ConversationActivity : BaseActivity() {
                 messageId = null
             )
         }
+        threadId = getThreadId(setOf(number))
+        Log.d("TAG", "resendMessage:threadId "+threadId)
+        viewModel.loadConversation(threadId)
     }
 
 
@@ -1137,6 +1162,7 @@ class ConversationActivity : BaseActivity() {
             }
 
             Handler(Looper.getMainLooper()).postDelayed({
+                Log.d("TAG", "deleteSelectedMessages:-- ")
                 if (adapter.itemCount == 0) {
                     finish()
                 }
@@ -1171,7 +1197,7 @@ class ConversationActivity : BaseActivity() {
 
     private fun starSelectedMessages() {
         val selectedMessages = adapter.selectedItems.toList()
-        viewModel.starSelectedMessages(selectedMessages)
+        viewModel.starSelectedMessages(selectedMessages,name,number)
         adapter.clearSelection()
         updateSnnipet()
     }
@@ -1242,11 +1268,11 @@ class ConversationActivity : BaseActivity() {
         viewModel.loadConversation(threadId)
     }
 
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    fun onRecievessagesEvent(event: NewSmsEvent) {
-//        Log.d("TAG", "onRecievessagesEvent: ")
-//        viewModel.loadConversation(threadId)
-//    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onRecievessagesEvent(event: NewSmsEvent) {
+        Log.d("TAG", "onRecievessagesEvent: ")
+        viewModel.loadConversation(threadId)
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onActivtiyfinishEvent(event: ActivityFinishEvent) {
@@ -1446,21 +1472,6 @@ class ConversationActivity : BaseActivity() {
         }.start()
 
     }
-
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    private val smsPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (isDefaultSmsApp(this)) {
-                proceedWithMessageSending()
-            } else {
-                Toast.makeText(
-                    this,
-                    getString(R.string.please_set_this_app_as_default),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
 
     @RequiresApi(Build.VERSION_CODES.S)
     private fun proceedWithMessageSending() {
