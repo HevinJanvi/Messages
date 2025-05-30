@@ -14,9 +14,9 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.databinding.ActivityBlockContactBinding
 import com.test.messages.demo.ui.Adapter.BlockedContactAdapter
@@ -111,52 +111,9 @@ class BlockedContactActivity : BaseActivity() {
                 }
 
             } catch (e: Exception) {
-                Log.e("SMS_DELETE", "Error deleting messages: ${e.message}")
             }
         }.start()
     }
-
-
-
-
-//    @RequiresApi(Build.VERSION_CODES.Q)
-//    fun deleteSelectedMessages() {
-//        if (adapter.selectedItems.isEmpty()) return
-//        val threadIds = adapter.selectedItems.map { it.threadId }.toSet()
-//        val contentResolver = contentResolver
-//
-//        Thread {
-//            try {
-//                for (threadId in threadIds) {
-//                    val uri = Uri.parse("content://sms/conversations/$threadId")
-//                    val deletedRows = contentResolver.delete(uri, null, null)
-//
-//                    if (deletedRows > 0) {
-//                        Log.d(
-//                            "SMS_DELETE",
-//                            "Deleted thread ID $threadId with $deletedRows messages."
-//                        )
-//                        updatedList.removeAll { it.threadId == threadId }
-//                    } else {
-//                        Log.d("SMS_DELETE", "Failed to delete thread ID $threadId.")
-//                    }
-//                }
-//                Handler(Looper.getMainLooper()).post {
-//                    adapter.updateList(updatedList)
-//                    adapter.clearSelection()
-//                    /*adapter.selectedMessages.clear()
-//                    adapter.updateList(updatedList)
-//                    onSelectionChanged?.invoke(
-//                        adapter.selectedMessages.size,
-//                        adapter.selectedMessages.count { it.isPinned })*/
-//                }
-//
-//            } catch (e: Exception) {
-//                Log.d("SMS_DELETE", "Error deleting threads: ${e.message}")
-//            }
-//        }.start()
-//    }
-
 
     private fun unblockSelectedNumbers() {
         if (adapter.selectedItems.isEmpty()) {
@@ -175,9 +132,7 @@ class BlockedContactActivity : BaseActivity() {
                     val deletedRows = contentResolver.delete(uri, selection, arrayOf(number))
 
                     if (deletedRows > 0) {
-                        Log.d("UNBLOCK", "Unblocked number: $number")
                     } else {
-                        Log.d("UNBLOCK", "Failed to unblock number: $number")
                     }
                 }
 
@@ -191,7 +146,6 @@ class BlockedContactActivity : BaseActivity() {
                 }
 
             } catch (e: Exception) {
-                Log.e("UNBLOCK", "Error unblocking numbers: ${e.message}")
             }
         }.start()
     }

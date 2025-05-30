@@ -12,18 +12,12 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
-import android.text.method.LinkMovementMethod
 import android.text.style.BackgroundColorSpan
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.util.Log
-import android.view.GestureDetector
-import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -36,14 +30,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.CustomLinkMovementMethod
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.extractOtp
 import com.test.messages.demo.data.Model.ConversationItem
-import com.test.messages.demo.data.repository.MessageRepository
-import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
-import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,7 +43,6 @@ import java.util.regex.Pattern
 
 class ConversationBinAdapter(
     private val context: Context,
-    private val isContactSaved: Boolean,
     private val onSelectionChanged: (Int) -> Unit
 ) : ListAdapter<ConversationItem, ConversationBinAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<ConversationItem>() {
@@ -83,9 +73,6 @@ class ConversationBinAdapter(
     var retryListener: OnMessageRetryListener? = null
     var starredMessageIds: Set<Long> = emptySet()
 
-    fun setOnRetryListener(listener: OnMessageRetryListener) {
-        this.retryListener = listener
-    }
 
     override fun getItemViewType(position: Int): Int {
         return when {
@@ -107,10 +94,10 @@ class ConversationBinAdapter(
 
         private fun getFontSizeFromPreferences(): Float {
             return when (ViewUtils.getFontSize(itemView.context)) {
-                CommanConstants.ACTION_SMALL -> 13f
-                CommanConstants.ACTION_NORMAL -> 15f
-                CommanConstants.ACTION_LARGE -> 17f
-                CommanConstants.ACTION_EXTRALARGE -> 20f
+                Constants.ACTION_SMALL -> 13f
+                Constants.ACTION_NORMAL -> 15f
+                Constants.ACTION_LARGE -> 17f
+                Constants.ACTION_EXTRALARGE -> 20f
                 else -> 15f
             }
         }
@@ -124,9 +111,7 @@ class ConversationBinAdapter(
             } else {
                 messageBody.setOnClickListener {
                     if (message.isHeader) return@setOnClickListener
-                    // selection logic
                 }
-
 
                 messageBody.textSize = fontSize
                 otptext.textSize = fontSize
@@ -147,8 +132,6 @@ class ConversationBinAdapter(
                 } else {
                     messageBody.text = message.body
                 }
-//                messageDate.text =
-//                    SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
                 val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
                 val timeFormat = if (is24Hour) "HH:mm" else "hh:mm a"
                 val sdf = SimpleDateFormat(timeFormat, Locale.getDefault())
@@ -183,7 +166,6 @@ class ConversationBinAdapter(
                                 0,
                                 0
                             )
-
 
                             messageStatus.setOnClickListener {
                                 messageStatus.text = itemView.context.getString(R.string.sending)
@@ -301,12 +283,6 @@ class ConversationBinAdapter(
                     spannableString.setSpan(object : ClickableSpan() {
                         override fun onClick(widget: View) {
                             onClick(matchedText)
-                          /*  if (!isContactSaved && conversationItem.isIncoming()) {
-
-                                ExternalLinkDialog(widget.context, matchedText).show()
-                            } else {
-                                onClick(matchedText)
-                            }*/
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
@@ -455,16 +431,10 @@ class ConversationBinAdapter(
         }
     }
 
-
     private fun enableMultiSelection(message: ConversationItem) {
         isMultiSelectionEnabled = true
         toggleSelection(message, 2)
     }
-
-    fun getPositionOfMessage(messageItem: ConversationItem): Int {
-        return currentList.indexOf(messageItem)
-    }
-
 
     private fun toggleTimeVisibility(message: ConversationItem) {
         val position = currentList.indexOf(message)
@@ -477,14 +447,7 @@ class ConversationBinAdapter(
         notifyItemChanged(position)
     }
 
-
-    fun setStarredMessages(starredIds: Set<Long>) {
-        starredMessageIds = starredIds
-        notifyDataSetChanged()
-    }
-
     private fun toggleSelection(message: ConversationItem, i: Int) {
-        Log.d("TAG", "toggleSelection: $i")
         if (selectedItems.contains(message)) {
             selectedItems.remove(message)
         } else {

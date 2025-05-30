@@ -3,25 +3,21 @@ package com.test.messages.demo.ui.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowInsetsController
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
-import com.test.messages.demo.Util.CommanConstants.THEMEMODE
+import com.test.messages.demo.Util.Constants.PREFS_NAME
+import com.test.messages.demo.Util.Constants.THEMEMODE
 import com.test.messages.demo.Util.ViewUtils
 import java.util.Locale
 
@@ -47,8 +43,6 @@ open class BaseActivity : AppCompatActivity() {
             val bars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
-
-//           v.setBackgroundColor(resources.getColor(R.color.bg))
             v.setPadding(
                 bars.left,
                 bars.top,
@@ -57,8 +51,6 @@ open class BaseActivity : AppCompatActivity() {
             )
             WindowInsetsCompat.CONSUMED
         }
-
-        // Trigger the insets listener immediately
         ViewCompat.requestApplyInsets(view)
     }
 
@@ -99,7 +91,6 @@ open class BaseActivity : AppCompatActivity() {
         val selectedMode = sharedPref.getInt(THEMEMODE, 1)
 
         if (selectedMode == 1) {
-            // Only recreate if using system theme
             recreate()
         }
     }

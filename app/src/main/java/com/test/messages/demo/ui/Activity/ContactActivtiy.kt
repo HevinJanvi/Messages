@@ -1,17 +1,14 @@
 package com.test.messages.demo.ui.Activity
 
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.provider.Telephony
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -23,16 +20,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ActivityFinishEvent
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.FORWARD
-import com.test.messages.demo.Util.CommanConstants.FORWARDMSGS
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.SHARECONTACT
-import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNAME
-import com.test.messages.demo.Util.CommanConstants.SHARECONTACTNUMBER
-import com.test.messages.demo.Util.CommanConstants.SOURCE
-import com.test.messages.demo.Util.NewSmsEvent
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.FORWARD
+import com.test.messages.demo.Util.Constants.FORWARDMSGS
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.SHARECONTACT
+import com.test.messages.demo.Util.Constants.SHARECONTACTNAME
+import com.test.messages.demo.Util.Constants.SHARECONTACTNUMBER
+import com.test.messages.demo.Util.Constants.SOURCE
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.viewmodel.MessageViewModel
@@ -55,7 +51,6 @@ class ContactActivtiy : BaseActivity() {
     private lateinit var messageUtils: MessageUtils
     private var isNumberKeyboard = false
     private lateinit var source: String
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,13 +136,6 @@ class ContactActivtiy : BaseActivity() {
                     binding.fastscroller.setVisibility(if (contactAdapter.getItemCount() > itemsShown) View.VISIBLE else View.GONE)
                 }
             }
-
-        /* contactAdapter = ContactAdapter(allContacts) { contact ->
-             if (!selectedContacts.contains(contact)) {
-                 addToSelectedContacts(contact)
-             }
-         }*/
-
         binding.fastscroller.setRecyclerView(binding.contactRecyclerView)
         binding.fastscroller.setViewsToUse(
             R.layout.recycler_view_fast_scroller__fast_scroller,
@@ -262,11 +250,10 @@ class ContactActivtiy : BaseActivity() {
         val contactView = selectedContactViews[contact.normalizeNumber]
         if (contactView != null) {
             binding.selectedContactsLayout.removeView(contactView)
-            selectedContactViews.remove(contact.normalizeNumber) // Remove from map
+            selectedContactViews.remove(contact.normalizeNumber)
         }
         if (selectedContacts.isEmpty()) {
             binding.selectedContactsScroll.visibility = View.GONE
-//            binding.btmly.visibility = View.GONE
         }
     }
 
@@ -307,9 +294,6 @@ class ContactActivtiy : BaseActivity() {
             if (source.equals(FORWARD)) {
                 finish()
             } else {
-               /* val resultIntent = Intent()
-                resultIntent.putParcelableArrayListExtra("selectedContacts", ArrayList(selectedContacts))
-                setResult(RESULT_OK, resultIntent)*/
                 binding.editTextSearch.hideKeyboard(this)
                 super.onBackPressed()
             }

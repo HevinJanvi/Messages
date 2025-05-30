@@ -1,7 +1,6 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -20,12 +19,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ActivityFinishEvent
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.TimeUtils
-import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.ui.Activity.ConversationActivity
 import com.test.messages.demo.ui.send.getThreadId
 import kotlinx.coroutines.CoroutineScope
@@ -65,13 +63,11 @@ class GroupMemberAdapter(
 
         val cachedInfo = contactInfoCache[number]
         if (cachedInfo != null) {
-            // Use cached info
             bindContactInfo(holder, cachedInfo, number)
         } else {
-            // Query contact info asynchronously
             CoroutineScope(Dispatchers.IO).launch {
                 val contactInfo = getContactInfo(context, number)
-                contactInfoCache[number] = contactInfo // cache it
+                contactInfoCache[number] = contactInfo
 
                 withContext(Dispatchers.Main) {
                     bindContactInfo(holder, contactInfo, number)
@@ -88,11 +84,10 @@ class GroupMemberAdapter(
         holder.messageButton.setOnClickListener {
             val intent = Intent(context, ConversationActivity::class.java).apply {
                 val threadId = context.getThreadId(setOf(number))
-                Log.d("TAG", "onBindViewHolder:grop thread " + threadId)
                 putExtra(EXTRA_THREAD_ID, threadId)
                 putExtra(NUMBER, number)
                 putExtra(NAME, holder.nameText.text)
-                putExtra(CommanConstants.ISGROUP, true)
+                putExtra(Constants.ISGROUP, true)
             }
             context.startActivity(intent)
             context.finish()
@@ -117,7 +112,6 @@ class GroupMemberAdapter(
         val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
 
         if (startsWithSpecialChar || (photoUri != null)) {
-            // Show profile image
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
 
@@ -127,7 +121,6 @@ class GroupMemberAdapter(
                 .circleCrop()
                 .into(holder.icUser)
         } else {
-            // Show initials with colored background
             holder.icUser.visibility = View.GONE
             holder.initialsTextView.visibility = View.VISIBLE
             holder.initialsTextView.text = TimeUtils.getInitials(name)
@@ -139,7 +132,6 @@ class GroupMemberAdapter(
     private fun getContactInfo(context: Context, phoneNumber: String): ContactInfo? {
         val resolver = context.contentResolver
 
-        // Query contact name and photo URI by phone number
         val uri = Uri.withAppendedPath(
             ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
             Uri.encode(phoneNumber)

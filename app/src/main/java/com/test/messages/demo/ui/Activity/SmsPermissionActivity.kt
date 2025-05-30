@@ -7,14 +7,12 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
-import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 
@@ -83,7 +81,6 @@ class SmsPermissionActivity : BaseActivity() {
         }
 
     }
-
 
     private fun prepareIntentLauncher() {
         intentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {

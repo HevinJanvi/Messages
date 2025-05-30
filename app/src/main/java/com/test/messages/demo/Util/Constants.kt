@@ -1,6 +1,6 @@
 package com.test.messages.demo.Util
 
-object CommanConstants {
+object Constants {
 
     const val PREFS_NAME = "prefs"
     const val KEY_NOTIFICATION_OPTION = "notification_option"
@@ -14,7 +14,7 @@ object CommanConstants {
 
     //BACKUP file
     const val BACKUP_FILE = "messages_backup.json"
-
+    const val GROUP_SEPARATOR = ","
     //prefs keys
     const val SIM_SELECT = "selected_sim_id"
     const val FONT_SIZE_KEY = "font_size"

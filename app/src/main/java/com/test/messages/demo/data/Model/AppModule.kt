@@ -20,5 +20,4 @@ class AppModule {
         return com.test.messages.demo.data.repository.MessageRepository(context)
     }
 
-
 }

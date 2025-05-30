@@ -10,14 +10,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.telephony.SmsManager
-import android.telephony.SubscriptionManager
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.core.os.postDelayed
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
@@ -27,15 +23,13 @@ import com.test.messages.demo.ui.Adapter.ScheduledMessageAdapter
 import com.test.messages.demo.ui.Dialogs.ScheduleDialog
 import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.Util.SmsSender
-import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.ui.send.SmsSender
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -53,11 +47,9 @@ class ScheduleActivity : BaseActivity() {
         setContentView(view)
         applyWindowInsetsToView(binding.rootView)
         adapter = ScheduledMessageAdapter { message ->
-//            showScheduleDialog(message)
                Handler(Looper.getMainLooper()).postDelayed({
                    showScheduleDialog(message)
                },200)
-
         }
         binding.scheduleRecycleview.layoutManager = LinearLayoutManager(this)
         binding.scheduleRecycleview.adapter = adapter
@@ -65,7 +57,6 @@ class ScheduleActivity : BaseActivity() {
         binding.addSchedule.setOnClickListener {
             val intent = Intent(this, AddScheduleActivity::class.java)
             startActivity(intent)
-//            finish()
         }
         binding.icBack.setOnClickListener {
             finish()
@@ -91,9 +82,6 @@ class ScheduleActivity : BaseActivity() {
     }
 
     private fun showScheduleDialog(message: ScheduledMessage) {
-//        if (scheduleDialog?.isShowing == true) {
-//            return  // Avoid showing dialog again if already visible
-//        }
         scheduleDialog = ScheduleDialog(
 
             context = this,
@@ -148,8 +136,6 @@ class ScheduleActivity : BaseActivity() {
                             requireDeliveryReport = false,
                             messageUri = messageUri
                         )
-
-                        // IMPORTANT: change this delete method to delete by message ID (see explanation below)
                         AppDatabase.getDatabase(this@ScheduleActivity).scheduledMessageDao()
                             .deleteById(it.id)
                     }
@@ -163,59 +149,6 @@ class ScheduleActivity : BaseActivity() {
             }
         }
     }
-
-//    private fun sendMessageImmediately(message: ScheduledMessage) {
-//        val messagingUtils = MessageUtils(this)
-//        Log.d("TAG", "sendMessageImmediately: ")
-//        Thread {
-//            val message =
-//                AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById1(message.id)
-////            val scheduledMsg = AppDatabase.getDatabase(this).scheduledMessageDao().getMessageById(message.threadId)
-//
-//            message?.let {
-//                val personalThreadId = it.threadId.toLongOrNull() ?: -1L
-//
-//                /* val messageUri = messagingUtils.insertSmsMessage(
-//                     subId = message.subscriptionId,
-//                     dest = it.recipient,
-//                     text = it.message,
-//                     timestamp = System.currentTimeMillis(),
-//                     threadId = personalThreadId,
-//                 )*/
-//                val messageUri = messagingUtils.insertSmsMessage(
-//                    subId = message.subscriptionId,
-//                    dest = it.recipientNumber,
-//                    text = it.message,
-//                    timestamp = System.currentTimeMillis(),
-//                    threadId = personalThreadId,
-//                    status = Telephony.Sms.Sent.STATUS_COMPLETE,
-//                    type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
-//                    messageId = null
-//                )
-//                try {
-//                    SmsSender.getInstance(applicationContext as Application).sendMessage(
-//                        subId = message.subscriptionId,
-//                        destination = it.recipientNumber,
-//                        body = it.message,
-//                        serviceCenter = null,
-//                        requireDeliveryReport = false,
-//                        messageUri = messageUri
-//                    )
-//                    val threadId = message.threadId
-//                    Log.d("TAG", "Deleting scheduled message for threadId: ${threadId}")
-//
-//                    AppDatabase.getDatabase(this).scheduledMessageDao()
-//                        .deleteByThreadId(it.threadId.toLong())
-//                    runOnUiThread {
-//                        viewModel.loadMessages()
-//                        loadScheduledMessages() // refresh list
-//                    }
-//
-//                } catch (e: Exception) {
-//                }
-//            }
-//        }.start()
-//    }
 
     private fun copyToClipboard(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

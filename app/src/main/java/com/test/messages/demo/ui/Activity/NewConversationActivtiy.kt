@@ -1,20 +1,15 @@
 package com.test.messages.demo.ui.Activity
 
 import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Telephony
-import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -22,15 +17,16 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityNewConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationContactAdapter
 import com.test.messages.demo.ui.send.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.Util.SmsSender
+import com.test.messages.demo.ui.send.SmsSender
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.data.Model.SIMCard
 import com.test.messages.demo.data.viewmodel.MessageViewModel
@@ -57,8 +53,6 @@ class NewConversationActivtiy : BaseActivity() {
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var filteredContacts: List<ContactItem>
     private lateinit var messageUtils: MessageUtils
-
-    //    private var subscriptionId: Int = -1
     private var threadId: Long = -1
     private var sharetxt: String? = null
     private val availableSIMCards = mutableListOf<SIMCard>()
@@ -89,9 +83,7 @@ class NewConversationActivtiy : BaseActivity() {
         binding.progressBar.visibility = View.VISIBLE
         binding.contactRecyclerView.visibility = View.GONE
         viewModel.contacts.observe(this) { contacts ->
-
             allContacts = contacts
-//            filteredContacts = contacts
             filteredContacts = sortContactsPutSpecialLast(contacts)
             contactAdapter.submitList(filteredContacts)
             binding.progressBar.visibility = View.GONE
@@ -119,7 +111,6 @@ class NewConversationActivtiy : BaseActivity() {
                             ) == true || it.normalizeNumber.contains(normalizedQuery)
                         }
                     }
-//                val isValidNumber = query.matches(Regex("^\\d{1,16}$"))
                     val isValidNumber = normalizedQuery.matches(Regex("^\\+?\\d{1,16}$"))
                     val numberExistsInContacts =
                         allContacts.any { it.normalizeNumber == normalizedQuery }
@@ -145,80 +136,6 @@ class NewConversationActivtiy : BaseActivity() {
                 }
 
             }
-
-            /*    override fun afterTextChanged(s: Editable?) {
-                    val query = s.toString().trim()
-                    val lowerCaseQuery = query.lowercase()
-
-                    val normalizedQuery = normalizeNumber(query)
-                    Log.d("SearchDebug", "Query: $query, Normalized: $normalizedQuery")
-
-                    searchJob?.cancel()
-                    searchJob = CoroutineScope(Dispatchers.Default).launch {
-                        delay(150)
-                        val newFilteredList = allContacts.filter { contact ->
-                            val name = contact.name?.lowercase() ?: ""
-                            val number = normalizeNumber(contact.normalizeNumber)
-
-                            val match = name.contains(lowerCaseQuery) || number.contains(normalizedQuery)
-
-                            Log.d(
-                                "SearchDebug",
-                                "Checking contact: name=$name, number=$number, match=$match"
-                            )
-
-                            match
-                        }.toMutableList()
-
-
-    //                    val newFilteredList = if (query.isEmpty()) {
-    //                        allContacts
-    //                    } else {
-    //                        allContacts.filter {
-    //                            it.name?.contains(query, ignoreCase = true) == true ||
-    //                                    normalizeNumber(it.normalizeNumber).contains(normalizedQuery)
-    //                        }
-    //                    }.toMutableList()
-
-                        val isValidNumber = normalizedQuery.length in 7..16 && normalizedQuery.all { it.isDigit() }
-
-    //                    val isValidNumber = normalizedQuery.length in 7..16
-    //                    val isValidNumber = normalizedQuery.matches(Regex("^\\+?\\d{5,16}$"))
-                        val numberExistsInContacts = allContacts.any {
-                            normalizeNumber(it.normalizeNumber) == normalizedQuery
-                        }
-                        Log.d("SearchDebug", "isValidNumber=$isValidNumber, numberExists=$numberExistsInContacts")
-
-
-                        if (isValidNumber && !numberExistsInContacts) {
-                            val newContact = ContactItem(
-                                cid = "",
-                                name = query,
-                                phoneNumber = query,
-                                normalizeNumber = normalizedQuery,
-                                profileImageUrl = ""
-                            )
-                            newFilteredList.add(0, newContact)
-                            Log.d("SearchDebug", "Added new contact for number: $normalizedQuery")
-
-                        }
-
-                        val sortedList = sortContactsPutSpecialLast(newFilteredList)
-
-                        withContext(Dispatchers.Main) {
-                            Log.d("SearchDebug", "Final filtered list size: ${newFilteredList.size}")
-
-                            filteredContacts = sortedList
-                            binding.contactRecyclerView.visibility =
-                                if (filteredContacts.isNotEmpty()) View.VISIBLE else View.GONE
-
-                            contactAdapter.submitList(filteredContacts)
-                            Log.d("SearchDebug", "Submitted list to adapter")
-
-                        }
-                    }
-                }*/
-
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -295,19 +212,6 @@ class NewConversationActivtiy : BaseActivity() {
                 updateSelectedContactsHeader()
             }
         }
-
-
-        /* if (requestCode == 111 && resultCode == RESULT_OK) {
-             val updatedContacts = data?.getParcelableArrayListExtra<ContactItem>("selectedContacts")
-             updatedContacts?.let { newContacts ->
-                 newContacts.forEach { contact ->
-                     if (!selectedContacts.contains(contact)) {
-                         selectedContacts.add(contact)
-                     }
-                 }
-                 updateSelectedContactsHeader()
-             }
-         }*/
     }
 
     private fun updateSelectedContactsHeader() {
@@ -344,7 +248,6 @@ class NewConversationActivtiy : BaseActivity() {
         updateSelectedContactsHeader()
 
         binding.editTextSearch.text.clear()
-//        filteredContacts = allContacts
         filteredContacts = sortContactsPutSpecialLast(allContacts)
         contactAdapter.submitList(filteredContacts)
     }
@@ -392,16 +295,13 @@ class NewConversationActivtiy : BaseActivity() {
         if (selectedNumbers.size > 1) {
             val groupThreadId = getThreadId(selectedNumbers.toSet())
             groupId = groupThreadId
-            val groupAddress = selectedContacts.joinToString(",") { it.name ?: it.normalizeNumber }
+            val groupAddress = selectedContacts.joinToString(GROUP_SEPARATOR) { it.name ?: it.normalizeNumber }
             groupUri = messageUtils.insertSmsMessage(
                 subId = selectedSimId,
                 dest = groupAddress,
                 text = text,
                 timestamp = System.currentTimeMillis(),
                 threadId = threadId
-//                status = Telephony.Sms.Sent.STATUS_COMPLETE,
-//                type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
-//                messageId = null
             )
         }
 
@@ -418,12 +318,12 @@ class NewConversationActivtiy : BaseActivity() {
         viewModel.loadMessages()
         viewModel.loadConversation(threadId)
 
-        val combinedNumbers = selectedNumbers.joinToString(",")
+        val combinedNumbers = selectedNumbers.joinToString(GROUP_SEPARATOR)
 
         val intent = Intent(this, ConversationActivity::class.java).apply {
             putExtra(EXTRA_THREAD_ID, threadId)
             putExtra(NUMBER, combinedNumbers)
-            putExtra(NAME, selectedNames.joinToString(","))
+            putExtra(NAME, selectedNames.joinToString(GROUP_SEPARATOR))
         }
         startActivity(intent)
         finish()

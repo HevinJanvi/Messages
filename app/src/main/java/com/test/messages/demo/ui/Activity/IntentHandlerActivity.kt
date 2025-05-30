@@ -1,22 +1,16 @@
 package com.test.messages.demo.ui.Activity
 
 import android.app.TaskStackBuilder
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.ContactsContract
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.EXTRA_TXT
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.ViewUtils
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.EXTRA_TXT
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.send.getThreadId
 import dagger.hilt.android.AndroidEntryPoint

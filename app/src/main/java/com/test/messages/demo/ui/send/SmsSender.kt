@@ -1,4 +1,4 @@
-package com.test.messages.demo.Util
+package com.test.messages.demo.ui.send
 
 import android.app.Application
 import android.app.PendingIntent
@@ -6,14 +6,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.telephony.PhoneNumberUtils
-import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import com.test.messages.demo.data.SmsException
 import com.test.messages.demo.data.SmsException.Companion.EMPTY_DESTINATION_ADDRESS
 import com.test.messages.demo.data.SmsException.Companion.ERROR_SENDING_MESSAGE
 import com.test.messages.demo.data.reciever.SendStatusReceiver
 import com.test.messages.demo.data.reciever.SmsStatusSentReceiver
-import com.test.messages.demo.ui.send.getSmsManager
 
 class SmsSender(val app: Application) {
 

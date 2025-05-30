@@ -20,14 +20,6 @@ class CustomLinkMovementMethod(
 
     override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
         when (event.action) {
-           /* MotionEvent.ACTION_DOWN -> {
-                longPressed = false
-                handler = Handler(Looper.getMainLooper())
-                handler?.postDelayed({
-                    longPressed = true
-                    onLongClick?.invoke()
-                }, longPressTimeout)
-            }*/
             MotionEvent.ACTION_DOWN -> {
                 longPressed = false
                 initialX = event.x
@@ -43,9 +35,8 @@ class CustomLinkMovementMethod(
             }
 
             MotionEvent.ACTION_MOVE, MotionEvent.ACTION_CANCEL -> {
-//                handler?.removeCallbacksAndMessages
                 if (Math.abs(event.x - initialX) > 10 || Math.abs(event.y - initialY) > 10) {
-                    handler?.removeCallbacksAndMessages(null) // cancel long press if finger moved
+                    handler?.removeCallbacksAndMessages(null)
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -54,10 +45,6 @@ class CustomLinkMovementMethod(
                     return true
                 }
             }
-         /*   MotionEvent.ACTION_UP -> {
-                handler?.removeCallbacksAndMessages(null)
-                if (longPressed) return true
-            }*/
         }
 
         return super.onTouchEvent(widget, buffer, event)

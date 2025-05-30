@@ -1,28 +1,25 @@
 package com.test.messages.demo.ui.Activity
 
-import android.content.ContentUris
 import android.content.ContentValues
-import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.ISDELETED
-import com.test.messages.demo.Util.CommanConstants.ISGROUP
-import com.test.messages.demo.Util.CommanConstants.NAME
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.ISDELETED
+import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.TimeUtils
-import com.test.messages.demo.Util.TimeUtils.formatHeaderDate
 import com.test.messages.demo.Util.ViewUtils.getorcreateThreadId
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.viewmodel.DraftViewModel
@@ -64,7 +61,6 @@ class ConversationBinactivity : BaseActivity() {
 
         adapter = ConversationBinAdapter(
             context = this,
-            isContactSaved = false,
             onSelectionChanged = { count ->
                 if (count == 0) {
                     disableMultiSelection()
@@ -84,7 +80,6 @@ class ConversationBinactivity : BaseActivity() {
         binding.recycleConversationView.adapter = adapter
 
         isGroupThread = intent.getBooleanExtra(ISGROUP, false)
-        Log.d("TAG", "onCreate:group bin - " + isGroupThread)
         isDeletedThread = intent.getBooleanExtra(ISDELETED, false)
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1L)
         name = intent.getStringExtra(NAME) ?: ""
@@ -93,12 +88,10 @@ class ConversationBinactivity : BaseActivity() {
         binding.icClose.setOnClickListener {
             disableMultiSelection()
         }
-        Log.d("TAG", "onCreate:bin thread id " + threadId)
         binding.btnDelete.setOnClickListener {
             deleteSelectedMessages()
             disableMultiSelection()
         }
-
         binding.btnRestore.setOnClickListener {
             binding.actionSelectItem.visibility = View.GONE
             restoreSelectedMessages()
@@ -141,11 +134,8 @@ class ConversationBinactivity : BaseActivity() {
         val groupedList = mutableListOf<ConversationItem>()
         val addedHeaders = mutableSetOf<Long>()
         for (message in messages) {
-//            val headerTimestamp = getStartOfDayTimestamp(message.date)
-            val headerKey = getStartOfDayTimestamp(message.date) // For grouping logic (Long)
-
+            val headerKey = getStartOfDayTimestamp(message.date)
             if (headerKey !in addedHeaders) {
-//                val formattedDate = formatHeaderDate(this, message.date)
                 val formattedHeaderText =
                     TimeUtils.getFormattedHeaderTimestamp(
                         this@ConversationBinactivity,
@@ -205,7 +195,6 @@ class ConversationBinactivity : BaseActivity() {
                     loadDeletedMessages(threadId)
                     handler.removeCallbacks(showDialogRunnable)
                     deleteDialog.dismiss()
-//                    EventBus.getDefault().post(MessagesRestoredEvent(true))
                     Handler(Looper.getMainLooper()).postDelayed({
                         if (adapter.itemCount == 0) {
                             setResult(RESULT_OK)
@@ -228,23 +217,19 @@ class ConversationBinactivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun restoreSelectedMessages() {
         val selected = adapter.getSelectedItems().filter { !it.isHeader }
-        val totalToRestore = selected.size
         Thread {
             try {
                 selected.forEach {
-
-//                        val newThreadId = getorcreateThreadId(this@ConversationBinactivity, it.address)
-                    Log.d("Restore", "restoreSelectedMessages:- " + it.address)
-                    val newThreadId = if (it.address.contains(",")) {
+                    val newThreadId = if (it.address.contains(GROUP_SEPARATOR)) {
                         val normalizedAddress = it.address
-                            .split(",")
+                            .split(GROUP_SEPARATOR)
                             .map { addr ->
                                 viewModel.getContactNumber(
                                     this@ConversationBinactivity,
                                     addr.trim()
                                 )
                             }
-                            .joinToString(",")
+                            .joinToString(GROUP_SEPARATOR)
                         val tempThreadId = getThreadId(setOf(normalizedAddress))
                         if (isThreadExists(tempThreadId)) {
                             tempThreadId
@@ -265,12 +250,7 @@ class ConversationBinactivity : BaseActivity() {
                         put(Telephony.Sms.SUBSCRIPTION_ID, it.subscriptionId)
                     }
 
-                    val resultUri = contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
-                    if (resultUri == null) {
-                        Log.e("Restore", "Failed to insert message for ${it.address}")
-                    } else {
-                        Log.d("Restore", "Message inserted: $resultUri")
-                    }
+                    contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
                     db.deleteMessageById(it.id)
 
                 }
@@ -289,7 +269,6 @@ class ConversationBinactivity : BaseActivity() {
                 }
 
             } catch (e: Exception) {
-                Log.e("Restore", "Error while restoring", e)
             }
         }.start()
     }
@@ -308,8 +287,9 @@ class ConversationBinactivity : BaseActivity() {
         contentResolver.query(uri, projection, selection, selectionArgs, sortOrder)?.use { cursor ->
             if (cursor.moveToFirst()) {
                 Date = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
-                            latestBody = cursor . getString (cursor.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                    cursor.getColumnIndexOrThrow(Telephony.Sms.DATE)
+                )
+                latestBody = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY))
             } else null
         }
 
@@ -317,7 +297,7 @@ class ConversationBinactivity : BaseActivity() {
         val contentValues = ContentValues().apply {
             put("body", latestBody)
             put("type", Telephony.Sms.MESSAGE_TYPE_SENT)
-            put("date",Date)
+            put("date", Date)
         }
         contentValues.put(Telephony.Sms.THREAD_ID, threadId)
         val insertedUri: Uri? = contentResolver.insert(Telephony.Sms.CONTENT_URI, contentValues)
@@ -352,7 +332,7 @@ class ConversationBinactivity : BaseActivity() {
 
     private fun createNewGroupThread(addresses: String): Long {
         val uri = Uri.parse("content://mms-sms/threadID")
-        val addressList = addresses.split(",").map { it.trim() }
+        val addressList = addresses.split(GROUP_SEPARATOR).map { it.trim() }
 
         val uriBuilder = Uri.Builder().apply {
             scheme("content")

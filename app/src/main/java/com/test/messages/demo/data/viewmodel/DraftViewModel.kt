@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
-import androidx.lifecycle.viewModelScope
 import com.test.messages.demo.data.Model.DraftModel
 import com.test.messages.demo.data.repository.DraftRepository
 import kotlinx.coroutines.CoroutineScope

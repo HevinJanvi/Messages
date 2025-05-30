@@ -132,7 +132,7 @@
             android:layout_marginEnd="7.5dp"
             android:background="@drawable/scroll_bg" />
 
-        <com.test.messages.demo.ui.AlphabticScroll.RecyclerViewFastScroller
+        <com.test.messages.demo.ui.CustomView.RecyclerViewFastScroller
             android:id="@+id/fastscroller"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

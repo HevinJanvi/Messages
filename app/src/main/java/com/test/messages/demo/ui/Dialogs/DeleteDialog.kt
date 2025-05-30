@@ -42,7 +42,7 @@ class DeleteDialog(
         val btnConfirmDelete = findViewById<TextView>(R.id.btnConfirmDelete)
         val txtDialogMessage = findViewById<TextView>(R.id.txtDialogMessage)
         val txtDialogTitle = findViewById<TextView>(R.id.txtDialogTitle)
-        Log.d("TAG", "onCreate: binnn "+from)
+
         if (from.equals("recyclebin")) {
             txtDialogTitle.setText(context.getString(R.string.delete_conversation))
             btnConfirmDelete.setText(context.getString(R.string.delete))

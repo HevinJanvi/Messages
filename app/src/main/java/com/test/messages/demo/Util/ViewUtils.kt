@@ -3,7 +3,6 @@ package com.test.messages.demo.Util
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
 import android.provider.Telephony
@@ -11,23 +10,22 @@ import android.telephony.SubscriptionManager
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.CATEGORY_ORDER
-import com.test.messages.demo.Util.CommanConstants.FONT_SIZE_KEY
-import com.test.messages.demo.Util.CommanConstants.KEY_INTRO_SHOWN
-import com.test.messages.demo.Util.CommanConstants.KEY_LANGUAGE_SELECTED
-import com.test.messages.demo.Util.CommanConstants.KEY_LEFT_SWIPE_ACTION
-import com.test.messages.demo.Util.CommanConstants.KEY_NOTIFICATION_OPTION
-import com.test.messages.demo.Util.CommanConstants.KEY_RIGHT_SWIPE_ACTION
-import com.test.messages.demo.Util.CommanConstants.KEY_SELECTED_LANGUAGE
-import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
-import com.test.messages.demo.Util.CommanConstants.SHOW_CATEGORIES
-import com.test.messages.demo.Util.CommanConstants.SIM_SELECT
+import com.test.messages.demo.Util.Constants.CATEGORY_ORDER
+import com.test.messages.demo.Util.Constants.FONT_SIZE_KEY
+import com.test.messages.demo.Util.Constants.KEY_INTRO_SHOWN
+import com.test.messages.demo.Util.Constants.KEY_LANGUAGE_SELECTED
+import com.test.messages.demo.Util.Constants.KEY_LEFT_SWIPE_ACTION
+import com.test.messages.demo.Util.Constants.KEY_NOTIFICATION_OPTION
+import com.test.messages.demo.Util.Constants.KEY_RIGHT_SWIPE_ACTION
+import com.test.messages.demo.Util.Constants.KEY_SELECTED_LANGUAGE
+import com.test.messages.demo.Util.Constants.PREFS_NAME
+import com.test.messages.demo.Util.Constants.SHOW_CATEGORIES
+import com.test.messages.demo.Util.Constants.SIM_SELECT
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import org.json.JSONArray
 import java.time.Instant
@@ -38,7 +36,6 @@ import kotlin.random.Random
 object ViewUtils {
     private const val LOCK_SCREEN_VISIBILITY = "lock_screen_visibility"
     private const val LOCK_SCREEN_SENDER_MESSAGE = 1
-    private const val LOCK_SCREEN_SENDER = 2
 
     fun RecyclerView.Adapter<*>.autoScrollToStart(
         recyclerView: RecyclerView,
@@ -235,7 +232,7 @@ object ViewUtils {
 
 
     fun updateMessageCount(context: Context, threadId: Long): Int {
-        val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
         val count = prefs.getInt("msg_count_$threadId", 0) + 1
         prefs.edit().putInt("msg_count_$threadId", count).apply()
         return count
@@ -243,7 +240,7 @@ object ViewUtils {
 
 
     fun resetMessageCount(context: Context, threadId: Long) {
-        val prefs = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putInt("msg_count_$threadId", 0).apply()
     }
 
@@ -345,7 +342,7 @@ object ViewUtils {
     fun getSwipeAction(context: Context, isRightSwipe: Boolean): Int {
         val key = if (isRightSwipe) KEY_RIGHT_SWIPE_ACTION else KEY_LEFT_SWIPE_ACTION
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getInt(key, CommanConstants.SWIPE_ARCHIVE)
+            .getInt(key, Constants.SWIPE_ARCHIVE)
     }
 
     fun saveSwipeAction(context: Context, action: Int, isRightSwipe: Boolean) {
@@ -364,7 +361,7 @@ object ViewUtils {
 
     fun getFontSize(context: Context): Int {
         val sharedPref = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return sharedPref.getInt(FONT_SIZE_KEY, CommanConstants.ACTION_NORMAL)
+        return sharedPref.getInt(FONT_SIZE_KEY, Constants.ACTION_NORMAL)
     }
 
     fun getLanguageName(context: Context, languageCode: String?): String {

@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.MARK_AS_READ
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.MARK_AS_READ
 import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.SmsUtils
 import com.test.messages.demo.data.repository.MessageRepository

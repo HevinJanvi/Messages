@@ -10,9 +10,7 @@ import android.net.Uri
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import androidx.core.content.ContextCompat
-import com.test.messages.demo.Util.CommanConstants
 import com.test.messages.demo.Util.NotificationHelper
-import com.test.messages.demo.Util.SmsSender
 
 
 val Context.smsSender get() = SmsSender.getInstance(applicationContext as Application)
@@ -67,7 +65,6 @@ fun Context.queryThreadIdForSingleAddress(address: String): Long {
             if (cursor.moveToFirst()) {
                 cursor.getLong(cursor.getColumnIndexOrThrow("_id"))
             } else {
-                // fallback if thread doesn't exist
                 Telephony.Threads.getOrCreateThreadId(this, address)
             }
         } ?: 0L

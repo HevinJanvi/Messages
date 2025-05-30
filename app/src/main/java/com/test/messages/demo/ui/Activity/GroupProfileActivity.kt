@@ -11,16 +11,15 @@ import android.provider.Telephony
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.GROUP_MEMBERS
-import com.test.messages.demo.Util.CommanConstants.GROUP_NAME
-import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_DEFAULT
-import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
-import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.GROUP_MEMBERS
+import com.test.messages.demo.Util.Constants.GROUP_NAME
+import com.test.messages.demo.Util.Constants.GROUP_NAME_DEFAULT
+import com.test.messages.demo.Util.Constants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.PREFS_NAME
 import com.test.messages.demo.databinding.ActivityGroupProfileBinding
 import com.test.messages.demo.ui.Adapter.GroupMemberAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
@@ -97,8 +96,6 @@ class GroupProfileActivity : BaseActivity() {
             withContext(Dispatchers.Main) {
                 isArchived = archivedConversationIds.contains(threadId)
                 updateArchiveUI()
-
-                // Set up click listener once
                 binding.lyArchive.setOnClickListener {
                     if (isArchived) {
                         viewModel.unarchiveConversations(listOf(threadId))
@@ -132,7 +129,7 @@ class GroupProfileActivity : BaseActivity() {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
                 val existingBodyDatePairs =
-                    mutableSetOf<Pair<String, Long>>() // To prevent duplicates
+                    mutableSetOf<Pair<String, Long>>()
 
                 val cursor = contentResolver.query(
                     Telephony.Sms.CONTENT_URI,
@@ -161,7 +158,7 @@ class GroupProfileActivity : BaseActivity() {
                         }
                         if (existingBodyDatePairs.contains(key)) continue
                         existingBodyDatePairs.add(key)
-                        val isGroup = address.contains(",")
+                        val isGroup = address.contains(GROUP_SEPARATOR)
                         val deletedMessage = DeletedMessage(
                             messageId = it.getLong(messageIdIndex),
                             threadId = threadId,
@@ -192,14 +189,6 @@ class GroupProfileActivity : BaseActivity() {
         }.start()
     }
 
-    private fun refreshListStatus() {
-        Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }, 500)
-        overridePendingTransition(R.anim.fadin, R.anim.fadout);
-    }
 
     private fun showRenameDialog() {
         val currentName = binding.textGroupName.text.toString()
@@ -215,10 +204,6 @@ class GroupProfileActivity : BaseActivity() {
         val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         sharedPreferences.edit().putString("${GROUP_NAME_KEY}$threadId", newName).apply()
         binding.textGroupName.text = newName
-
-        Log.d("GroupNameCheck", "Checking SharedPreferences for key g : ${GROUP_NAME_KEY}$threadId")
-        Log.d("GroupNameCheck", "Value for  g = $newName")
-
         EventBus.getDefault().post(UpdateGroupNameEvent(threadId, newName))
     }
 

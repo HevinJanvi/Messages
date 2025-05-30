@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
-import com.test.messages.demo.data.Model.MessageDiffCallback
-import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.Util.TimeUtils.formatTimestamp
 import com.test.messages.demo.Util.TimeUtils.getInitials
 import com.test.messages.demo.Util.TimeUtils.getRandomColor
@@ -58,20 +56,27 @@ class StarredMessagesAdapter :
         val lastStarredMessage = lastStarredMessages[message.thread_id] ?: message.body
         holder.messageBody.text = lastStarredMessage ?: message.body
         holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
-        if (message.profile_image != null && message.profile_image.isNotEmpty()) {
+        if (message.is_group_chat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
-            Glide.with(holder.itemView.context)
-                .load(message.profile_image)
-                .placeholder(R.drawable.ic_user)
-                .into(holder.icUser)
-        } else {
-            holder.icUser.visibility = View.GONE
-            holder.initialsTextView.visibility = View.VISIBLE
-            holder.initialsTextView.text = getInitials(message.sender)
-            holder.profileContainer.backgroundTintList =
-                ColorStateList.valueOf(getRandomColor(message.sender))
+            holder.icUser.setImageResource(R.drawable.ic_group)
+        }else{
+            if (message.profile_image != null && message.profile_image.isNotEmpty()) {
+                holder.icUser.visibility = View.VISIBLE
+                holder.initialsTextView.visibility = View.GONE
+                Glide.with(holder.itemView.context)
+                    .load(message.profile_image)
+                    .placeholder(R.drawable.ic_user)
+                    .into(holder.icUser)
+            } else {
+                holder.icUser.visibility = View.GONE
+                holder.initialsTextView.visibility = View.VISIBLE
+                holder.initialsTextView.text = getInitials(message.sender)
+                holder.profileContainer.backgroundTintList =
+                    ColorStateList.valueOf(getRandomColor(message.sender))
+            }
         }
+
 
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE

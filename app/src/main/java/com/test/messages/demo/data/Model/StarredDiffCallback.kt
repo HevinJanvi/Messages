@@ -13,7 +13,6 @@ class StarredDiffCallback(
     override fun getNewListSize(): Int = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-//        return oldList[oldItemPosition] == newList[newItemPosition]
         return oldList[oldItemPosition].thread_id == newList[newItemPosition].thread_id
 
     }

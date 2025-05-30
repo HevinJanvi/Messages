@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Typeface
 import android.net.Uri
 import android.provider.Telephony
 import android.text.Spannable
@@ -16,16 +15,10 @@ import android.text.method.LinkMovementMethod
 import android.text.style.BackgroundColorSpan
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.util.Log
-import android.view.GestureDetector
-import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.ImageView
@@ -36,9 +29,8 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.util.query
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.CustomLinkMovementMethod
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.extractOtp
@@ -46,9 +38,7 @@ import com.test.messages.demo.Util.ViewUtils.isLikelyOtp
 import com.test.messages.demo.Util.ViewUtils.isProbablyYear
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.SIMCard
-import com.test.messages.demo.data.repository.MessageRepository
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
-import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -113,10 +103,10 @@ class ConversationAdapter(
 
         private fun getFontSizeFromPreferences(): Float {
             return when (ViewUtils.getFontSize(itemView.context)) {
-                CommanConstants.ACTION_SMALL -> 13f
-                CommanConstants.ACTION_NORMAL -> 15f
-                CommanConstants.ACTION_LARGE -> 17f
-                CommanConstants.ACTION_EXTRALARGE -> 20f
+                Constants.ACTION_SMALL -> 13f
+                Constants.ACTION_NORMAL -> 15f
+                Constants.ACTION_LARGE -> 17f
+                Constants.ACTION_EXTRALARGE -> 20f
                 else -> 15f
             }
         }
@@ -142,9 +132,6 @@ class ConversationAdapter(
                 messageBody.visibility = View.VISIBLE
                 messageBody.text = message.body
 
-//                messageDate.text =
-//                    SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.date))
-
                 val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
                 val timeFormat = if (is24Hour) "HH:mm" else "hh:mm a"
                 val sdf = SimpleDateFormat(timeFormat, Locale.getDefault())
@@ -157,7 +144,6 @@ class ConversationAdapter(
                 if (availableSIMCards.size > 1 && message.subscriptionId != -1) {
                     val simIndex =
                         availableSIMCards.indexOfFirst { it.subscriptionId == message.subscriptionId }
-                    Log.d("TAG", "bind: " + simIndex)
                     when (simIndex) {
                         0 -> simIcon.setImageResource(R.drawable.sim_1)
                         1 -> simIcon.setImageResource(R.drawable.sim_2)
@@ -308,12 +294,6 @@ class ConversationAdapter(
                         ""
                     )
                 }
-
-                /* formatMessageWithLinks(
-                     messageBody,
-                     message,
-                     message = message.body, searchQuery
-                 )*/
             }
         }
 
@@ -545,10 +525,6 @@ class ConversationAdapter(
         toggleSelection(message, 2)
     }
 
-    fun getPositionOfMessage(messageItem: ConversationItem): Int {
-        return currentList.indexOf(messageItem)
-    }
-
 
     private fun toggleTimeVisibility(message: ConversationItem) {
         val position = currentList.indexOf(message)
@@ -567,18 +543,7 @@ class ConversationAdapter(
         notifyDataSetChanged()
     }
 
-    fun toggleStarred(messageId: Long) {
-        if (starredMessageIds.contains(messageId)) {
-            starredMessageIds = starredMessageIds - messageId
-
-        } else {
-            starredMessageIds = starredMessageIds + messageId
-        }
-        notifyDataSetChanged()
-    }
-
     private fun toggleSelection(message: ConversationItem, i: Int) {
-        Log.d("TAG", "toggleSelection: $i")
         if (selectedItems.contains(message)) {
             selectedItems.remove(message)
         } else {
@@ -614,34 +579,10 @@ class ConversationAdapter(
         }
     }
 
-
-
     fun addMessages(messages: List<ConversationItem>) {
-        Log.d("SEND_MSG", "Adding messages count=${messages.size}")
-
         val updatedList = currentList.toMutableList()
         updatedList.addAll(messages)
         submitList(updatedList)
-        Log.d("SEND_MSG", "Total messages after add: ${updatedList.size}")
-
-    }
-
-
-
-    fun addTemporaryMessage(message: MutableList<ConversationItem>) {
-        val newList = currentList.toMutableList()
-        Log.d("TAG", "addTemporaryMessage:1 " + newList.size)
-        newList.addAll(message)
-        submitList(newList)
-        Log.d("TAG", "addTemporaryMessage:2 " + newList.size)
-
-        notifyDataSetChanged()
-    }
-
-    fun removeTemporaryMessageById(messageId: Long) {
-        val updatedList = currentList.filterNot { it.id == messageId }
-        submitList(updatedList)
-        notifyDataSetChanged()
     }
 
 }

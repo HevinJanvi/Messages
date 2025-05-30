@@ -45,7 +45,4 @@ class BlockProgressDialog(private val context: Context) {
         dialog = null
     }
 
-    fun isShowing(): Boolean {
-        return dialog?.isShowing == true
-    }
 }

@@ -8,17 +8,12 @@ import androidx.room.Query
 
 @Dao
 interface ScheduledMessageDao {
-//    @Insert
-//    fun insert(message: ScheduledMessage)
 
     @Insert
     fun insert(message: ScheduledMessage): Long
 
     @get:Query("SELECT * FROM scheduled_messages ORDER BY scheduledTime ASC")
     val allScheduledMessages: LiveData<List<ScheduledMessage>>
-
-//    @Query("SELECT * FROM scheduled_messages WHERE threadId = :threadId LIMIT 1")
-//    fun getMessageById(threadId: String?): ScheduledMessage
 
     @Query("SELECT * FROM scheduled_messages WHERE id = :id")
     fun getMessageById1(id: Int): ScheduledMessage?
@@ -31,10 +26,8 @@ interface ScheduledMessageDao {
 
     @Query("SELECT * FROM scheduled_messages WHERE threadId = :threadId")
     fun getMessagesByThreadId(threadId: Long): List<ScheduledMessage>
+
     @Query("DELETE FROM scheduled_messages WHERE threadId = :threadId")
     fun deleteByThreadId(threadId: String)
 
-
-//    @Query("DELETE FROM scheduled_messages WHERE threadId = :threadId")
-//    fun deleteByThreadId(threadId: Long)
 }

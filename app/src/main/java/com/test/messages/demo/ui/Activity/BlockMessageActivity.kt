@@ -15,21 +15,20 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.DROPMSG
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.Constants.DROPMSG
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.FROMBLOCK
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.PREFS_NAME
 import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MessagesRefreshEvent
-import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.databinding.ActivityBlockBinding
 import com.test.messages.demo.ui.Adapter.BlockedMessagesAdapter
 import com.test.messages.demo.ui.Dialogs.UnblockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
@@ -86,8 +85,6 @@ class BlockMessageActivity : BaseActivity() {
             intent.putExtra(NAME, message.sender)
             intent.putExtra(FROMBLOCK, true)
             startActivity(intent)
-//            conversationResultLauncher.launch(intent)
-
         }
         viewModel.loadBlockThreads()
         viewModel.messages.observe(this) { messageList ->
@@ -123,27 +120,17 @@ class BlockMessageActivity : BaseActivity() {
         }
     }
 
-    /*@RequiresApi(Build.VERSION_CODES.Q)
-    private val conversationResultLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data: Intent? = result.data
-            if (data != null) {
-                adapter.notifyDataSetChanged()
-                draftViewModel.loadAllDrafts()
-                viewModel.loadMessages()
-            }
-        }
-    }*/
-
     @RequiresApi(Build.VERSION_CODES.Q)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDraftUpdateEvent(event: DraftChangedEvent) {
-        Handler(Looper.getMainLooper()).postDelayed({
-            draftViewModel.loadAllDrafts()
-            viewModel.loadMessages()
-        }, 500)
+        try {
+            Handler(Looper.getMainLooper()).postDelayed({
+                draftViewModel.loadAllDrafts()
+                viewModel.loadMessages()
+            }, 500)
+        } catch (e: Exception) {
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -176,7 +163,6 @@ class BlockMessageActivity : BaseActivity() {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
                     deleteMessages()
-//                    deleteMessages(selectedThreadIds)
                     viewModel.deleteblockConversations(selectedThreadIds)
                     adapter?.removeItems(selectedThreadIds)
                     adapter?.clearSelection()
@@ -208,7 +194,6 @@ class BlockMessageActivity : BaseActivity() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessagesRefreshed(event: MessagesRefreshEvent) {
         if (event.success) {
-            Log.d("TAG", "onMessagesRefreshed: ")
             Handler(Looper.getMainLooper()).postDelayed({
                 viewModel.loadMessages()
             }, 100)
@@ -273,7 +258,7 @@ class BlockMessageActivity : BaseActivity() {
                                 read = it.getInt(readIndex) == 1,
                                 subscriptionId = subscriptionId,
                                 deletedTime = System.currentTimeMillis(),
-                                isGroupChat = address.contains(","),
+                                isGroupChat = address.contains(GROUP_SEPARATOR),
                                 profileImageUrl = ""
                             )
                             deletedMessages.add(deletedMessage)
@@ -293,7 +278,6 @@ class BlockMessageActivity : BaseActivity() {
                     deleteDialog.dismiss()
                 }
             } catch (e: Exception) {
-                Log.e("BlockMessageActivity", "Error deleting messages", e)
                 withContext(Dispatchers.Main) {
                     handler.removeCallbacks(showDialogRunnable)
                     deleteDialog.dismiss()
@@ -301,101 +285,6 @@ class BlockMessageActivity : BaseActivity() {
             }
         }
     }
-
-    /* @RequiresApi(Build.VERSION_CODES.Q)
-     fun deleteMessages(threadIds: List<Long>) {
-         if (adapter.selectedMessages.isEmpty()) return
-
-         val contentResolver = contentResolver
-         val db = AppDatabase.getDatabase(this).recycleBinDao()
-         val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
-         val handler = Handler(Looper.getMainLooper())
-         val deleteDialog = DeleteProgressDialog(this@BlockMessageActivity)
-         val showDialogRunnable = Runnable {
-             deleteDialog.show(getString(R.string.moving_messages_to_recycle_bin))
-         }
-         handler.postDelayed(showDialogRunnable, 300)
-         Thread {
-             try {
-                 val deletedMessages = mutableListOf<DeletedMessage>()
-                 val existingBodyDatePairs =
-                     mutableSetOf<Pair<String, Long>>()
-
-                 for (item in adapter.selectedMessages) {
-                     val threadId = item.threadId
-
-                     val cursor = contentResolver.query(
-                         Telephony.Sms.CONTENT_URI,
-                         null,
-                         "thread_id = ?",
-                         arrayOf(threadId.toString()),
-                         null
-                     )
-
-                     cursor?.use {
-                         val idIndex = it.getColumnIndex(Telephony.Sms._ID)
-                         val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-                         val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-                         val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
-                         val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
-                         val readIndex = it.getColumnIndex(Telephony.Sms.READ)
-                         val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
-
-                         while (it.moveToNext()) {
-                             val messageId = it.getLong(idIndex)
-                             val address = it.getString(addressIndex) ?: ""
-                             if (address.isNullOrEmpty()) {
-                                 continue
-                             }
-                             val body = it.getString(bodyIndex) ?: ""
-                             val date = it.getLong(dateIndex)
-                             val key = Pair(body, date)
-                             if (existingBodyDatePairs.contains(key)) {
-                                 continue
-                             }
-                             existingBodyDatePairs.add(key)
-
-                             val deletedMessage = DeletedMessage(
-                                 messageId = messageId,
-                                 threadId = threadId,
-                                 address = address,
-                                 date = date,
-                                 body = body,
-                                 type = it.getInt(typeIndex),
-                                 read = it.getInt(readIndex) == 1,
-                                 subscriptionId = it.getInt(subIdIndex),
-                                 deletedTime = System.currentTimeMillis()
-                             )
-
-                             deletedMessages.add(deletedMessage)
-                         }
-                     }
-
-                     val uri = Uri.parse("content://sms/conversations/$threadId")
-                     contentResolver.delete(uri, null, null)
-
-                     updatedList.removeAll { it.threadId == threadId }
-                 }
-
-                 db.insertMessages(deletedMessages)
-
-                 Handler(Looper.getMainLooper()).post {
-                     handler.removeCallbacks(showDialogRunnable)
-                     deleteDialog.dismiss()
-                     adapter.removeItems(threadIds)
-                     adapter.selectedMessages.clear()
-                     viewModel.updateMessages(updatedList)
-                     adapter.submitList(updatedList)
-                     adapter.clearSelection()
-                 }
-
-             } catch (e: Exception) {
-                 handler.removeCallbacks(showDialogRunnable)
-                 deleteDialog.dismiss()
-                 e.printStackTrace()
-             }
-         }.start()
-     }*/
 
     override fun onBackPressed() {
         if (adapter.selectedMessages.size > 0) {

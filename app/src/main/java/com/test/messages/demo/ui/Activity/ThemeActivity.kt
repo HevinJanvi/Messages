@@ -10,8 +10,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
-import com.test.messages.demo.Util.CommanConstants.THEMEMODE
+import com.test.messages.demo.Util.Constants.PREFS_NAME
+import com.test.messages.demo.Util.Constants.THEMEMODE
 import com.test.messages.demo.databinding.ActivityThemeBinding
 
 class ThemeActivity : BaseActivity() {

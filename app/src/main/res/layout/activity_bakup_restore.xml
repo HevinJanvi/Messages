@@ -32,7 +32,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.test.messages.demo.Util.MarqueeTextView
+        <com.test.messages.demo.ui.CustomView.MarqueeTextView
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -120,7 +120,7 @@
                     android:weightSum="2"
                     app:layout_constraintTop_toBottomOf="@+id/txtviw2">
 
-                    <com.test.messages.demo.Util.MarqueeTextView
+                    <com.test.messages.demo.ui.CustomView.MarqueeTextView
                         android:id="@+id/btnRestore"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -136,7 +136,7 @@
                         android:textColor="@color/white"
                         android:textSize="16dp" />
 
-                    <com.test.messages.demo.Util.MarqueeTextView
+                    <com.test.messages.demo.ui.CustomView.MarqueeTextView
                         android:id="@+id/btnBackup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

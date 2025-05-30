@@ -6,17 +6,15 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import com.test.messages.demo.data.Database.Notification.NotificationDao
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.NotificationHelper
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.databinding.ActivityNotificationBinding
 import com.test.messages.demo.ui.Dialogs.NotificationViewDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
@@ -27,7 +25,6 @@ import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -134,10 +131,7 @@ class NotificationActivity : BaseActivity(){
 
 
     fun openSmsNotificationSettings(context: Context, contactNumber: String) {
-        val channelId = "${CommanConstants.KEY_SMS_CHANNEL}${contactNumber.removeCountryCode()}"
-
-        Log.d("TAG", "showMessageNotification:activity1 "+channelId)
-
+        val channelId = "${Constants.KEY_SMS_CHANNEL}${contactNumber.removeCountryCode()}"
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         var myNotificationChannel = notificationManager.getNotificationChannel(channelId)
 
@@ -154,13 +148,11 @@ class NotificationActivity : BaseActivity(){
             putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
             putExtra(Settings.EXTRA_CHANNEL_ID, myNotificationChannel.id)
         }
-        Log.d("TAG", "showMessageNotification:activity "+channelId)
-
         context.startActivity(intent)
     }
 
     fun openSmsNotificationGlobalSettings(context: Context) {
-        val channelId = "${CommanConstants.KEY_SMS_CHANNEL}"
+        val channelId = "${Constants.KEY_SMS_CHANNEL}"
 
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         var myNotificationChannel = notificationManager.getNotificationChannel(channelId)

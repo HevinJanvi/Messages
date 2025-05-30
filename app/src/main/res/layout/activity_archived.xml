@@ -213,7 +213,7 @@
                    android:padding="3dp"
                    android:src="@drawable/ic_unarchive" />
 
-               <com.test.messages.demo.Util.MarqueeTextView
+               <com.test.messages.demo.ui.CustomView.MarqueeTextView
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:fontFamily="@font/product_sans_regular"
@@ -239,7 +239,7 @@
                    android:padding="3dp"
                    android:src="@drawable/ic_delete" />
 
-               <com.test.messages.demo.Util.MarqueeTextView
+               <com.test.messages.demo.ui.CustomView.MarqueeTextView
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:fontFamily="@font/product_sans_regular"
@@ -265,7 +265,7 @@
                    android:padding="3dp"
                    android:src="@drawable/ic_block" />
 
-               <com.test.messages.demo.Util.MarqueeTextView
+               <com.test.messages.demo.ui.CustomView.MarqueeTextView
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:fontFamily="@font/product_sans_regular"

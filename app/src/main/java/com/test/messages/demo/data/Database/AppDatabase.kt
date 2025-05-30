@@ -23,7 +23,7 @@ import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databas
 
 @Database(entities = [DeletedMessage::class, ArchivedConversation::class, BlockConversation::class,
     PinMessage::class, StarredMessage::class, ScheduledMessage::class, NotificationSetting::class], version = 21, exportSchema = false)
-@TypeConverters(Converters::class)
+//@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun recycleBinDao(): RecycleBinDao
     abstract fun archivedDao(): ArchivedDao

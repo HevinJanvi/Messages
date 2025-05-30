@@ -276,4 +276,7 @@
     <string name="pin_limit_reached">Sie können nur bis zu 10 Nachrichten anheften.</string>
     <string name="no_result_found">Kein Ergebnis gefunden</string>
 
+    <string name="move">Verschieben</string>
+    <string name="move_to_bin">In den Papierkorb verschieben?</string>
+    <string name="marking_messages_as_read">Nachrichten als gelesen markieren...</string>
 </resources>

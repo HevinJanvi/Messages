@@ -11,19 +11,14 @@ interface PinDao {
     @Query("SELECT COUNT(*) FROM pinned_messages WHERE thread_id IN (:threadIds)")
     suspend fun isPinned(threadIds: List<Long>): Int
 
-    // Insert multiple pinned messages (IGNORE to prevent duplicates)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
      fun insertPinnedMessages(pinnedMessages: List<PinMessage>)
-//    suspend fun insertPinnedMessages(pinnedMessages: List<PinMessage>)  // For bulk insertion
 
-
-    // Remove pinned messages for given thread IDs
     @Query("DELETE FROM pinned_messages WHERE thread_id IN (:threadIds)")
     suspend fun removePinnedMessages(threadIds: List<Long>)
 
      @Query("DELETE FROM pinned_messages WHERE thread_id IN (:threadIds)")
      fun deletePinnedMessage(threadIds: List<Long>)
-
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun pinMessage(pinEntity: PinMessage)

@@ -3,13 +3,12 @@ package com.test.messages.demo.ui.Activity
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
+import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.data.viewmodel.BackupViewModel
 import com.test.messages.demo.databinding.ActivityBakupRestoreBinding
@@ -87,24 +86,24 @@ class BakupRestoreActivity : BaseActivity() {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "application/json"
-            putExtra(Intent.EXTRA_TITLE, CommanConstants.BACKUP_FILE)
+            putExtra(Intent.EXTRA_TITLE, Constants.BACKUP_FILE)
         }
         startActivityForResult(intent, EXPORT_JSON_REQUEST_CODE)
 
     }
 
     private fun saveLastBackupTime() {
-        val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val currentTime =
             SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH).format(Date())
-        editor.putString(CommanConstants.KEY_LAST_BACKUP, currentTime)
+        editor.putString(Constants.KEY_LAST_BACKUP, currentTime)
         editor.apply()
     }
 
     private fun loadLastBackupTime() {
-        val sharedPreferences = getSharedPreferences(CommanConstants.PREFS_NAME, MODE_PRIVATE)
-        val lastBackupTime = sharedPreferences.getString(CommanConstants.KEY_LAST_BACKUP, null)
+        val sharedPreferences = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE)
+        val lastBackupTime = sharedPreferences.getString(Constants.KEY_LAST_BACKUP, null)
         binding.txtviw2.apply {
             if (lastBackupTime.isNullOrEmpty()) {
                 text = getString(R.string.messages_can_be_backed)
@@ -135,11 +134,9 @@ class BakupRestoreActivity : BaseActivity() {
                             try {
                                 showProgress()
                                 backupViewModel.restoreMessages(uri, { progress ->
-                                    Log.d("TAG", "onActivityResult:p " + progress)
                                     binding.progressBar.progress = progress
 
                                 }) { restoredList ->
-                                    // Handle completion on the main thread
                                     hideProgress()
                                     if (restoredList.isNotEmpty()) {
                                         Toast.makeText(
@@ -157,11 +154,10 @@ class BakupRestoreActivity : BaseActivity() {
                                     }
                                 }
                             } catch (e: Exception) {
-                                // Handle any errors that occur during the restore process
                                 hideProgress()
                                 Toast.makeText(
                                     this@BakupRestoreActivity,
-                                    "Restore failed: ${e.message}",
+                                    getString(R.string.restore_failed) + "${e.message}",
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -222,15 +218,4 @@ class BakupRestoreActivity : BaseActivity() {
         binding.progressBar.visibility = View.GONE
     }
 
-    /*private fun showRestoreSuccessDialog(restoredList: List<ConversationItem>) {
-        val messageCount = restoredList.size
-        val messagesPreview = restoredList.joinToString("\n") { "${it.address}: ${it.body}" }
-
-        runOnUiThread {
-            AlertDialog.Builder(this).setTitle("Restore Successful")
-                .setMessage("Restored $messageCount messages:\n\n$messagesPreview")
-                .setPositiveButton("OK", null).show()
-        }
-    }
-*/
 }

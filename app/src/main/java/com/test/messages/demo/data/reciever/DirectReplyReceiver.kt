@@ -5,19 +5,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.telephony.SmsManager
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.RemoteInput
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.MESSAGE_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.REPLY
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.MESSAGE_ID
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.REPLY
 import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.SmsUtils
 import com.test.messages.demo.Util.ViewUtils.getUseSIMIdAtNumber
@@ -89,12 +86,10 @@ class DirectReplyReceiver : BroadcastReceiver() {
                             alertOnlyOnce = true
                         )
                     }
-//                    Handler(Looper.getMainLooper()).postDelayed({
-                        SmsUtils.markThreadAsRead(context, threadId)
-                        repository.getMessages()
-//                    }, 500)
-                    EventBus.getDefault().post(MarkasreadEvent(threadId,true))
-    
+                    SmsUtils.markThreadAsRead(context, threadId)
+                    repository.getMessages()
+                    EventBus.getDefault().post(MarkasreadEvent(threadId, true))
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

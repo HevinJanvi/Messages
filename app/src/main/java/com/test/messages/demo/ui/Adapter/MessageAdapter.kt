@@ -17,10 +17,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.MultiTransformation
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
 import com.test.messages.demo.data.Model.MessageDiffCallback
@@ -30,7 +26,6 @@ import com.test.messages.demo.Util.TimeUtils.getInitials
 import com.test.messages.demo.Util.TimeUtils.getRandomColor
 import com.test.messages.demo.Util.ViewUtils.copyToClipboard
 import com.test.messages.demo.Util.ViewUtils.extractOtp
-import com.test.messages.demo.data.Model.ConversationItem
 
 class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
     RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
@@ -69,7 +64,6 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
         holder.date.text = formatTimestamp(holder.itemView.context,message.lastMsgDate)
-//        Log.d("DARFT", "onBindViewHolder: "+ holder.messageBody.text)
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE

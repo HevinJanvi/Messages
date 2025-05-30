@@ -4,7 +4,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <com.test.messages.demo.Util.ShadowLayout
+    <com.test.messages.demo.ui.CustomView.ShadowLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="1dp"
@@ -70,5 +70,5 @@
 
         </LinearLayout>
 
-    </com.test.messages.demo.Util.ShadowLayout>
+    </com.test.messages.demo.ui.CustomView.ShadowLayout>
 </RelativeLayout>

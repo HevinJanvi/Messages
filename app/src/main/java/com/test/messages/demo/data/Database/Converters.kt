@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 
 class Converters {
 
-    class Converters {
+    /*class Converters {
         @TypeConverter
         fun fromMessageList(messages: List<String>): String {
             return Gson().toJson(messages)
@@ -16,10 +16,10 @@ class Converters {
         fun toMessageList(messagesJson: String): List<String> {
             return Gson().fromJson(messagesJson, object : TypeToken<List<String>>() {}.type)
         }
-    }
+    }*/
 
 
-    @TypeConverter
+   /* @TypeConverter
     fun fromDeletedMessagesList(value: List<String>): String {
         // Serialize the list to JSON
         val gson = Gson()
@@ -32,5 +32,5 @@ class Converters {
         val gson = Gson()
         val listType = object : TypeToken<List<String>>() {}.type
         return gson.fromJson(value, listType)
-    }
+    }*/
 }

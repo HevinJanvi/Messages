@@ -1,18 +1,12 @@
 package com.test.messages.demo.ui.Fragment
 
-import android.app.Activity
 import android.app.AlarmManager
-import android.app.AlertDialog
-import android.app.Dialog
 import android.app.PendingIntent
-import android.app.TaskStackBuilder
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
@@ -27,10 +21,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.os.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -52,12 +44,12 @@ import com.test.messages.demo.Util.ViewUtils.getCategoriesFromPrefs
 import com.test.messages.demo.Util.ViewUtils.isCategoryEnabled
 import com.test.messages.demo.Util.CategoryUpdateEvent
 import com.test.messages.demo.Util.CategoryVisibilityEvent
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.ISGROUP
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.PROFILEURL
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.PROFILEURL
 import com.test.messages.demo.Util.MessageDeletedEvent
 import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.MessagesRestoredEvent
@@ -80,20 +72,17 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.jetbrains.annotations.Nullable
 import androidx.core.view.doOnPreDraw
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.NewSmsEvent
 import com.test.messages.demo.Util.ViewUtils.autoScrollToStart
-import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.reciever.MessageSenderReceiver
 import com.test.messages.demo.ui.Dialogs.BlockProgressDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import com.test.messages.demo.ui.send.hasReadSmsPermission
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
@@ -165,9 +154,6 @@ class ConversationFragment : Fragment() {
         EventBus.getDefault().register(this)
         selectedCategory = requireActivity().getString(R.string.inbox)
 
-//        binding.categoryRecyclerView.visibility =
-//            if (isCategoryEnabled(requireContext())) View.VISIBLE else View.GONE
-
         if (binding.categoryRecyclerView.visibility == View.VISIBLE) {
             binding.categoryRecyclerView.post {
                 binding.categoryRecyclerView.scrollToPosition(categoryAdapter.itemCount - 1)
@@ -193,8 +179,6 @@ class ConversationFragment : Fragment() {
         }
         viewModel.messages.observe(viewLifecycleOwner) { messageList ->
             (activity as? MainActivity)?.updateTotalMessagesCount(messageList.size)
-
-//            CoroutineScope(Dispatchers.Default).launch {
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
                 val filteredMessages = prepareFilteredMessages(messageList)
                     .filter { !it.sender.isNullOrBlank() }
@@ -224,7 +208,6 @@ class ConversationFragment : Fragment() {
         }
 
         draftViewModel.draftsLiveData.observe(viewLifecycleOwner) { draftMap ->
-            Log.d("TAG", "onCreateView:observe " + draftMap)
             adapter.updateDrafts(draftMap)
         }
         if (requireContext().hasReadSmsPermission()) {
@@ -350,12 +333,9 @@ class ConversationFragment : Fragment() {
                 (activity as? MainActivity)?.updateBlockUI(!hasGroupSelected)
 
                 if (count > 0) {
-//                    binding.categoryRecyclerView.visibility = View.GONE
                     updateCategoryVisibility()
                     binding.newConversation.visibility = View.GONE
                 } else {
-
-//                    binding.categoryRecyclerView.visibility = View.VISIBLE
                     updateCategoryVisibility()
                     binding.newConversation.visibility = View.VISIBLE
                 }
@@ -368,11 +348,8 @@ class ConversationFragment : Fragment() {
         }
 
         adapter.autoScrollToStart(binding.conversationList) { }
-//        binding.conversationList.itemAnimator = null
         (binding.conversationList.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations =
             true
-//        binding.conversationList.itemAnimator = DefaultItemAnimator()
-
         binding.conversationList.layoutManager = LinearLayoutManager(requireActivity())
         binding.conversationList.adapter = adapter
         setupSwipeGesture()
@@ -386,7 +363,6 @@ class ConversationFragment : Fragment() {
                 putExtra(PROFILEURL, message.profileImageUrl)
 
             }
-//            conversationResultLauncher.launch(intent)
             startActivity(intent)
         }
     }
@@ -411,8 +387,8 @@ class ConversationFragment : Fragment() {
             val leftAction = ViewUtils.getSwipeAction(context, isRightSwipe = false)
             val rightAction = ViewUtils.getSwipeAction(context, isRightSwipe = true)
 
-            val leftEnabled = leftAction != CommanConstants.SWIPE_NONE
-            val rightEnabled = rightAction != CommanConstants.SWIPE_NONE
+            val leftEnabled = leftAction != Constants.SWIPE_NONE
+            val rightEnabled = rightAction != Constants.SWIPE_NONE
 
             return when {
                 leftEnabled && rightEnabled -> ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -478,14 +454,12 @@ class ConversationFragment : Fragment() {
                 c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
             )
 
-            // Apply Right Swipe (dX > 0)
             if (dX > 0 && rightSwipeIcon != null) {
                 decorator.addSwipeRightBackgroundColor(colorPrimary)
                     .addSwipeRightActionIcon(rightSwipeIcon)
                     .setSwipeRightActionIconTint(whiteColor)
             }
 
-            // Apply Left Swipe (dX < 0)
             if (dX < 0 && leftSwipeIcon != null) {
                 decorator.addSwipeLeftBackgroundColor(colorPrimary)
                     .addSwipeLeftActionIcon(leftSwipeIcon)
@@ -499,18 +473,18 @@ class ConversationFragment : Fragment() {
 
         private fun getSwipeIcon(action: Int): Int? {
             return when (action) {
-                CommanConstants.SWIPE_DELETE -> R.drawable.ic_delete
-                CommanConstants.SWIPE_ARCHIVE -> R.drawable.ic_archive
-                CommanConstants.SWIPE_CALL -> R.drawable.ic_call
-                CommanConstants.SWIPE_MARK_READ -> R.drawable.ic_mark_read2
-                CommanConstants.SWIPE_MARK_UNREAD -> R.drawable.ic_mark_read1
+                Constants.SWIPE_DELETE -> R.drawable.ic_delete
+                Constants.SWIPE_ARCHIVE -> R.drawable.ic_archive
+                Constants.SWIPE_CALL -> R.drawable.ic_call
+                Constants.SWIPE_MARK_READ -> R.drawable.ic_mark_read2
+                Constants.SWIPE_MARK_UNREAD -> R.drawable.ic_mark_read1
                 else -> null
             }
         }
 
         private fun handleSwipeAction(action: Int, position: Int, message: MessageItem) {
             when (action) {
-                CommanConstants.SWIPE_DELETE -> {
+                Constants.SWIPE_DELETE -> {
                     adapter.selectedMessages.clear()
                     adapter.selectedMessages.add(message)
                     var userConfirmedDelete = false
@@ -531,13 +505,13 @@ class ConversationFragment : Fragment() {
                     deleteDialog.show()
                 }
 
-                CommanConstants.SWIPE_ARCHIVE -> {
+                Constants.SWIPE_ARCHIVE -> {
                     adapter.selectedMessages.clear()
                     adapter.selectedMessages.add(message)
                     archiveMessages()
                 }
 
-                CommanConstants.SWIPE_CALL -> {
+                Constants.SWIPE_CALL -> {
                     val intent = Intent(Intent.ACTION_DIAL).apply {
                         data = Uri.parse("tel:${message.sender}")
                     }
@@ -546,13 +520,13 @@ class ConversationFragment : Fragment() {
                     adapter.notifyItemChanged(position)
                 }
 
-                CommanConstants.SWIPE_MARK_READ -> {
+                Constants.SWIPE_MARK_READ -> {
                     adapter.selectedMessages.clear()
                     markThreadAsread(message.threadId)
                     updateMessageList(message.threadId, true)
                 }
 
-                CommanConstants.SWIPE_MARK_UNREAD -> {
+                Constants.SWIPE_MARK_UNREAD -> {
                     adapter.selectedMessages.clear()
                     markThreadAsUnread(message.threadId)
                     updateMessageList(message.threadId, false)
@@ -592,18 +566,15 @@ class ConversationFragment : Fragment() {
     }
 
     fun toggleSelectAll(selectAll: Boolean) {
-        Log.d("TAG", "toggleSelectAll: ")
         if (selectAll) {
             adapter.clearSelection()
             val allMessages = adapter.getAllMessages()
             adapter.selectedMessages.addAll(allMessages)
-//            binding.categoryRecyclerView.visibility = View.GONE
             updateCategoryVisibility()
             binding.newConversation.visibility = View.GONE
 
         } else {
             adapter.clearSelection()
-//            binding.categoryRecyclerView.visibility = View.VISIBLE
             updateCategoryVisibility()
             binding.newConversation.visibility = View.VISIBLE
         }
@@ -630,9 +601,7 @@ class ConversationFragment : Fragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onCategoryVisibilityEvent(event: CategoryVisibilityEvent) {
-//        binding.categoryRecyclerView.visibility = if (event.isEnabled) View.VISIBLE else View.GONE
         updateCategoryVisibility()
-
     }
 
     private fun updateCategoryVisibility() {
@@ -660,8 +629,6 @@ class ConversationFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMarkasdread(event: MarkasreadEvent) {
         if (event.success) {
-            Log.d("MessageRepository", "onMarkadread:event ")
-//            markReadMessages()
             markThreadAsread(event.threadId)
             adapter.notifyDataSetChanged()
             viewModel.loadMessages()
@@ -673,42 +640,11 @@ class ConversationFragment : Fragment() {
         viewModel.loadMessages()
     }
 
-    fun getLastMessageForThread(threadId: Long): Pair<String?, Long?> {
-        val uri = Uri.parse("content://sms/conversations?simple=true")
-        val projection = arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE)
-        val selection = "${Telephony.Sms.THREAD_ID} = ?"
-        val selectionArgs = arrayOf(threadId.toString())
-        val sortOrder = "${Telephony.Sms.DATE} DESC"
-
-        val cursor = requireContext().contentResolver.query(
-            uri,
-            projection,
-            selection,
-            selectionArgs,
-            sortOrder
-        )
-
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
-                Log.d("SnippetUpdate", "Fetched LAST message: $body at $date")
-                return Pair(body, date)
-            } else {
-                Log.d("SnippetUpdate", "No message found for threadId $threadId")
-            }
-        }
-
-        return Pair(null, null)
-    }
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageDeleted(event: MessageDeletedEvent) {
         viewModel.loadMessages()
-//        val (newLastMessage, newLastMessageTime) = getLastMessageForThread(event.threadId)
-//        updateConversationSnippet(event.threadId, newLastMessage, newLastMessageTime)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -726,7 +662,6 @@ class ConversationFragment : Fragment() {
         adapter.clearSelection()
         val contentResolver = requireActivity().contentResolver
         val db = AppDatabase.getDatabase(requireContext()).recycleBinDao()
-        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
         val handler = Handler(Looper.getMainLooper())
         val deleteDialog = DeleteProgressDialog(requireContext())
         val showDialogRunnable = Runnable {
@@ -774,15 +709,11 @@ class ConversationFragment : Fragment() {
                             val date = it.getLong(dateIndex)
                             val key = Pair(body, date)
                             if (existingBodyDatePairs.contains(key)) {
-                                Log.d(
-                                    "DeleteSelectedMessages",
-                                    "Duplicate message found, skipping: $key"
-                                )
                                 continue
                             }
                             existingBodyDatePairs.add(key)
                             val finalThreadId = existingThreadMap[address] ?: threadId
-                            val isGroup = address.contains(",")
+                            val isGroup = address.contains(GROUP_SEPARATOR)
                             val subscriptionId = if (subIdIndex != -1) it.getInt(subIdIndex) else -1
 
                             val deletedMessage = DeletedMessage(
@@ -801,7 +732,6 @@ class ConversationFragment : Fragment() {
                             deletedMessages.add(deletedMessage)
                         }
                     }
-//                    db.insertMessages(deletedMessages)
                     val uri = Uri.parse("content://sms/conversations/$threadId")
                     contentResolver.delete(uri, null, null)
 
@@ -826,7 +756,6 @@ class ConversationFragment : Fragment() {
                 }
 
             } catch (e: Exception) {
-                Log.d("TAG", "deleteSelectedMessages:` " + e.toString())
                 e.printStackTrace()
                 Handler(Looper.getMainLooper()).post {
                     handler.removeCallbacks(showDialogRunnable)
@@ -932,7 +861,6 @@ class ConversationFragment : Fragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDraftUpdateEvent(event: DraftChangedEvent) {
-//        Log.d("TAG", "onDraftUpdateEvent: " + event)
         draftViewModel.loadAllDrafts()
         viewModel.loadMessages()
         try {
@@ -949,11 +877,10 @@ class ConversationFragment : Fragment() {
     fun unarchiveMessages(messages: List<MessageItem>) {
         CoroutineScope(Dispatchers.Default).launch {
             viewModel.unarchiveConversations(messages.map { it.threadId })
-            withContext(Dispatchers.Main) {
+            /*withContext(Dispatchers.Main) {
                 val currentList = adapter.getAllMessages().toMutableList()
                 val restoredList = (messages + currentList).distinctBy { it.threadId }
-//                adapter.submitList(restoredList)
-            }
+            }*/
         }
     }
 
@@ -982,10 +909,7 @@ class ConversationFragment : Fragment() {
     fun pinMessages() {
         val selectedMessages = adapter.selectedMessages
         val selectedIds = selectedMessages.map { it.threadId }
-        // Already pinned threads
         val alreadyPinned = viewModel.getPinnedThreadIds() ?: emptyList()
-
-        // Only count items that are NOT already pinned
         val newPins = selectedMessages.filter { !it.isPinned }
 
         if (alreadyPinned.size + newPins.size > 10) {
@@ -997,8 +921,6 @@ class ConversationFragment : Fragment() {
             return
         }
 
-//        val selectedIds = adapter.selectedMessages.map { it.threadId }
-//        adapter.selectedMessages.filter { it.isPinned }.map { it.threadId }
         viewModel.togglePin(selectedIds) {
             pinnedThreadIds = viewModel.getPinnedThreadIds() ?: emptyList()
             val updatedPinnedThreadIds = pinnedThreadIds.toMutableSet()
@@ -1015,10 +937,6 @@ class ConversationFragment : Fragment() {
                 adapter.notifyItemChanged(it)
             }
             adapter.submitList(updatedList)
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                adapter.notifyDataSetChanged()
-//            }, 500)
-
         }
     }
 
@@ -1049,43 +967,6 @@ class ConversationFragment : Fragment() {
         }
 
     }
-
-    /*@RequiresApi(Build.VERSION_CODES.Q)
-    fun BlockMessages() {
-        val selectedMessages = adapter.selectedMessages.toList()
-        if (selectedMessages.isNotEmpty()) {
-            viewModel.blockContacts(selectedMessages)
-            adapter.clearSelection()
-        }
-    }*/
-
-
-    /*   @RequiresApi(Build.VERSION_CODES.Q)
-       fun BlockMessages() {
-           val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
-           if (selectedGroups.isNotEmpty()) {
-               Log.d("BlockMessages", "Blocking not allowed for groups.")
-               return
-           }
-           val selectedIds = adapter.selectedMessages.map { it.threadId }
-
-           val blockDialog = BlockDialog(requireContext()) {
-               CoroutineScope(Dispatchers.IO).launch {
-                   viewModel.blockSelectedConversations(selectedIds)
-
-                   withContext(Dispatchers.Main) {
-                       val updatedList = adapter.getAllMessages().toMutableList()
-                       updatedList.removeAll { selectedIds.contains(it.threadId) }
-                       adapter.submitList(updatedList)
-                       adapter.clearSelection()
-                       updateMessageCount()
-                       refreshMessages()
-                   }
-               }
-           }
-           blockDialog.show()
-       }
-  */
 
     /* @RequiresApi(Build.VERSION_CODES.Q)
      fun markReadMessages() {
@@ -1160,7 +1041,7 @@ class ConversationFragment : Fragment() {
                     adapter.notifyDataSetChanged()
                 }, 100)
             }
-            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(GROUP_SEPARATOR)})"
             requireContext().contentResolver.update(
                 Telephony.Sms.CONTENT_URI, contentValues, selection, null
             )
@@ -1238,7 +1119,7 @@ class ConversationFragment : Fragment() {
             val contentValues = ContentValues().apply {
                 put(Telephony.Sms.READ, 0)
             }
-            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(",")})"
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${unreadThreadIds.joinToString(GROUP_SEPARATOR)})"
             val updatedRows = requireContext().contentResolver.update(
                 Telephony.Sms.CONTENT_URI, contentValues, selection, null
             )

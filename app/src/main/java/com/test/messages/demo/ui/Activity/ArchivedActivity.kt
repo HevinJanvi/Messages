@@ -1,11 +1,9 @@
 package com.test.messages.demo.ui.Activity
 
-import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
@@ -13,7 +11,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -22,18 +19,16 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.DraftChangedEvent
 import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.databinding.ActivityArchivedBinding
@@ -42,12 +37,10 @@ import com.test.messages.demo.ui.Dialogs.BlockDialog
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.SnackbarUtil
-import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
-import com.test.messages.demo.ui.Fragment.ConversationFragment
 import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
@@ -81,10 +74,14 @@ class ArchivedActivity : BaseActivity() {
     fun onDraftUpdateEvent(event: DraftChangedEvent) {
         draftViewModel.loadAllDrafts()
         viewModel.loadMessages()
-        Handler(Looper.getMainLooper()).postDelayed({
-            draftViewModel.loadAllDrafts()
-            viewModel.loadMessages()
-        }, 500)
+        try {
+            Handler(Looper.getMainLooper()).postDelayed({
+                draftViewModel.loadAllDrafts()
+                viewModel.loadMessages()
+            }, 500)
+        } catch (e: Exception) {
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -118,9 +115,8 @@ class ArchivedActivity : BaseActivity() {
                 putExtra(EXTRA_THREAD_ID, message.threadId)
                 putExtra(NUMBER, message.number)
                 putExtra(NAME, message.sender)
-                putExtra(CommanConstants.FROMARCHIVE, true)
+                putExtra(Constants.FROMARCHIVE, true)
             }
-//            conversationResultLauncher.launch(intent)
             startActivity(intent)
         }
 
@@ -202,9 +198,13 @@ class ArchivedActivity : BaseActivity() {
                         adapter.notifyItemChanged(it)
                     }
                     adapter.submitList(updatedList)
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        adapter.notifyDataSetChanged()
-                    }, 500)
+                    try {
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            adapter.notifyDataSetChanged()
+                        }, 500)
+                    } catch (e: Exception) {
+                    }
+
 
                 }
             }
@@ -245,7 +245,6 @@ class ArchivedActivity : BaseActivity() {
             val deleteDialog = DeleteDialog(this, "archive", true) {
                 val selectedThreadIds = adapter?.getSelectedThreadIds() ?: emptyList()
                 if (selectedThreadIds.isNotEmpty()) {
-//                    deleteMessages(selectedThreadIds)
                     deleteMessages()
                     viewModel.deleteArchiveConversations(selectedThreadIds)
                     adapter?.removeItems(selectedThreadIds)
@@ -267,10 +266,6 @@ class ArchivedActivity : BaseActivity() {
                             adapter.removeItems(selectedThreadIds)
                             adapter.clearSelection()
                         }
-                        /* withContext(Dispatchers.Main) {
-                             adapter.removeItems(selectedThreadIds)
-                             adapter.clearSelection()
-                         }*/
                     }
                 }
                 blockDialog.show()
@@ -299,7 +294,6 @@ class ArchivedActivity : BaseActivity() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessagesRefreshed(event: MessagesRefreshEvent) {
         if (event.success) {
-            Log.d("TAG", "onMessagesRefreshed:archiv ")
             Handler(Looper.getMainLooper()).postDelayed({
                 viewModel.loadMessages()
             }, 100)
@@ -309,7 +303,6 @@ class ArchivedActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-//        viewModel.emptyConversation()
         EventBus.getDefault().unregister(this)
     }
 
@@ -335,7 +328,6 @@ class ArchivedActivity : BaseActivity() {
         adapter.selectedMessages.clear()
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
-        val updatedList = viewModel.messages.value?.toMutableList() ?: mutableListOf()
         val handler = Handler(Looper.getMainLooper())
         val deleteDialog = DeleteProgressDialog(this)
         val showDialogRunnable = Runnable {
@@ -386,7 +378,7 @@ class ArchivedActivity : BaseActivity() {
                                 read = it.getInt(readIndex) == 1,
                                 subscriptionId = subscriptionId,
                                 deletedTime = System.currentTimeMillis(),
-                                isGroupChat = address.contains(","),
+                                isGroupChat = address.contains(GROUP_SEPARATOR),
                                 profileImageUrl = ""
                             )
                             deletedMessages.add(deletedMessage)
@@ -394,9 +386,8 @@ class ArchivedActivity : BaseActivity() {
                     }
 
                     val uri = Uri.parse("content://sms/conversations/$threadId")
-                    var result = contentResolver.delete(uri, null, null)
+                     contentResolver.delete(uri, null, null)
                 }
-//          updatedList.removeAll { it.threadId == threadId }
                 if (deletedMessages.isNotEmpty()) db.insertMessages(deletedMessages)
                 withContext(Dispatchers.Main) {
                     viewModel.loadMessages()
@@ -520,7 +511,7 @@ class ArchivedActivity : BaseActivity() {
                 put(Telephony.Sms.READ, newReadStatus)
             }
 
-            val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(",")})"
+            val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(GROUP_SEPARATOR)})"
             val updatedRows = contentResolver.update(
                 Telephony.Sms.CONTENT_URI,
                 contentValues,
@@ -540,76 +531,6 @@ class ArchivedActivity : BaseActivity() {
                     adapter.updateReadStatus(threadIds)
                 }
             }
-        }
-
-        /* val firstIsRead = selectedMessages.first().isRead
-         val newReadStatus = if (firstIsRead) 0 else 1
-
-         val threadIds = selectedMessages.map { it.threadId }
-         val contentValues = ContentValues().apply {
-             put(Telephony.Sms.READ, newReadStatus)
-         }
-
-         val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(",")})"
-         val updatedRows =
-             contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
-
-         if (updatedRows > 0) {
-             val updatedList = viewModel.messages.value?.map { message ->
-                 if (threadIds.contains(message.threadId)) {
-                     message.copy(isRead = newReadStatus == 1)
-                 } else message
-             } ?: emptyList()
-
-             viewModel.updateMessages(updatedList)
-             adapter.updateReadStatus(threadIds)
-         }*/
-    }
-
-
-    private fun markThreadsAsUnread() {
-        val selectedThreadIds = adapter.getSelectedThreadIds()
-        if (selectedThreadIds.isEmpty()) return
-
-        val contentValues = ContentValues().apply { put(Telephony.Sms.READ, 0) }
-        val selection = "${Telephony.Sms.THREAD_ID} IN (${selectedThreadIds.joinToString(",")})"
-
-        val updatedRows =
-            contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
-        if (updatedRows > 0) {
-            val updatedList = viewModel.messages.value?.map { message ->
-                if (selectedThreadIds.contains(message.threadId)) {
-                    message.copy(isRead = false)
-                } else {
-                    message
-                }
-            } ?: emptyList()
-
-            viewModel.updateMessages(updatedList)
-            adapter.updateUnreadStatus(selectedThreadIds)
-        }
-    }
-
-    private fun markThreadsAsRead() {
-        val selectedThreadIds = adapter.getSelectedThreadIds()
-        if (selectedThreadIds.isEmpty()) return
-
-        val contentValues = ContentValues().apply { put(Telephony.Sms.READ, 1) }
-        val selection = "${Telephony.Sms.THREAD_ID} IN (${selectedThreadIds.joinToString(",")})"
-
-        val updatedRows =
-            contentResolver.update(Telephony.Sms.CONTENT_URI, contentValues, selection, null)
-        if (updatedRows > 0) {
-            val updatedList = viewModel.messages.value?.map { message ->
-                if (selectedThreadIds.contains(message.threadId)) {
-                    message.copy(isRead = true)
-                } else {
-                    message
-                }
-            } ?: emptyList()
-
-            viewModel.updateMessages(updatedList)
-            adapter.updateReadStatus(selectedThreadIds)
         }
     }
 
@@ -640,7 +561,6 @@ class ArchivedActivity : BaseActivity() {
             binding.btnPin.visibility = View.GONE
         }
     }
-
 
     override fun onBackPressed() {
         if (adapter.selectedMessages.size > 0) {

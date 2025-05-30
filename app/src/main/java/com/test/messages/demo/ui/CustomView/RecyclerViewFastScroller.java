@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.AlphabticScroll;
+package com.test.messages.demo.ui.CustomView;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;

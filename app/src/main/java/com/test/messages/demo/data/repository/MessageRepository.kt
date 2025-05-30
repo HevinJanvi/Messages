@@ -1,12 +1,10 @@
 package com.test.messages.demo.data.repository
 
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.BlockedNumberContract
@@ -21,9 +19,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
-import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.ViewUtils.countryCodes
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Block.BlockConversation
 import com.test.messages.demo.data.Database.Notification.NotificationSetting
@@ -43,7 +42,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.concurrent.thread
 
 class MessageRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
@@ -52,29 +50,29 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     private val _conversation = MutableLiveData<List<ConversationItem>?>()
     val conversation: LiveData<List<ConversationItem>?> get() = _conversation
-    val countryCodes = listOf(
-        "0", "+1", "+7", "+20", "+27", "+30", "+31", "+32", "+33", "+34", "+36", "+39",
-        "+40", "+41", "+43", "+44", "+45", "+46", "+47", "+48", "+49", "+51", "+52",
-        "+53", "+54", "+55", "+56", "+57", "+58", "+60", "+61", "+62", "+63", "+64",
-        "+65", "+66", "+81", "+82", "+84", "+86", "+90", "+91", "+92", "+93", "+94",
-        "+95", "+98", "+211", "+212", "+213", "+216", "+218", "+220", "+221", "+222",
-        "+223", "+224", "+225", "+226", "+227", "+228", "+229", "+230", "+231", "+232",
-        "+233", "+234", "+235", "+236", "+237", "+238", "+239", "+240", "+241", "+242",
-        "+243", "+244", "+245", "+246", "+247", "+248", "+249", "+250", "+251", "+252",
-        "+253", "+254", "+255", "+256", "+257", "+258", "+260", "+261", "+262", "+263",
-        "+264", "+265", "+266", "+267", "+268", "+269", "+290", "+291", "+297", "+298",
-        "+299", "+350", "+351", "+352", "+353", "+354", "+355", "+356", "+357", "+358",
-        "+359", "+370", "+371", "+372", "+373", "+374", "+375", "+376", "+377", "+378",
-        "+379", "+380", "+381", "+382", "+383", "+385", "+386", "+387", "+389", "+420",
-        "+421", "+423", "+500", "+501", "+502", "+503", "+504", "+505", "+506", "+507",
-        "+508", "+509", "+590", "+591", "+592", "+593", "+594", "+595", "+596", "+597",
-        "+598", "+599", "+670", "+672", "+673", "+674", "+675", "+676", "+677", "+678",
-        "+679", "+680", "+681", "+682", "+683", "+685", "+686", "+687", "+688", "+689",
-        "+690", "+691", "+692", "+850", "+852", "+853", "+855", "+856", "+880", "+886",
-        "+960", "+961", "+962", "+963", "+964", "+965", "+966", "+967", "+968", "+970",
-        "+971", "+972", "+973", "+974", "+975", "+976", "+977", "+992", "+993", "+994",
-        "+995", "+996", "+998"
-    )
+//    val countryCodes = listOf(
+//        "0", "+1", "+7", "+20", "+27", "+30", "+31", "+32", "+33", "+34", "+36", "+39",
+//        "+40", "+41", "+43", "+44", "+45", "+46", "+47", "+48", "+49", "+51", "+52",
+//        "+53", "+54", "+55", "+56", "+57", "+58", "+60", "+61", "+62", "+63", "+64",
+//        "+65", "+66", "+81", "+82", "+84", "+86", "+90", "+91", "+92", "+93", "+94",
+//        "+95", "+98", "+211", "+212", "+213", "+216", "+218", "+220", "+221", "+222",
+//        "+223", "+224", "+225", "+226", "+227", "+228", "+229", "+230", "+231", "+232",
+//        "+233", "+234", "+235", "+236", "+237", "+238", "+239", "+240", "+241", "+242",
+//        "+243", "+244", "+245", "+246", "+247", "+248", "+249", "+250", "+251", "+252",
+//        "+253", "+254", "+255", "+256", "+257", "+258", "+260", "+261", "+262", "+263",
+//        "+264", "+265", "+266", "+267", "+268", "+269", "+290", "+291", "+297", "+298",
+//        "+299", "+350", "+351", "+352", "+353", "+354", "+355", "+356", "+357", "+358",
+//        "+359", "+370", "+371", "+372", "+373", "+374", "+375", "+376", "+377", "+378",
+//        "+379", "+380", "+381", "+382", "+383", "+385", "+386", "+387", "+389", "+420",
+//        "+421", "+423", "+500", "+501", "+502", "+503", "+504", "+505", "+506", "+507",
+//        "+508", "+509", "+590", "+591", "+592", "+593", "+594", "+595", "+596", "+597",
+//        "+598", "+599", "+670", "+672", "+673", "+674", "+675", "+676", "+677", "+678",
+//        "+679", "+680", "+681", "+682", "+683", "+685", "+686", "+687", "+688", "+689",
+//        "+690", "+691", "+692", "+850", "+852", "+853", "+855", "+856", "+880", "+886",
+//        "+960", "+961", "+962", "+963", "+964", "+965", "+966", "+967", "+968", "+970",
+//        "+971", "+972", "+973", "+974", "+975", "+976", "+977", "+992", "+993", "+994",
+//        "+995", "+996", "+998"
+//    )
 
     fun String.removeCountryCode(): String {
         for (code in countryCodes.sortedByDescending { it.length }) {
@@ -89,7 +87,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getMessages(): List<MessageItem> {
         val startTime = System.currentTimeMillis()
         val sharedPreferences =
-            context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+            context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
 
         return runBlocking(Dispatchers.IO) {
             val conversationsDeferred = async { getConversations() }
@@ -131,16 +129,13 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             null
                         )
 //                    Log.d("DEBUG", "Saved group name for thread ${messageItem.threadId}: $savedGroupName")
-                    Log.d("GroupNameCheck", "Checking SharedPreferences for key R : $key")
-                    Log.d("GroupNameCheck", "Value for  R = $savedGroupName")
-
                     val groupName = savedGroupName ?: rawPhoneNumbers.map { number ->
                         contactDetails[number]?.name
                             ?: contactDetails[number.removeCountryCode()]?.name ?: number
                     }.joinToString(", ")
 //                    Log.d("DEBUG", "Final group name: $groupName")
 
-                    Triple(groupName, rawPhoneNumbers.joinToString(","), "")
+                    Triple(groupName, rawPhoneNumbers.joinToString(GROUP_SEPARATOR), "")
                 } else {
                     val rawPhone = (recipientMap[reciptids] ?: reciptids).replace(" ", "")
 //                    Log.d("DEBUG", "Processing individual chat. Raw phone number: $rawPhone")
@@ -190,49 +185,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             newMsgList
         }
     }
-
-    fun getLatestMessagesPerThread(context: Context): Map<Long, String> {
-        val uri = Telephony.Sms.CONTENT_URI
-        val projection = arrayOf(
-            Telephony.Sms._ID,
-            Telephony.Sms.THREAD_ID,
-            Telephony.Sms.BODY,
-            Telephony.Sms.DATE
-        )
-        val sortOrder = "${Telephony.Sms.DATE} DESC"
-
-        val threadMessageMap = mutableMapOf<Long, String>()
-        Log.d("TAG", "getLatestMessagesPerThread:---- ")
-        context.contentResolver.query(uri, projection, null, null, sortOrder)?.use { cursor ->
-            val threadIdIndex = cursor.getColumnIndex(Telephony.Sms.THREAD_ID)
-            val bodyIndex = cursor.getColumnIndex(Telephony.Sms.BODY)
-
-            while (cursor.moveToNext()) {
-                val threadId = cursor.getLong(threadIdIndex)
-                val body = cursor.getString(bodyIndex)
-
-                // If not already present, insert the first (i.e., latest) message for the thread
-                if (!threadMessageMap.containsKey(threadId)) {
-                    threadMessageMap[threadId] = body
-                }
-            }
-
-        }
-        Log.d("TAG", "getLatestMessagesPerThread:111---- ")
-
-        return threadMessageMap
-    }
-
     fun emptyConversation() {
-        Log.d("TAG", "emptyConversation: ")
         _conversation.postValue(null)
     }
 
     fun getConversation(threadId: Long): List<ConversationItem> {
-        Log.d("SEND_MSG", "getConversation:thread id " + threadId)
         val updatedConversation = getConversationDetails(threadId)
-        Log.d("SEND_MSG", "getConversation:------- ")
-
         _conversation.postValue(updatedConversation)
         return updatedConversation
     }
@@ -335,12 +293,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
 
 //                Log.d("TAG", "getRecipientid---- " + recipientIds)
-                recipientIds.split(",").map { it.trim() }
-                    .filter { it.isNotEmpty() } // Filter out blank recipient IDs
+                recipientIds.split(GROUP_SEPARATOR).map { it.trim() }
+                    .filter { it.isNotEmpty() }
                     .let { recipientList.addAll(it) }
             }
         }
-        val recipientMap = getRecipientAddressesForIds(recipientList) // Get as HashMap
+        val recipientMap = getRecipientAddressesForIds(recipientList)
 //        Log.d("TAG", "getRecipientAddresses: " + recipientMap)
         return recipientMap
     }
@@ -381,7 +339,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         val contactList = mutableListOf<ContactItem>()
         if (!context.hasReadContactsPermission()
         ) {
-            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
             return contactList
         }
         val projection = arrayOf(
@@ -505,7 +462,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     fun getLastLatestMessage(): MutableMap<Long, ConversationItem> {
         val threadMessageMap = mutableMapOf<Long, ConversationItem>()
-//        Log.d("TAG", "getLastLatestMessage:Build.MANUFACTURER " + Build.MANUFACTURER)
         if (!context.hasReadContactsPermission() || (!Build.MANUFACTURER.equals("motorola") && !Build.MANUFACTURER.equals(
                 "Google") && !Build.MANUFACTURER.equals("vivo"))) {
             return threadMessageMap
@@ -530,7 +486,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             while (it.moveToNext()) {
                 val threadId = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.THREAD_ID))
 
-                // Already have the latest for this thread, skip
                 if (threadMessageMap.containsKey(threadId)) continue
 
                 val id = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms._ID))
@@ -566,62 +521,19 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     private val contactCache = mutableMapOf<String, String>()
 
-    /*fun getContactNameOrNumber(phoneNumber: String): String {
-
-        contactCache[phoneNumber]?.let { return it }?: contactCache[phoneNumber.removeCountryCode()]?.let { return it }
-        val contactMap = getContactDetails().associateBy(
-            { it.phoneNumber },
-            { it.name }
-        )
-        Log.d("TAG", "getContactNameOrNumber: "+phoneNumber)
-//        contactMap[phoneNumber]?.let {
-//            contactCache[phoneNumber] = it  // Save to cache
-//            return it
-//        }
-        contactMap[phoneNumber]?.let { return it }?: contactCache[phoneNumber.removeCountryCode()]?.let { return it }
-        Log.d("TAG", "getContactNameOrNumber:--- "+phoneNumber)
-
-        val contentResolver: ContentResolver = context.contentResolver
-        val uri = Uri.withAppendedPath(
-            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
-            Uri.encode(phoneNumber)
-        )
-        val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
-
-        *//* contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-             if (cursor.moveToFirst()) {
-                 val nameIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)
-                 return cursor.getString(nameIndex)
-             }
-         }*//*
-        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val nameIndex = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)
-                val contactName = cursor.getString(nameIndex)
-                contactCache[phoneNumber] = contactName  // Save to cache
-                Log.d("TAG", "getContactNameOrNumber name: "+contactName)
-                return contactName
-            }
-        }
-        return phoneNumber
-    }*/
-
 
     fun getContactNameOrNumber(phoneNumbers: String): String {
-        val numberList = phoneNumbers.split(",").map { it.trim() }
+        val numberList = phoneNumbers.split(GROUP_SEPARATOR).map { it.trim() }
 
-        // Build contact map once
         val contactMap = getContactDetails().associateBy(
             { it.phoneNumber.removeCountryCode() },
             { it.name }
         )
 
         val resolvedNames = numberList.map { number ->
-            // Try cache first
             contactCache[number]?.let { return@map it }
             contactCache[number.removeCountryCode()]?.let { return@map it }
 
-            // Try contact map
             contactMap[number]?.let {
                 contactCache[number] = it
                 return@map it
@@ -631,7 +543,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 return@map it
             }
 
-            // Try content resolver
             val contentResolver: ContentResolver = context.contentResolver
             val uri = Uri.withAppendedPath(
                 ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
@@ -647,35 +558,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 }
             }
 
-            // Cache and return result
             val finalName = name ?: number
             contactCache[number] = finalName
             return@map finalName
         }
 
-        // Join all resolved names with comma
-        return resolvedNames.joinToString(",")
-    }
-
-
-    fun findGroupThreadId(addresses: Set<String>): Long? {
-        val mergedAddresses = addresses.joinToString("|")
-        val cursor = context.contentResolver.query(
-            Uri.parse("content://sms/threads"),
-            arrayOf("thread_id"),
-            "address LIKE ?",
-            arrayOf("%$mergedAddresses%"),
-            null
-        )
-
-        return cursor?.use {
-            if (it.moveToFirst()) {
-                val threadId = it.getLong(it.getColumnIndexOrThrow("thread_id"))
-                threadId
-            } else {
-                null
-            }
-        }
+        return resolvedNames.joinToString(GROUP_SEPARATOR)
     }
 
     suspend fun getArchivedConversations(): List<ArchivedConversation> {
@@ -704,11 +592,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
         }
     }
-    suspend fun deleteArchiveConversations(conversationIds: List<Long>) {
-        conversationIds.forEach {
-            AppDatabase.getDatabase(context).archivedDao().unarchiveConversation(it)
-        }
-    }
+
 
     fun getPinnedThreadIds(): List<Long> {
         return AppDatabase.getDatabase(context).pinDao().getAllPinnedThreadIds()
@@ -754,9 +638,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         dao.updateNotificationSetting(threadId, 0)
     }
 
-    //    suspend fun getBlockConversations(): List<BlockConversation> {
-//        return AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
-//    }
     suspend fun getBlockConversations(): List<BlockConversation> = withContext(Dispatchers.IO) {
         AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
     }
@@ -942,8 +823,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 }
             }
         }
-
-        Log.d("BlockMessages", "Blocked numbers: $blockedNumbers")
         return blockedNumbers
     }
 
@@ -963,7 +842,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         AppDatabase.getDatabase(context).starredMessageDao().insertStarredMessage(starredMessage)
     }
 
-    // Delete starred message
     suspend fun deleteStarredMessageById(messageId: Long) {
         AppDatabase.getDatabase(context).starredMessageDao().deleteStarredMessageById(messageId)
     }
@@ -1031,8 +909,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     type = type,
                     read = read,
                     subscriptionId = subscriptionId,
-                    profileImageUrl = "", // Can be set later from contact/photo lookup
-                    isHeader = false      // Will be used for date headers like "Today", etc.
+                    profileImageUrl = "",
+                    isHeader = false
                 )
 
                 messages.add(conversationItem)
@@ -1079,7 +957,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             val photoIndex =
                 it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI)
 
-            val seenNumbers = mutableSetOf<String>() // to avoid duplicates
+            val seenNumbers = mutableSetOf<String>()
 
             while (it.moveToNext()) {
                 val id = it.getString(idIndex)
@@ -1088,7 +966,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val normalized = it.getString(normalizedIndex) ?: number
                 val photoUri = it.getString(photoIndex) ?: ""
 
-                // Avoid duplicate phone numbers
                 if (seenNumbers.contains(number)) continue
                 seenNumbers.add(number)
 
@@ -1215,45 +1092,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         }
     }
 
-    fun getContactUriFromNumber(context: Context, phoneNumber: String): String? {
-        val uri = Uri.withAppendedPath(
-            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
-            Uri.encode(phoneNumber)
-        )
-        context.contentResolver.query(
-            uri,
-            arrayOf(ContactsContract.PhoneLookup.PHOTO_URI),
-            null,
-            null,
-            null
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI))
-            }
-        }
-        return null
-    }
-
-    fun getContactPhotoBitmap(context: Context, contactUri: Uri?): Bitmap? {
-        return try {
-            contactUri?.let {
-                ContactsContract.Contacts.openContactPhotoInputStream(context.contentResolver, it)
-                    ?.use { inputStream ->
-                        BitmapFactory.decodeStream(inputStream)
-                    }
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     fun getPhoneNumber(context: Context, address: String): String {
-        // If it's already a number, just return it
         if (Patterns.PHONE.matcher(address).matches()) {
             return address
         }
-
-        // Otherwise, try to find the number by contact name
         val uri = ContactsContract.Contacts.CONTENT_URI
         val projection = arrayOf(ContactsContract.Contacts._ID)
         val selection = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} = ?"
@@ -1278,8 +1120,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                     }
                 }
             }
-
-        // fallback to original if not found
         return address
     }
 

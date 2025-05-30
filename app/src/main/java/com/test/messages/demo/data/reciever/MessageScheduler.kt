@@ -17,7 +17,6 @@ object MessageScheduler {
         val intent = Intent(context, MessageSenderReceiver::class.java).apply {
             putExtra("threadId", message.threadId)
             putExtra("messageId", message.id)
-
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -25,10 +24,6 @@ object MessageScheduler {
             message.id,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        Log.d(
-            "ScheduleDebug",
-            "Scheduling message for threadId: ${message.threadId}, id: ${message.id}, time: ${message.scheduledTime}"
         )
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,

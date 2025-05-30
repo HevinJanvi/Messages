@@ -1,13 +1,7 @@
 package com.test.messages.demo.ui.send
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
-import android.provider.Telephony
-import android.telephony.SmsManager
-import android.util.Log
-import com.test.messages.demo.Util.SmsSender
-import com.test.messages.demo.data.Model.ConversationItem
 
 class SmsSend(
     private val context: Context,
@@ -25,7 +19,7 @@ class SmsSend(
         if (addresses.isEmpty()) return
 
         for (address in addresses) {
-            val personalThreadId = getThreadId(context,setOf(address))
+            val personalThreadId = context.getThreadId(setOf(address))
             val messageUri = messagingUtils.insertSmsMessage(
                 subId = subId,
                 dest = address,
@@ -45,32 +39,8 @@ class SmsSend(
                     messageUri = messageUri
                 )
             } catch (e: Exception) {
-                Log.d("SmsMessageSender", "Failed to send message to $address", e)
             }
         }
     }
-
-    fun resendMessage(message: ConversationItem, numbers: String) {
-        val addresses = numbers.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
-        val subId = SmsManager.getDefaultSmsSubscriptionId()
-
-        sendSmsMessage(
-            text = message.body ?: return,
-            addresses = addresses,
-            subId = subId,
-            requireDeliveryReport = false,
-            messageId = message.id
-        )
-    }
-
-    @SuppressLint("NewApi")
-    fun getThreadId(context: Context,addresses: Set<String>): Long {
-        return try {
-            Telephony.Threads.getOrCreateThreadId(context, addresses)
-        } catch (e: Exception) {
-            0L
-        }
-    }
-
 
 }

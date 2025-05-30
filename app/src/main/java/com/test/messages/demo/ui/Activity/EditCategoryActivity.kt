@@ -3,20 +3,19 @@ package com.test.messages.demo.ui.Activity
 import android.content.Context
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.test.messages.demo.ui.AlphabticScroll.ItemMoveCallback
+import com.test.messages.demo.ui.CustomView.ItemMoveCallback
 import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityEditCategoryBinding
 import com.test.messages.demo.ui.Adapter.EditCategoryAdapter
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.CategoryUpdateEvent
 import com.test.messages.demo.Util.CategoryVisibilityEvent
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.CATEGORY_ORDER
-import com.test.messages.demo.Util.CommanConstants.SHOW_CATEGORIES
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.CATEGORY_ORDER
+import com.test.messages.demo.Util.Constants.SHOW_CATEGORIES
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
 
@@ -44,7 +43,7 @@ class EditCategoryActivity : BaseActivity() {
         val itemTouchHelper = ItemTouchHelper(ItemMoveCallback(adapter))
         itemTouchHelper.attachToRecyclerView(binding.recyclerViewCategories)
 
-        val sharedPrefs = getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
         binding.categorySwitch.isChecked = sharedPrefs.getBoolean(SHOW_CATEGORIES, true)
         binding.categorySwitch.setOnCheckedChangeListener { _, isChecked ->
             ViewUtils.setCategoryEnabled(this,isChecked)

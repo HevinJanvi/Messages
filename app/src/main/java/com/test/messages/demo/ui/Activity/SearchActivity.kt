@@ -8,19 +8,19 @@ import android.os.Bundle
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.FROMSEARCH
-import com.test.messages.demo.Util.CommanConstants.ISGROUP
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.QUERY
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.FROMSEARCH
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.QUERY
 import com.test.messages.demo.Util.ConversationUpdatedEvent
 import com.test.messages.demo.Util.DeleteSearchMessageEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
@@ -173,15 +173,15 @@ class SearchActivity : BaseActivity() {
 
         binding.recyclerViewMessages.layoutManager = LinearLayoutManager(this)
         adapter = SearchMessageAdapter(messageList) { message, searchedText ->
-            val isGroup = message.address?.contains(",") == true
+            val isGroup = message.address?.contains(GROUP_SEPARATOR) == true
             val rawAddress = message.address ?: ""
 
             val number = if (isGroup) {
-                val names = rawAddress.split(",").map { it.trim() }
+                val names = rawAddress.split(GROUP_SEPARATOR).map { it.trim() }
                 val numbers = names.map { name ->
                     viewModel.getContactNumber(this, name) ?: name
                 }
-                numbers.joinToString(",")
+                numbers.joinToString(GROUP_SEPARATOR)
             } else {
                 viewModel.getContactNumber(this, rawAddress)
             }
@@ -236,15 +236,15 @@ class SearchActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun setupRecyclerViews() {
         adapter = SearchMessageAdapter(messageList) { message, searchedText ->
-            val isGroup = message.address?.contains(",") == true
+            val isGroup = message.address?.contains(GROUP_SEPARATOR) == true
             val rawAddress = message.address ?: ""
 
             val number = if (isGroup) {
-                val names = rawAddress.split(",").map { it.trim() }
+                val names = rawAddress.split(GROUP_SEPARATOR).map { it.trim() }
                 val numbers = names.map { name ->
                     viewModel.getContactNumber(this, name) ?: name
                 }
-                numbers.joinToString(",")
+                numbers.joinToString(GROUP_SEPARATOR)
             } else {
                 viewModel.getContactNumber(this, rawAddress)
             }
@@ -266,7 +266,6 @@ class SearchActivity : BaseActivity() {
             contacts = emptyList(),
             query = "",
             onItemClick = { contact ->
-                // Handle contact click here
             }
         )
         binding.recyclerViewContacts.layoutManager = LinearLayoutManager(this)
@@ -301,7 +300,6 @@ class SearchActivity : BaseActivity() {
                         if (visibleMessages.isNotEmpty()) View.VISIBLE else View.GONE
                     binding.messagesHeader.visibility =
                         if (visibleMessages.isNotEmpty()) View.VISIBLE else View.GONE
-//                    binding.seeAllMessages.visibility = View.VISIBLE
                     binding.seeAllMessages.visibility =
                         if (messageList.size > 3) View.VISIBLE else View.GONE
                 }
@@ -312,7 +310,7 @@ class SearchActivity : BaseActivity() {
                 val visibleContacts = withContext(Dispatchers.Default) {
                     val grouped = contactList.groupBy { it.phoneNumber }
                     val topContacts = grouped.map { it.value.first() }
-                    /* if (isContactExpanded) topContacts else*/ topContacts.take(3)
+                    topContacts.take(3)
                 }
 
                 withContext(Dispatchers.Main) {
@@ -328,82 +326,6 @@ class SearchActivity : BaseActivity() {
             }
         }
     }
-
-
-    /*    @RequiresApi(Build.VERSION_CODES.Q)
-        private fun performSearch(query: String) {
-            Log.d("TAG", "performSearch: " + query)
-            searchJob?.cancel()
-            searchJob = CoroutineScope(Dispatchers.IO).launch {
-                if (query.isNotEmpty() && query.length > 1) {
-                    val lowerQuery = query.lowercase()
-
-                    *//*val filteredMessages = indexedMessages
-                    .asSequence()
-                    .filter { it.searchText.contains(lowerQuery) }
-                    .map { it.original }
-                    .toList()*//*
-                val safeMessages = ArrayList(indexedMessages)
-                val safeContacts = ArrayList(indexedContacts)
-                val nameCache = mutableMapOf<String, String>()
-
-                val filteredMessages = safeMessages
-                    .asSequence()
-                    .filter { it.searchText.contains(lowerQuery) }
-                    .map { item ->
-                        val number = item.original.address
-                        val name = nameCache.getOrPut(number ?: "") {
-                            viewModel.getContactNameOrNumber(number)
-                        }
-                        item.original.copy(address = name)
-                    }
-                    .groupBy { it.threadId } // Group by thread
-                    .mapValues { entry ->
-                        entry.value.maxByOrNull { it.date } // Pick latest message per thread
-                    }
-                    .values
-                    .filterNotNull()
-                    .sortedByDescending { it.date } // Optional: Sort by latest first
-                    .toList()
-
-                Log.d("TAG", "performSearch: " + filteredMessages.size)
-
-                val filteredContacts = safeContacts
-                    .asSequence()
-                    .filter { it.searchText.contains(lowerQuery) }
-                    .map { it.original }
-                    .toList()
-
-                withContext(Dispatchers.Main) {
-                    messageList.clear()
-                    contactList.clear()
-
-                    messageList.addAll(filteredMessages)
-                    contactList.addAll(filteredContacts)
-
-                    viewModel.setFilteredMessages(filteredMessages)
-                    viewModel.setFilteredContacts(filteredContacts)
-
-                    if (filteredContacts.isEmpty()) {
-                        isMessageExpanded = true
-                        isContactExpanded = false
-                    } else {
-                        isMessageExpanded = false
-                    }
-
-                    updateAdapterList()
-                    binding.btnclose.visibility = View.VISIBLE
-                    binding.emptyList.visibility = View.GONE
-                }
-
-            } else {
-                withContext(Dispatchers.Main) {
-                    clearFilters()
-                }
-            }
-        }
-    }*/
-
 
     var safeMessages: List<SearchableMessage> = indexedMessages.toList()
     var safeContacts: List<SearchableContact> = indexedContacts.toList()
@@ -433,8 +355,8 @@ class SearchActivity : BaseActivity() {
                         val rawAddress = item.original.address ?: return@mapNotNull null
 
                         val messageBodyLower = item.original.body?.lowercase() ?: ""
-                        val contactName = rawAddress.split(",")
-                            .joinToString(", ") { number ->
+                        val contactName = rawAddress.split(GROUP_SEPARATOR)
+                            .joinToString(GROUP_SEPARATOR) { number ->
                                 val cleanNumber = number.trim()
                                 contactMap[cleanNumber] ?: cleanNumber
                             }
@@ -481,8 +403,6 @@ class SearchActivity : BaseActivity() {
                     }
                     updateAdapterList()
                     binding.btnclose.visibility = View.VISIBLE
-//                    binding.emptyList.visibility = View.GONE
-
                     val hasNoResults = filteredMessages.isEmpty() && filteredContacts.isEmpty()
                     binding.textNoResults.visibility = if (hasNoResults) View.VISIBLE else View.GONE
                 }

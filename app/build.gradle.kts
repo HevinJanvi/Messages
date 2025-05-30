@@ -37,13 +37,13 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            isDebuggable =true
-            isShrinkResources= false
+            isDebuggable = true
+            isShrinkResources = false
         }
         release {
             isMinifyEnabled = true
-            isDebuggable =false
-            isShrinkResources= true
+            isDebuggable = false
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -108,18 +108,18 @@ dependencies {
     implementation("com.klinkerapps:android-smsmms:5.2.6")
     implementation("androidx.work:work-runtime:2.9.0")
     implementation("com.googlecode.libphonenumber:libphonenumber:8.12.51")
-    implementation ("com.github.bumptech.glide:glide:4.16.0")
-    implementation ("com.makeramen:roundedimageview:2.3.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.makeramen:roundedimageview:2.3.0")
 
-    implementation ("androidx.room:room-ktx:2.6.1")
-    kapt ("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
 
-    implementation ("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.greenrobot:eventbus:3.1.1")
-    implementation ("com.google.android.flexbox:flexbox:3.0.0")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
 //    implementation ("android.arch.lifecycle:extensions:1.1.1")
     implementation("com.tbuonomo:dotsindicator:5.1.0")
-    implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
+    implementation("it.xabaras.android:recyclerview-swipedecorator:1.4")
 
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-crashlytics")
@@ -127,7 +127,6 @@ dependencies {
 
 //    implementation ("com.intuit.sdp:sdp-android:1.1.0")
 //    implementation ("com.intuit.ssp:ssp-android:1.1.0")
-
 
 
 }

@@ -8,22 +8,18 @@ import android.provider.Telephony
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.ISGROUP
-import com.test.messages.demo.Util.CommanConstants.ISSCHEDULED
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.PROFILEURL
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.ISSCHEDULED
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.PROFILEURL
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityAddScheduleBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
@@ -37,9 +33,6 @@ class AddScheduleActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAddScheduleBinding
     private lateinit var contactAdapter: ContactAdapter
-    private var selectedContacts = mutableListOf<ContactItem>()
-    private val selectedContactViews = mutableMapOf<String, View>()
-
     private var allContacts = listOf<ContactItem>()
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var filteredContacts: List<ContactItem>
@@ -58,10 +51,7 @@ class AddScheduleActivity : BaseActivity() {
         messageUtils = MessageUtils(this)
         view.hideKeyboard(this)
         binding.icBack.setOnClickListener {
-            Log.d("TAG", "onCreate:back ")
             onBackPressed()
-
-
         }
         binding.btnKeypad.setOnClickListener {
             if (isNumberKeyboard) {
@@ -124,7 +114,6 @@ class AddScheduleActivity : BaseActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
-
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -142,25 +131,6 @@ class AddScheduleActivity : BaseActivity() {
         finish()
     }
 
-    private fun updateSelectedContactsHeader() {
-        selectedContactViews.clear()
-        selectedContacts.forEach { contact ->
-            val contactView =
-                LayoutInflater.from(this).inflate(R.layout.item_selected_contact, null)
-            val contactNameTextView = contactView.findViewById<TextView>(R.id.contactName)
-            val minusButton = contactView.findViewById<ImageView>(R.id.minusButton)
-
-            contactNameTextView.text = contact.name
-
-            minusButton.setOnClickListener {
-                removeFromSelectedContacts(contact)
-            }
-
-            selectedContactViews[contact.phoneNumber] = contactView
-        }
-    }
-
-
     private fun getThreadId(context: Context, sender: String): Long {
         val uri = Telephony.Sms.CONTENT_URI
         val projection = arrayOf(Telephony.Sms.THREAD_ID)
@@ -174,16 +144,6 @@ class AddScheduleActivity : BaseActivity() {
                 }
             }
         return 0L
-    }
-
-
-    private fun removeFromSelectedContacts(contact: ContactItem) {
-        if (!selectedContacts.contains(contact)) return
-        selectedContacts.remove(contact)
-        val contactView = selectedContactViews[contact.phoneNumber]
-        if (contactView != null) {
-            selectedContactViews.remove(contact.phoneNumber)
-        }
     }
 
     private fun setNumberKeyboard() {

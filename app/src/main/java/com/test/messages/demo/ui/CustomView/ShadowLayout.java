@@ -1,6 +1,4 @@
-package com.test.messages.demo.Util;
-
-
+package com.test.messages.demo.ui.CustomView;
 
 import android.content.Context;
 import android.content.res.TypedArray;

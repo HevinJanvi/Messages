@@ -4,7 +4,6 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -82,7 +81,6 @@ class BlockedMessagesAdapter(
 
         if (draftMessages.containsKey(message.threadId)) {
             val (draftText, _) = draftMessages[message.threadId]!!
-            Log.d("TAG", "onBindViewHolder:draft")
             val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
             val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
                 setSpan(
@@ -110,8 +108,6 @@ class BlockedMessagesAdapter(
             holder.messageBody.text = draftTextSpannable
 
         } else {
-            Log.d("TAG", "onBindViewHolder:draft else")
-
             holder.messageBody.text = message.body
         }
 

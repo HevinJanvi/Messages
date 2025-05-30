@@ -1,16 +1,15 @@
 package com.test.messages.demo.ui.Activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-
 import android.view.View
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.LAUNCHFROM
-import com.test.messages.demo.Util.CommanConstants.THEMEMODE
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.LAUNCHFROM
+import com.test.messages.demo.Util.Constants.THEMEMODE
 import com.test.messages.demo.databinding.ActivitySettingsBinding
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.getLanguageName
@@ -30,7 +29,7 @@ class SettingsActivity : BaseActivity() {
         binding.icBack.setOnClickListener {
             onBackPressed()
         }
-        val sharedPref = getSharedPreferences(CommanConstants.PREFS_NAME, MODE_PRIVATE)
+        val sharedPref = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE)
         editor = sharedPref.edit()
         val selectedMode = sharedPref.getInt(THEMEMODE, 1)
         when (selectedMode) {
@@ -96,10 +95,10 @@ class SettingsActivity : BaseActivity() {
 
     private fun updateFontSizeText(fontSize: Int) {
         val fontLabel = when (fontSize) {
-            CommanConstants.ACTION_SMALL -> getString(R.string.small)
-            CommanConstants.ACTION_NORMAL -> getString(R.string.normal)
-            CommanConstants.ACTION_LARGE -> getString(R.string.large)
-            CommanConstants.ACTION_EXTRALARGE -> getString(R.string.extra_large)
+            Constants.ACTION_SMALL -> getString(R.string.small)
+            Constants.ACTION_NORMAL -> getString(R.string.normal)
+            Constants.ACTION_LARGE -> getString(R.string.large)
+            Constants.ACTION_EXTRALARGE -> getString(R.string.extra_large)
             else -> getString(R.string.normal)
         }
         binding.fontSizeTextView.text = fontLabel
@@ -140,9 +139,6 @@ class SettingsActivity : BaseActivity() {
             recreate()
         } else if (requestCode == 102 && resultCode == RESULT_OK) {
             val selectedTheme = data?.getIntExtra(THEMEMODE, 1) ?: 1
-
-            Log.d("TAG", "onActivityResult: " + selectedTheme)
-            // Update the theme name on screen or UI accordingly
             when (selectedTheme) {
                 1 -> binding.themeMode.text = getString(R.string.system_default)
                 2 -> binding.themeMode.text = getString(R.string.light)
@@ -152,6 +148,7 @@ class SettingsActivity : BaseActivity() {
 
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         finish()
     }

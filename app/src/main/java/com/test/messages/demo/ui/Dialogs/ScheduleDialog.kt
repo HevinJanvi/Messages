@@ -3,11 +3,9 @@ package com.test.messages.demo.ui.Dialogs
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.Window
 import android.view.WindowManager
-import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
@@ -34,7 +32,6 @@ class ScheduleDialog(
         val sendNow = findViewById<ConstraintLayout>(R.id.lySend)
 
         delete.setOnClickListener {
-            Log.d("TAG", "onCreate:showScheduleDialog ")
             dismiss()
             onDeleteConfirmed.invoke()
 

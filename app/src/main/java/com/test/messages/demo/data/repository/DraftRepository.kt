@@ -1,27 +1,20 @@
 package com.test.messages.demo.data.repository
 
-import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.provider.Telephony
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.test.messages.demo.data.Model.DraftModel
-import com.test.messages.demo.ui.send.hasReadContactsPermission
 import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.qualifiers.ApplicationContext
-import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-//class DraftRepository(private val contentResolver: ContentResolver) {
 class DraftRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
 
@@ -112,44 +105,6 @@ class DraftRepository @Inject constructor(@ApplicationContext private val contex
         }
     }
 
-   /* fun saveDraft(threadId: Long, draftText: String) {
-        if (threadId == -1L) return
-        if (!context.hasReadSmsPermission()) return
-        val contentValues = ContentValues().apply {
-            put("body", draftText)
-            put("type", Telephony.Sms.MESSAGE_TYPE_DRAFT)
-            put("date", System.currentTimeMillis())
-        }
-        val uri = Telephony.Sms.CONTENT_URI
-        val selection = "${Telephony.Sms.THREAD_ID} = ? AND ${Telephony.Sms.TYPE} = ?"
-        val selectionArgs =
-            arrayOf(threadId.toString(), Telephony.Sms.MESSAGE_TYPE_DRAFT.toString())
-
-        val cursor = context.contentResolver.query(uri, null, selection, selectionArgs, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            val messageId = cursor.getLong(cursor.getColumnIndexOrThrow(Telephony.Sms._ID))
-            val updateUri = ContentUris.withAppendedId(uri, messageId)
-            context.contentResolver.update(updateUri, contentValues, null, null)
-        } else {
-            contentValues.put(Telephony.Sms.THREAD_ID, threadId)
-            context.contentResolver.insert(uri, contentValues)
-        }
-        cursor?.close()
-        getAllDrafts()
-    }
-
-    fun deleteDraft(messageId: Int) {
-
-        val selection = "${Telephony.Sms._ID} = ?"
-        val selectionArgs = arrayOf(messageId.toString())
-
-        context.contentResolver.delete(
-            Telephony.Sms.CONTENT_URI,
-            selection,
-            selectionArgs
-        )
-    }*/
-
     fun saveDraft(threadId: Long, draftText: String) {
         if (threadId == -1L || !context.hasReadSmsPermission()) return
 
@@ -175,10 +130,8 @@ class DraftRepository @Inject constructor(@ApplicationContext private val contex
                 context.contentResolver.insert(uri, contentValues)
             }
             cursor?.close()
-
-            // Optional: if needed, run UI-related code on main thread
             withContext(Dispatchers.Main) {
-                getAllDrafts() // only if this is updating UI
+                getAllDrafts()
             }
         }
     }

@@ -6,11 +6,10 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.Gravity
 import android.view.WindowManager
-import android.widget.RadioButton
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.SWIPE_NONE
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.SWIPE_NONE
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.databinding.DialogSwipeActionBinding
@@ -40,12 +39,12 @@ class SwipeActionDialog(
         window?.setGravity(Gravity.BOTTOM)
 
         val radioButtons = mapOf(
-            binding.rbNone to CommanConstants.SWIPE_NONE,
-            binding.rbDelete to CommanConstants.SWIPE_DELETE,
-            binding.rbArchive to CommanConstants.SWIPE_ARCHIVE,
-            binding.rbCall to CommanConstants.SWIPE_CALL,
-            binding.rbMarkRead to CommanConstants.SWIPE_MARK_READ,
-            binding.rbMarkUnread to CommanConstants.SWIPE_MARK_UNREAD
+            binding.rbNone to Constants.SWIPE_NONE,
+            binding.rbDelete to Constants.SWIPE_DELETE,
+            binding.rbArchive to Constants.SWIPE_ARCHIVE,
+            binding.rbCall to Constants.SWIPE_CALL,
+            binding.rbMarkRead to Constants.SWIPE_MARK_READ,
+            binding.rbMarkUnread to Constants.SWIPE_MARK_UNREAD
         )
         radioButtons.forEach { (radioButton, action) ->
             radioButton.isChecked = (action == selectedAction)
@@ -59,11 +58,8 @@ class SwipeActionDialog(
             it.blinkThen {
                 val selectedAction =
                     radioButtons.entries.find { it.key.isChecked }?.value ?: SWIPE_NONE
-//                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe)
                 ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe)
                 onActionSelected(selectedAction)
-//                ViewUtils.saveSwipeAction(context, selectedAction, isRightSwipe = false)
-
                 dismiss()
             }
         }

@@ -1,6 +1,5 @@
 package com.test.messages.demo.ui.Activity
 
-import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -9,11 +8,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.ContactsContract
 import android.provider.Telephony
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -25,14 +20,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.ISDELETED
-import com.test.messages.demo.Util.CommanConstants.ISGROUP
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.PREFS_NAME
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.ISDELETED
+import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.PREFS_NAME
 import com.test.messages.demo.Util.MessageRestoredEvent
-import com.test.messages.demo.Util.MessagesRestoredEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
@@ -45,14 +40,11 @@ import com.test.messages.demo.ui.send.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 
 @AndroidEntryPoint
@@ -60,7 +52,6 @@ import org.greenrobot.eventbus.ThreadMode
 class RecycleBinActivity : BaseActivity() {
     private lateinit var binding: ActivityRecyclebinBinding
     private lateinit var recycleBinAdapter: RecycleBinAdapter
-    private val selectedMessages = mutableSetOf<DeletedMessage>()
     private val viewModel: MessageViewModel by viewModels()
     private val draftViewModel: DraftViewModel by viewModels()
 
@@ -72,13 +63,11 @@ class RecycleBinActivity : BaseActivity() {
         applyWindowInsetsToView(binding.rootView)
         binding.recycleBinRecyclerView.layoutManager = LinearLayoutManager(this)
         recycleBinAdapter = RecycleBinAdapter { selectedCount ->
-            Log.d("TAG", "onCreate:bin adapter ")
             updateActionLayout(selectedCount)
         }
 
         binding.recycleBinRecyclerView.adapter = recycleBinAdapter
         recycleBinAdapter.onBinItemClick = { deletedMessage ->
-//            val intent = Intent(this, RecycleConversationactivity::class.java)
             val intent = Intent(this, ConversationBinactivity::class.java)
             intent.putExtra(ISDELETED, true)
             intent.putExtra(EXTRA_THREAD_ID, deletedMessage.threadId)
@@ -90,19 +79,9 @@ class RecycleBinActivity : BaseActivity() {
         setupClickListeners()
     }
 
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    fun onMessagesRestored(event: MessagesRestoredEvent) {
-//        if (event.success) {
-//            Log.d("TAG", "onMessagesRestored:recycle ")
-//            loadGroupedMessages()
-//        }
-//    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (requestCode == 101 && resultCode == RESULT_OK) {
-            Log.d("TAG", "onActivityResult: recycle")
             loadGroupedMessages()
             recycleBinAdapter.notifyDataSetChanged()
         }
@@ -130,7 +109,6 @@ class RecycleBinActivity : BaseActivity() {
             } else {
                 recycleBinAdapter.selectAll()
             }
-            Log.d("TAG", " bin setupClickListeners: ")
             updateActionLayout(recycleBinAdapter.selectedMessages.size)
         }
     }
@@ -231,10 +209,10 @@ class RecycleBinActivity : BaseActivity() {
                     if (!isThreadExists(threadId)) {
                         threadId = if (deletedMessage.isGroupChat) {
                             val normalizedAddress = deletedMessage.address
-                                .split(",")
+                                .split(GROUP_SEPARATOR)
                                 .map { it.trim() }
                                 .map { viewModel.getContactNumber(this@RecycleBinActivity, it) }
-                                .joinToString(",")
+                                .joinToString(GROUP_SEPARATOR)
                             createNewGroupThread(normalizedAddress)
                         } else {
                             getThreadId(setOf(deletedMessage.address))
@@ -243,12 +221,11 @@ class RecycleBinActivity : BaseActivity() {
 
                         if (deletedMessage.isGroupChat) {
                             val sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                            val oldKey = "${CommanConstants.GROUP_NAME_KEY}${originalThreadId}"
-                            val newKey = "${CommanConstants.GROUP_NAME_KEY}$threadId"
+                            val oldKey = "${Constants.GROUP_NAME_KEY}${originalThreadId}"
+                            val newKey = "${Constants.GROUP_NAME_KEY}$threadId"
                             val oldGroupName = sharedPrefs.getString(oldKey, null)
                             if (!oldGroupName.isNullOrEmpty()) {
                                 sharedPrefs.edit().putString(newKey, oldGroupName).apply()
-                                Log.d("GroupRestore", "Copied group name from $oldKey to $newKey")
                             }
                         }
                     }
@@ -279,8 +256,6 @@ class RecycleBinActivity : BaseActivity() {
                 }
 
                 withContext(Dispatchers.Main) {
-
-//                   viewModel.loadMessages()
                     for ((threadId, pair) in restoredThreadMap) {
                         fetchInsertAndDeleteDraft(threadId)
                         val (lastMessage, lastTime) = pair
@@ -291,7 +266,6 @@ class RecycleBinActivity : BaseActivity() {
                     recycleBinAdapter.clearSelection()
                     loadGroupedMessages()
                     dialog.dismiss()
-//                   viewModel.loadMessages()
                 }
 
             } catch (e: Exception) {
@@ -306,7 +280,7 @@ class RecycleBinActivity : BaseActivity() {
 
     private fun createNewGroupThread(addresses: String): Long {
         val uri = Uri.parse("content://mms-sms/threadID")
-        val addressList = addresses.split(",").map { it.trim() }
+        val addressList = addresses.split(GROUP_SEPARATOR).map { it.trim() }
 
         val uriBuilder = Uri.Builder().apply {
             scheme("content")
@@ -361,7 +335,6 @@ class RecycleBinActivity : BaseActivity() {
     private fun isThreadExists(threadId: Long): Boolean {
         try {
             val uri = Telephony.Threads.CONTENT_URI
-//        val uri =  Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
             val projection = arrayOf(Telephony.Threads._ID)
             val selection = "${Telephony.Threads._ID} = ?"
             val selectionArgs = arrayOf(threadId.toString())
@@ -369,9 +342,8 @@ class RecycleBinActivity : BaseActivity() {
             contentResolver.query(uri, projection, selection, selectionArgs, null).use { cursor ->
                 return cursor != null && cursor.moveToFirst()
             }
-        }catch (e:Exception){
-//            val uri = Telephony.Threads.CONTENT_URI
-        val uri =  Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
+        } catch (e: Exception) {
+            val uri = Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
             val projection = arrayOf(Telephony.Threads._ID)
             val selection = "${Telephony.Threads._ID} = ?"
             val selectionArgs = arrayOf(threadId.toString())
@@ -386,7 +358,6 @@ class RecycleBinActivity : BaseActivity() {
 
         binding.btnSelectAll.isChecked = recycleBinAdapter.isAllSelected()
         binding.txtSelectedCount.text = "$selectedCount" + " " + getString(R.string.selected)
-        val isSelectionActive = selectedMessages.isNotEmpty()
         binding.selectMenuBin.visibility = if (selectedCount > 0) View.VISIBLE else View.GONE
         binding.lySelectedItemsBin.visibility = if (selectedCount > 0) View.VISIBLE else View.GONE
         binding.toolBarBin.visibility = if (selectedCount > 0) View.GONE else View.VISIBLE

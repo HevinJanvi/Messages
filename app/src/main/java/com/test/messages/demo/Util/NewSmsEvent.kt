@@ -1,10 +1,6 @@
 package com.test.messages.demo.Util
 
 data class RefreshMessagesEvent(val timestamp: Long = System.currentTimeMillis())
-data class MessageUnstarredEvent(
-    val threadId: Long, val lastMessage: String?,
-    val lastMessageTime: Long?
-)
 
 data class UpdateGroupNameEvent(val threadId: Long, val newName: String)
 data class MessageDeletedEvent(

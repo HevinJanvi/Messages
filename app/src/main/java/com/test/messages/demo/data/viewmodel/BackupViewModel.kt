@@ -20,7 +20,6 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
     private val _restoreProgress = MutableLiveData<Int>()
     val restoreProgress: LiveData<Int> get() = _restoreProgress
 
-
     fun backupMessages(uri: Uri, onProgress: (Int) -> Unit, onComplete: (Boolean) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             repository.backupMessages(uri, { progress ->
@@ -40,21 +39,6 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
             }, onComplete)
         }
     }
-
-//    fun restoreMessages(
-//        uri: Uri,
-//        onComplete: (List<ConversationItem>) -> Unit,
-//        param: (Any) -> Unit
-//    ) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            repository.restoreMessages(uri, { progress ->
-//                _restoreProgress.postValue(progress)
-//            }, onComplete)
-//        }
-//    }
-
-    // In BackupViewModel
-
 
     fun clearRestoreProgress() {
         _restoreProgress.value = 0

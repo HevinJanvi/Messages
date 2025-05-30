@@ -5,7 +5,6 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -90,7 +89,6 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         }
 
 
-
         if (message.isPinned) {
             holder.icPin.visibility = View.VISIBLE
         } else {
@@ -120,7 +118,6 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         }
         if (draftMessages.containsKey(message.threadId)) {
             val (draftText, _) = draftMessages[message.threadId]!!
-//            Log.d("TAG", "onBindViewHolder:draft")
             val draftLabel = holder.itemView.context.getString(R.string.draft) + " "
             val draftTextSpannable = SpannableStringBuilder(draftLabel).apply {
                 setSpan(
@@ -148,8 +145,6 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
             holder.messageBody.text = draftTextSpannable
 
         } else {
-            Log.d("TAG", "onBindViewHolder:draft else")
-
             holder.messageBody.text = message.body
         }
 
@@ -249,24 +244,11 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         }
     }
 
-    fun updateUnreadStatus(threadIds: List<Long>) {
-        val newList = messages.map { message ->
-            if (threadIds.contains(message.threadId)) message.copy(isRead = false) else message
-        }
-        submitList(newList)
-    }
 
     fun updateDrafts(drafts: Map<Long, Pair<String, Long>>) {
         this.draftMessages.clear()
         this.draftMessages.putAll(drafts)
         notifyDataSetChanged()
-    }
-
-    fun getLastMessage():String?{
-        return messages?.lastOrNull()?.body
-    }
-    fun getLastMessageTime():Long?{
-        return messages?.lastOrNull()?.timestamp
     }
 
 }

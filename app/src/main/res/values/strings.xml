@@ -119,7 +119,7 @@
     <string name="intro_subtxt1">Stay connected with a clean, organized inbox. Chat effortlessly anytime!</string>
     <string name="intro_subtxt2">Schedule texts to send automatically—never forget a message!</string>
     <string name="intro_subtxt3">Easily block spam and unwanted contacts to keep your inbox clean.</string>
-<!--    <string name="select_language">Select language</string>-->
+    <!--    <string name="select_language">Select language</string>-->
     <string name="flag">flag</string>
     <string name="chinese">Chinese ( Simplified )</string>
     <string name="vietnamese">Vietnamese</string>
@@ -299,8 +299,8 @@
     <string name="pin_limit_reached">You can pin up to 10 messages only.</string>
     <string name="no_result_found">No result found</string>
 
-        <string name="move">Move</string>
-        <string name="move_to_bin">Move to Bin?</string>
-        <string name="marking_messages_as_read">Marking messages as read...</string>
+    <string name="move">Move</string>
+    <string name="move_to_bin">Move to Bin?</string>
+    <string name="marking_messages_as_read">Marking messages as read...</string>
 
 </resources>

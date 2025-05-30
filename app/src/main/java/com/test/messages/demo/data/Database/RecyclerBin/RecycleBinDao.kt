@@ -10,7 +10,6 @@ interface RecycleBinDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMessage(message: DeletedMessage)
 
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMessages(messages: List<DeletedMessage>)
 
@@ -22,8 +21,10 @@ interface RecycleBinDao {
 
     @Query("SELECT * FROM recycle_bin")
     fun getAllDeletedMessages(): List<DeletedMessage>
+
     @Query("DELETE FROM recycle_bin WHERE id = :messageId")
     fun deleteMessage(messageId: Long)
+
     @Query("DELETE FROM recycle_bin WHERE message_id = :id")
     fun deleteMessageById(id: Long)
 
@@ -31,7 +32,8 @@ interface RecycleBinDao {
     @Query("SELECT * FROM recycle_bin WHERE thread_id = :threadId")
     fun getDeletedMessages(threadId: Long): DeletedMessage?
 
-    @Query("""
+    @Query(
+        """
     SELECT DISTINCT d.* FROM recycle_bin d
     JOIN (
         SELECT thread_id, MAX(date) AS max_date
@@ -40,7 +42,8 @@ interface RecycleBinDao {
     ) grouped 
     ON d.thread_id = grouped.thread_id AND d.date = grouped.max_date
     ORDER BY d.date DESC
-""")
+"""
+    )
     fun getGroupedDeletedMessages(): List<DeletedMessage>
 
     @Query("DELETE FROM recycle_bin WHERE deletedTime < :cutoffTime")

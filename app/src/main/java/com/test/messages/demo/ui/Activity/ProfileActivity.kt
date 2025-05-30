@@ -3,10 +3,8 @@ package com.test.messages.demo.ui.Activity
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
@@ -25,14 +23,12 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.FROMARCHIVE
-import com.test.messages.demo.Util.CommanConstants.FROMBLOCK
-import com.test.messages.demo.Util.CommanConstants.ISGROUP
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.PROFILEURL
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.FROMARCHIVE
+import com.test.messages.demo.Util.Constants.FROMBLOCK
+import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.databinding.ActivityProfileBinding
 import com.test.messages.demo.ui.Dialogs.BlockDialog
@@ -61,9 +57,7 @@ class ProfileActivity : BaseActivity() {
     private var threadId: Long = -1
     private lateinit var number: String
     private lateinit var name: String
-    private lateinit var profileUrl: String
     private var fromBlock: Boolean = false
-    private var isThreadDelete: Boolean = false
     private var fromArchive: Boolean = false
     private val viewModel: MessageViewModel by viewModels()
     private lateinit var addContactLauncher: ActivityResultLauncher<Intent>
@@ -77,33 +71,28 @@ class ProfileActivity : BaseActivity() {
         applyWindowInsetsToView(binding.rootView)
         addContactLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//                if (result.resultCode == Activity.RESULT_OK) {
-                    val updatedName = getContactName(number)
-                    val updatedPhotoUri = getContactPhotoUri(number)
-                    Log.d("TAG", "onCreateprofile: "+updatedName)
-                    binding.adreesUser.text = updatedName
-                    binding.number.text = number
-                    if (updatedPhotoUri != null && updatedPhotoUri.toString().isNotBlank()) {
-                        profileEdit(updatedName, updatedPhotoUri)
-                    } else {
-                        profileEdit(updatedName, Uri.EMPTY) // or use `null`
-                    }
+                val updatedName = getContactName(number)
+                val updatedPhotoUri = getContactPhotoUri(number)
+                binding.adreesUser.text = updatedName
+                binding.number.text = number
+                if (updatedPhotoUri != null && updatedPhotoUri.toString().isNotBlank()) {
+                    profileEdit(updatedName, updatedPhotoUri)
+                } else {
+                    profileEdit(updatedName, Uri.EMPTY)
+                }
 
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        viewModel.loadMessages()
-                    }, 300)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    viewModel.loadMessages()
+                }, 300)
             }
 
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
         number = intent.getStringExtra(NUMBER).toString()
         name = intent.getStringExtra(NAME).toString()
-//        profileUrl = intent.getStringExtra(PROFILEURL).toString()
         fromBlock = intent.getBooleanExtra(FROMBLOCK, false)
         fromArchive = intent.getBooleanExtra(FROMARCHIVE, false)
         binding.adreesUser.text = name
         binding.number.text = number
-//        profileEdit(name, Uri.parse(profileUrl))
-//        loadContactDetails()
         setupClickListeners()
         if (threadId != -1L) {
             checkIfBlocked(threadId)
@@ -130,7 +119,6 @@ class ProfileActivity : BaseActivity() {
         val resultIntent = Intent()
         resultIntent.putExtra("UPDATED_NAME", binding.adreesUser.text.toString())
         resultIntent.putExtra(FROMBLOCK, fromBlock)
-//        resultIntent.putExtra("delete", isThreadDelete)
         setResult(Activity.RESULT_OK, resultIntent)
         super.finish()
     }
@@ -138,8 +126,6 @@ class ProfileActivity : BaseActivity() {
     fun profileEdit(name: String, profileuri: Uri) {
         val firstChar = name?.trim()?.firstOrNull()
         val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
-        Log.d("TAG", "profileEdit: " + profileuri)
-
         val hasValidPhoto = profileuri != Uri.EMPTY && profileuri.toString().isNotBlank()
 
         if (startsWithSpecialChar || hasValidPhoto) {
@@ -152,7 +138,6 @@ class ProfileActivity : BaseActivity() {
             binding.imgProfile.visibility = View.VISIBLE
             binding.profileContainer.visibility = View.GONE
         } else {
-            // Show initials
             binding.imgProfile.visibility = View.GONE
             binding.profileContainer.visibility = View.VISIBLE
             binding.initialsTextView.text = TimeUtils.getInitials(name ?: "")
@@ -175,8 +160,6 @@ class ProfileActivity : BaseActivity() {
                 if (exists) {
                     binding.profileContact.setImageResource(R.drawable.profile_edit)
                     binding.profileContact.setOnClickListener {
-                        Log.d("TAG", "onCreate:old contactb id " + id)
-//                        openEditContact(id)
                         openContactEditor(number)
                     }
                 } else {
@@ -256,19 +239,11 @@ class ProfileActivity : BaseActivity() {
         }
     }
 
-    private fun openEditContact(contactId: String) {
-//        val intent = Intent(Intent.ACTION_EDIT).apply {
-//            data = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId)
-//        }
-//        addContactLauncher.launch(intent)
-    }
-
     private fun openAddContact() {
         val intent = Intent(Intent.ACTION_INSERT).apply {
             type = ContactsContract.Contacts.CONTENT_TYPE
             putExtra(ContactsContract.Intents.Insert.PHONE, number)
         }
-        Log.d("TAG", "oncreate openAddContact: ")
         addContactLauncher.launch(intent)
     }
 
@@ -315,9 +290,6 @@ class ProfileActivity : BaseActivity() {
                                     binding.profileBlock.setImageResource(R.drawable.profile_unblock)
                                     refreshCheck(threadId)
                                 }
-//                                fromBlock = true
-//                                binding.profileBlock.setImageResource(R.drawable.profile_unblock)
-//                                refreshCheck(threadId)
                             }
                             blockDialog.show()
                         }
@@ -330,11 +302,15 @@ class ProfileActivity : BaseActivity() {
     }
 
     private fun refreshCheck(threadId: Long) {
-        Handler(Looper.getMainLooper()).postDelayed({
-            viewModel.loadBlockThreads()
-            checkIfBlocked(threadId)
-            binding.profileBlock.isEnabled = true
-        }, 500)
+        try {
+            Handler(Looper.getMainLooper()).postDelayed({
+                viewModel.loadBlockThreads()
+                checkIfBlocked(threadId)
+                binding.profileBlock.isEnabled = true
+            }, 500)
+        }catch (e:Exception){
+        }
+
     }
 
     private fun checkIfArchived(threadId: Long) {
@@ -345,8 +321,6 @@ class ProfileActivity : BaseActivity() {
             withContext(Dispatchers.Main) {
                 isArchived = archivedConversationIds.contains(threadId)
                 updateArchiveUI()
-
-                // Set up click listener once
                 binding.lyArchive.setOnClickListener {
                     if (isArchived) {
                         viewModel.unarchiveConversations(listOf(threadId))
@@ -426,9 +400,7 @@ class ProfileActivity : BaseActivity() {
                 val uri = Uri.parse("content://sms/conversations/$threadId")
                 contentResolver.delete(uri, null, null)
                 db.insertMessages(deletedMessages)
-
                 Handler(Looper.getMainLooper()).postDelayed({
-                    Log.d("TAG", "deleteMessagesForCurrentThread:else ")
                     EventBus.getDefault().post(MessagesRefreshEvent(true))
                     finish()
                     overridePendingTransition(0, 0)
@@ -516,13 +488,11 @@ class ProfileActivity : BaseActivity() {
                     putExtra(
                         "finishActivityOnSaveCompleted",
                         true
-                    ) // optional: auto-return after save
+                    )
                 }
-
                 editContactLauncher.launch(intent)
-//                startActivityForResult(intent, 200)
             } else {
-                Toast.makeText(this, "Contact not found", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.no_result_found), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -531,7 +501,6 @@ class ProfileActivity : BaseActivity() {
     private val editContactLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                // Contact saved, re-fetch updated name
                 val updatedName = getContactName(number)
                 val updatedPhotoUri = getContactPhotoUri(number)
                 binding.adreesUser.text = updatedName
@@ -539,21 +508,16 @@ class ProfileActivity : BaseActivity() {
                 if (updatedPhotoUri != null && updatedPhotoUri.toString().isNotBlank()) {
                     profileEdit(updatedName, updatedPhotoUri)
                 } else {
-                    // No profile image set anymore
-                    profileEdit(updatedName, Uri.EMPTY) // or use `null`
+                    profileEdit(updatedName, Uri.EMPTY)
                 }
 
                 Handler(Looper.getMainLooper()).postDelayed({
                     viewModel.loadMessages()
                 }, 500)
-
-//                Toast.makeText(this, "Updated name: $updatedName", Toast.LENGTH_SHORT).show()
             }
         }
 
     fun getContactName(phoneNumber: String?): String {
-        Log.d("TAG", "getContactName:number " + phoneNumber)
-
         if (phoneNumber.isNullOrEmpty()) return ""
 
         return try {
@@ -561,8 +525,6 @@ class ProfileActivity : BaseActivity() {
                 ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
                 Uri.encode(phoneNumber)
             )
-            Log.d("TAG", "getContactName:uri " + uri)
-
             val cursor = contentResolver.query(
                 uri,
                 arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME),
@@ -577,7 +539,7 @@ class ProfileActivity : BaseActivity() {
                 }
             }
 
-            phoneNumber // fallback to number if name not found
+            phoneNumber
         } catch (e: Exception) {
             e.printStackTrace()
             phoneNumber ?: ""
@@ -587,11 +549,15 @@ class ProfileActivity : BaseActivity() {
     fun getContactPhotoUri(phoneNumber: String): Uri? {
         if (phoneNumber.isNullOrBlank()) return null
 
-        val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+        val uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
         val projection = arrayOf(ContactsContract.PhoneLookup.PHOTO_URI)
         contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) {
-                val photoUri = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI))
+                val photoUri =
+                    cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.PHOTO_URI))
                 return if (photoUri != null) Uri.parse(photoUri) else null
             }
         }

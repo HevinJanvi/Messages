@@ -10,11 +10,9 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.CheckBox
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ViewUtils.blinkThen
-
 
 class ExternalLinkDialog(
     context: Context, var link: String

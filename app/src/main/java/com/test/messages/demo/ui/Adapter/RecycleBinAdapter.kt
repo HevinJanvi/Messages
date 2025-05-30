@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,16 +19,13 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.GROUP_NAME_KEY
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.ViewUtils.copyToClipboard
 import com.test.messages.demo.Util.ViewUtils.extractOtp
-import com.test.messages.demo.data.Model.MessageItem
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class RecycleBinAdapter(
     private val onSelectionChanged: (Int) -> Unit
@@ -64,34 +60,20 @@ class RecycleBinAdapter(
         val message = messages[position]
 
         val context = holder.itemView.context
-        val sharedPreferences = context.getSharedPreferences(CommanConstants.PREFS_NAME, Context.MODE_PRIVATE)
+        val sharedPreferences = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
         val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}${message.threadId}", null)
         val finalName = if (!savedGroupName.isNullOrEmpty()) {
             savedGroupName
         } else {
 
-            val addressList = message.address.split(",")
+            val addressList = message.address.split(GROUP_SEPARATOR)
             val nameList = addressList.map { number ->
                 val name = getContactName(context, number.trim())
                 if (!name.isNullOrEmpty() && name != number) name else number
             }
-            nameList.joinToString(",")
+            nameList.joinToString(GROUP_SEPARATOR)
         }
-//        val addressList = message.address.split(",")
-//        val nameList = addressList.map { number ->
-//            val name = getContactName(context, number.trim())
-//            if (!name.isNullOrEmpty() && name != number) name else number
-//        }
-//        val finalName = nameList.joinToString(",")
         message.address = finalName
-
-
-//        val name = getContactName(holder.itemView.context, message.address)
-//        Log.d("TAG", "onBindViewHolder:name "+name)
-//        if (!name.isNullOrEmpty() && name != message.address) {
-//            message.address = name
-//        }
-        Log.d("TAG", "onBindViewHolder:message.address "+message.address)
 
         holder.senderName.text = finalName
         holder.messageBody.text = message.body
@@ -105,12 +87,6 @@ class RecycleBinAdapter(
             holder.icSelect.visibility = View.GONE
             holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
         }
-
-       /* val isSelected = selectedMessages.contains(message)
-        holder.icSelect.visibility = if (isSelected) View.VISIBLE else View.GONE
-        holder.container.setBackgroundColor(
-            holder.itemView.context.getColor(if (isSelected) R.color.select_bg else R.color.transparant)
-        )*/
 
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
@@ -162,20 +138,12 @@ class RecycleBinAdapter(
             holder.otpTextView.visibility = View.GONE
         }
 
-
-
         holder.itemView.setOnClickListener {
             if (selectedMessages.isNotEmpty()) {
                 toggleSelection(message, holder)
             } else {
                 onBinItemClick?.invoke(message)
             }
-
-          /*  if (isMultiSelectionMode) {
-                toggleSelection(message, holder)
-            } else {
-                onBinItemClick?.invoke(message)
-            }*/
         }
 
         holder.itemView.setOnLongClickListener {
@@ -197,34 +165,8 @@ class RecycleBinAdapter(
             holder.icSelect.visibility = View.VISIBLE
             holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
         }
-//        updateSelectionUI(holder, message)
         onSelectionChanged(selectedMessages.size)
         notifyDataSetChanged()
-    }
-
-    /*private fun toggleSelection(message: DeletedMessage, holder: ViewHolder) {
-        if (selectedMessages.contains(message)) {
-            selectedMessages.remove(message)
-        } else {
-            selectedMessages.add(message)
-        }
-
-        updateSelectionUI(holder, message)
-        onSelectionChanged(selectedMessages.size)
-        if (selectedMessages.isEmpty()) {
-            isMultiSelectionMode = false
-            notifyDataSetChanged()
-        }
-    }
-*/
-    private fun updateSelectionUI(holder: ViewHolder, message: DeletedMessage) {
-        if (selectedMessages.contains(message)) {
-            holder.icSelect.visibility = View.VISIBLE
-            holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
-        } else {
-            holder.icSelect.visibility = View.GONE
-            holder.container.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
-        }
     }
 
     fun clearSelection() {
@@ -274,27 +216,5 @@ class RecycleBinAdapter(
         }
         return null
     }
-
-
-//    private fun getContactName(context: Context, phoneNumber: String?): String? {
-//        if (phoneNumber.isNullOrEmpty()) {
-//            return null
-//        }
-//
-//        return try {
-//            val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
-//            val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
-//
-//            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-//                if (cursor.moveToFirst()) {
-//                    return cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
-//                }
-//            }
-//            null
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            null
-//        }
-//    }
 
 }

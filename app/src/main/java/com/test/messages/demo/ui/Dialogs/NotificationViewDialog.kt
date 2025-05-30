@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.Window
 import android.view.WindowManager
@@ -14,10 +13,8 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.ViewUtils.blinkThen
-import com.test.messages.demo.Util.ViewUtils.resetMessageCount
 import com.test.messages.demo.Util.ViewUtils.saveNotificationOption
 import com.test.messages.demo.data.viewmodel.MessageViewModel
-import com.test.messages.demo.ui.send.notificationManager
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 
 
@@ -59,7 +56,6 @@ class NotificationViewDialog(
                         ?: 0
 
                 activity.runOnUiThread {
-                    Log.d("TAG", "onCreate: savedOption = $savedOption")
                     when (savedOption) {
                         0 -> check1.isChecked = true
                         1 -> check2.isChecked = true
@@ -73,7 +69,6 @@ class NotificationViewDialog(
                     AppDatabase.getDatabase(context).notificationDao().getPreviewOptionforGlobal()
 
                 activity.runOnUiThread {
-                    Log.d("TAG", "onCreate: savedOption else = $savedOption")
                     when (savedOption) {
                         0 -> check1.isChecked = true
                         1 -> check2.isChecked = true
@@ -82,14 +77,6 @@ class NotificationViewDialog(
                 }
             }.start()
         }
-
-        // val savedOption = getNotificationOption(context)
-        /*when (savedOption) {
-            0 -> check1.isChecked = true
-            1 -> check2.isChecked = true
-            2 -> check3.isChecked = true
-        }*/
-
         val radioButtons = listOf(check1, check2, check3)
         radioButtons.forEach { radioButton ->
             radioButton.setOnCheckedChangeListener { _, isChecked ->

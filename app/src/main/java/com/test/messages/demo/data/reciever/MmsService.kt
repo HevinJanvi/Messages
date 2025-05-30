@@ -9,7 +9,6 @@ class MmsService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("MmsService", "MMS Received!")
         return START_STICKY
     }
 }

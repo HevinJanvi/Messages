@@ -11,6 +11,7 @@ import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.ui.send.getThreadId
@@ -96,17 +97,11 @@ class BackupRepository(private val context: Context) {
                 return
             }
 
-            // Using BufferedWriter instead of JsonWriter
             val writer = BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
-
-            // Start writing the JSON array directly
             writer.write("[\n")
-
             val gson = Gson()
-
-            // Serialize each message as JSON and write it to the BufferedWriter
             for ((index, message) in messages.withIndex()) {
-                val jsonMessage = gson.toJson(message)  // Direct JSON string serialization
+                val jsonMessage = gson.toJson(message)
                 writer.write("  $jsonMessage")
 
                 if (index < messages.size - 1) {
@@ -118,8 +113,6 @@ class BackupRepository(private val context: Context) {
                     onProgress(progress)
                 }
             }
-
-            // End of JSON array
             writer.write("\n]")
 
             writer.flush()
@@ -163,15 +156,15 @@ class BackupRepository(private val context: Context) {
             for ((index, message) in sortedList.withIndex()) {
                 if (existingIds.contains(message.id)) continue
 
-                val isGroup = message.address.contains(",")
+                val isGroup = message.address.contains(GROUP_SEPARATOR)
                 val originalThreadId = message.threadId
                 var threadId = originalThreadId
 
                 val resolvedAddress = if (isGroup) {
-                    message.address.split(",")
+                    message.address.split(GROUP_SEPARATOR)
                         .map { it.trim() }
                         .map { resolveContactToNumber(it) }
-                        .joinToString(",")
+                        .joinToString(GROUP_SEPARATOR)
                 } else {
                     resolveContactToNumber(message.address.trim())
                 }
@@ -180,7 +173,7 @@ class BackupRepository(private val context: Context) {
                     threadId = if (isGroup) {
                         val random = System.currentTimeMillis().toString().takeLast(5)
                         val modifiedAddress = "$resolvedAddress"
-                        getThreadId(modifiedAddress.split(",").toSet())
+                        getThreadId(modifiedAddress.split(GROUP_SEPARATOR).toSet())
                     } else {
                         getThreadId(setOf(resolvedAddress))
                     }
@@ -202,7 +195,8 @@ class BackupRepository(private val context: Context) {
                 insertedMessages.add(message)
 
                 withContext(Dispatchers.IO) {
-                    AppDatabase.getDatabase(context).recycleBinDao().deleteMessagesByThreadId(originalThreadId)
+                    AppDatabase.getDatabase(context).recycleBinDao()
+                        .deleteMessagesByThreadId(originalThreadId)
                 }
 
                 val progress = ((index + 1) * 100) / totalMessages
@@ -226,6 +220,7 @@ class BackupRepository(private val context: Context) {
     fun getThreadId(addresses: Set<String>): Long {
         return Telephony.Threads.getOrCreateThreadId(context, addresses)
     }
+
     fun resolveContactToNumber(contact: String): String {
         val contentResolver = context.contentResolver
         val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
@@ -247,15 +242,13 @@ class BackupRepository(private val context: Context) {
                 }
             }
         }
-
         return contact
     }
 
 
     fun isThreadExists(threadId: Long): Boolean {
         if (threadId <= 0) return false
-
-        val uri =  Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
+        val uri = Uri.parse("${Telephony.Threads.CONTENT_URI}?simple=true")
         val cursor = context.contentResolver.query(uri, null, "_id = $threadId", null, null)
         cursor?.use {
             return it.moveToFirst()
@@ -293,10 +286,8 @@ class BackupRepository(private val context: Context) {
 
             val existingMessageId = checkIfMessageExists(body, date, threadId)
             if (existingMessageId != 0L) {
-                Log.d("SmsReceiver", "Message already exists, skipping insert.")
                 return
             }
-
 
             val values = ContentValues().apply {
                 put(Telephony.Sms.ADDRESS, address)
@@ -308,15 +299,9 @@ class BackupRepository(private val context: Context) {
                 put(Telephony.Sms.SUBSCRIPTION_ID, subscriptionId)
                 put(Telephony.Sms.SUBJECT, "")
             }
+            context.contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
 
-            val uri = context.contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
-            if (uri != null) {
-                Log.d("SmsReceiver", "Message inserted successfully." + uri)
-            } else {
-                Log.d("SmsReceiver", "Failed to insert message.")
-            }
         } catch (e: Exception) {
-            Log.e("SmsReceiver", "Error inserting message: ${e.message}")
         }
     }
 

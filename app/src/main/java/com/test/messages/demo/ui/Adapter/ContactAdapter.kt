@@ -1,7 +1,6 @@
 package com.test.messages.demo.ui.Adapter
 
 import android.content.res.ColorStateList
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.test.messages.demo.ui.AlphabticScroll.RecyclerViewFastScroller
+import com.test.messages.demo.ui.CustomView.RecyclerViewFastScroller
 import com.test.messages.demo.R
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.Util.TimeUtils
@@ -60,11 +59,6 @@ class ContactAdapter(
                 if (adjustedPosition in contacts.indices) {
                     val contact = contacts[adjustedPosition]
                     (holder as ContactViewHolder).bind(contact)
-                } else {
-                    Log.e(
-                        "ContactAdapter",
-                        "Invalid contact position: $adjustedPosition for position: $position"
-                    )
                 }
             }
         }

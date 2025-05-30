@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.test.messages.demo.ui.AlphabticScroll.ItemMoveCallback
+import com.test.messages.demo.ui.CustomView.ItemMoveCallback
 import com.test.messages.demo.R
 import java.util.Collections
 

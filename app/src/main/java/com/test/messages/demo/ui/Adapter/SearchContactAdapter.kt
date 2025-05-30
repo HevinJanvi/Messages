@@ -2,10 +2,8 @@ package com.test.messages.demo.ui.Adapter
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
@@ -114,8 +112,6 @@ class SearchContactAdapter(
         val profileContainer: RelativeLayout = itemView.findViewById(R.id.profileContainer)
     }
 
-
-
     class ContactDiffCallback(
         private val oldList: List<ContactItem>,
         private val newList: List<ContactItem>
@@ -125,7 +121,7 @@ class SearchContactAdapter(
         override fun getNewListSize() = newList.size
 
         override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean =
-            oldList[oldPos].cid == newList[newPos].cid // or use phoneNumber
+            oldList[oldPos].cid == newList[newPos].cid
 
         override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean =
             oldList[oldPos] == newList[newPos]

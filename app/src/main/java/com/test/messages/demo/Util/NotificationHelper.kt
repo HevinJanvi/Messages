@@ -3,7 +3,6 @@ package com.test.messages.demo.Util
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
@@ -22,15 +21,14 @@ import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.CommanConstants.LOCK_SCREEN_SENDER
-import com.test.messages.demo.Util.CommanConstants.LOCK_SCREEN_SENDER_MESSAGE
-import com.test.messages.demo.Util.CommanConstants.MARK_AS_READ
-import com.test.messages.demo.Util.CommanConstants.MESSAGE_ID
-import com.test.messages.demo.Util.CommanConstants.NAME
-import com.test.messages.demo.Util.CommanConstants.NUMBER
-import com.test.messages.demo.Util.CommanConstants.REPLY
-import com.test.messages.demo.Util.ViewUtils.generateRandomId
+import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Util.Constants.LOCK_SCREEN_SENDER
+import com.test.messages.demo.Util.Constants.LOCK_SCREEN_SENDER_MESSAGE
+import com.test.messages.demo.Util.Constants.MARK_AS_READ
+import com.test.messages.demo.Util.Constants.MESSAGE_ID
+import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.Constants.REPLY
 import com.test.messages.demo.Util.ViewUtils.getLockScreenVisibilitySetting
 import com.test.messages.demo.Util.ViewUtils.getPreviewOption
 import com.test.messages.demo.Util.ViewUtils.isNougatPlus
@@ -42,7 +40,6 @@ import com.test.messages.demo.data.reciever.DeleteSmsReceiver
 import com.test.messages.demo.data.reciever.DirectReplyReceiver
 import com.test.messages.demo.data.reciever.MarkAsReadReceiver
 import com.test.messages.demo.ui.Activity.ConversationActivity
-import com.test.messages.demo.ui.Activity.MainActivity
 import com.test.messages.demo.ui.send.notificationManager
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -132,8 +129,7 @@ class NotificationHelper(private val context: Context) {
     ) {
 
         val localizedContext = setLanguage(context) ?: context
-//        val NOTIFICATION_CHANNEL = "smsChannel_$address"
-        val NOTIFICATION_CHANNEL = "${CommanConstants.KEY_SMS_CHANNEL}${address.removeCountryCode()}"
+        val NOTIFICATION_CHANNEL = "${Constants.KEY_SMS_CHANNEL}${address.removeCountryCode()}"
 
         maybeCreateChannel(NOTIFICATION_CHANNEL, context.getString(R.string.channel_received_sms))
 
@@ -149,13 +145,6 @@ class NotificationHelper(private val context: Context) {
             putExtra(NAME, sender)
             putExtra(NUMBER, address)
         }
-        /*val contentPendingIntent =
-            PendingIntent.getActivity(
-                context,
-                notificationId,
-                contentIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            )*/
         val contentPendingIntent = TaskStackBuilder.create(context).run {
             addParentStack(ConversationActivity::class.java)
             addNextIntent(contentIntent)
@@ -239,13 +228,11 @@ class NotificationHelper(private val context: Context) {
 
 
         val largeIcon = bitmap ?: if (sender != null) {
-//            SimpleContactsHelper(context).getContactLetterIcon(sender)
         } else {
             null
         }
 
         val lockScreenVisibilitySetting = getLockScreenVisibilitySetting(context)
-        Log.d("TAG", "showMessageNotification: " + NOTIFICATION_CHANNEL)
         val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL).apply {
             when (lockScreenVisibilitySetting) {
                 LOCK_SCREEN_SENDER_MESSAGE -> {

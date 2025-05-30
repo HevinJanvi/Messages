@@ -1,43 +1,32 @@
 package com.test.messages.demo.ui.Activity
 
-import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PersistableBundle
-import android.provider.Settings
 import android.provider.Telephony
-import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewGroupCompat
 import androidx.core.widget.ImageViewCompat
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.LanguageChangeEvent
-import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.MessagesRefreshEvent
 import com.test.messages.demo.databinding.ActivityMainBinding
 import com.test.messages.demo.ui.Fragment.ConversationFragment
@@ -64,7 +53,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     private lateinit var binding: ActivityMainBinding
     private var selectedMessagesCount = 0
     val viewModel: MessageViewModel by viewModels()
-    private lateinit var schedulePermissionLauncher: ActivityResultLauncher<Intent>
     private var doubleBackToExit = false
 
     override fun onResume() {
@@ -144,7 +132,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
 
 
     private fun setupClickListeners() {
-        //toolbar
         binding.icMore.setOnClickListener {
             showPopupHome(it)
         }
@@ -174,7 +161,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         binding.muteLayout.setOnClickListener {
             val fragment =
                 supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? ConversationFragment
-//            fragment?.muteMessages()
             fragment?.MuteUnmuteMessages()
         }
         binding.blockLayout.setOnClickListener {
@@ -210,37 +196,10 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         }
 
         binding.include.lySchedule.setOnClickListener {
-//            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                if (!alarmManager.canScheduleExactAlarms()) {
-//                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-//                    intent.data = Uri.parse("package:$packageName")
-//                    schedulePermissionLauncher.launch(intent)
-//                } else {
-//                    val intent = Intent(this, ScheduleActivity::class.java)
-//                    startActivity(intent)
-//                }
-//            } else {
             val intent = Intent(this, ScheduleActivity::class.java)
             startActivity(intent)
-//            }
-
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
-        /* schedulePermissionLauncher = registerForActivityResult(
-             ActivityResultContracts.StartActivityForResult()
-         ) {
-             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                 if (alarmManager.canScheduleExactAlarms()) {
-                     val intent = Intent(this, ScheduleActivity::class.java)
-                     startActivity(intent)
-                 } else {
- //                    Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
-                 }
-             }
-         }*/
-
         binding.include.lySetting.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
@@ -262,7 +221,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessagesRefreshed(event: MessagesRefreshEvent) {
         if (event.success) {
-            Log.d("TAG", "onMessagesRefreshed:main screen ")
             Handler(Looper.getMainLooper()).postDelayed({
                 viewModel.loadMessages()
             }, 100)
@@ -316,10 +274,6 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
             }else{
                 binding.txtblock.setTextColor(resources.getColor(R.color.default_shadow_color))
             }
-
-//            binding.blockLayout.alpha = if (shouldEnable) 1f else 0.7f
-//            binding.icblock.alpha = if (shouldEnable) 1f else 0.5f
-//            binding.txtblock.alpha = if (shouldEnable) 1f else 0.5f
         }
     }
 

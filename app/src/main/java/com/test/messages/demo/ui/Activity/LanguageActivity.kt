@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +20,6 @@ import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityLanguageBinding
 import com.test.messages.demo.Util.DebouncedOnClickListener
 import com.test.messages.demo.Util.LanguageChangeEvent
-import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.getLanguageName
 import org.greenrobot.eventbus.EventBus
@@ -193,6 +191,7 @@ class LanguageActivity : BaseActivity() {
                     notifyDataSetChanged()
                 }
             })
+
             if (selectedPosition == position) {
                 holder.imgCheck.setImageResource(R.drawable.ic_selected2);
                 holder.lang_ly.setBackgroundResource(R.drawable.lang_item_select_bg);

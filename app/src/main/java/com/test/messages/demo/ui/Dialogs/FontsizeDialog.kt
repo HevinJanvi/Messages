@@ -6,15 +6,12 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.Gravity
 import android.view.WindowManager
-import android.widget.RadioButton
 import androidx.core.content.ContextCompat
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.CommanConstants
-import com.test.messages.demo.Util.CommanConstants.SWIPE_NONE
+import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.databinding.DialogFontSizeBinding
-import com.test.messages.demo.databinding.DialogSwipeActionBinding
 
 class FontsizeDialog(
     context: Context,
@@ -40,10 +37,10 @@ class FontsizeDialog(
         window?.setGravity(Gravity.BOTTOM)
 
         val radioButtons = mapOf(
-            binding.rbSmall to CommanConstants.ACTION_SMALL,
-            binding.rbNormal to CommanConstants.ACTION_NORMAL,
-            binding.rbLarge to CommanConstants.ACTION_LARGE,
-            binding.rbExtraLarge to CommanConstants.ACTION_EXTRALARGE,
+            binding.rbSmall to Constants.ACTION_SMALL,
+            binding.rbNormal to Constants.ACTION_NORMAL,
+            binding.rbLarge to Constants.ACTION_LARGE,
+            binding.rbExtraLarge to Constants.ACTION_EXTRALARGE,
         )
         radioButtons.forEach { (radioButton, action) ->
             radioButton.isChecked = (action == selectedAction)
@@ -57,7 +54,7 @@ class FontsizeDialog(
             it.blinkThen {
                 val selectedAction =
                     radioButtons.entries.find { it.key.isChecked }?.value
-                        ?: CommanConstants.ACTION_NORMAL
+                        ?: Constants.ACTION_NORMAL
                 ViewUtils.saveFontSize(context, selectedAction)
                 onActionSelected(selectedAction)
                 dismiss()
