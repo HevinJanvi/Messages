@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Telephony
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.Constants.DROPMSG
@@ -81,10 +82,13 @@ class SmsReceiver : BroadcastReceiver() {
                         status
                     )
                     threadId = context.getThreadId(setOf(address))
+
                     val isAlreadyBlocked = repository.isBlockedConversation(threadId)
                     if (!isAlreadyBlocked) {
                         repository.blockConversation(threadId, address)
                         repository.removeOldBlockedThreadIds(address, threadId)
+                    }else{
+                        EventBus.getDefault().post(NewSmsEvent(threadId))
                     }
 
                 } else {

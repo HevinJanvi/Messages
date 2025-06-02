@@ -22,7 +22,7 @@ import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databas
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinDao
 
 @Database(entities = [DeletedMessage::class, ArchivedConversation::class, BlockConversation::class,
-    PinMessage::class, StarredMessage::class, ScheduledMessage::class, NotificationSetting::class], version = 21, exportSchema = false)
+    PinMessage::class, StarredMessage::class, ScheduledMessage::class, NotificationSetting::class], version = 23, exportSchema = false)
 //@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun recycleBinDao(): RecycleBinDao

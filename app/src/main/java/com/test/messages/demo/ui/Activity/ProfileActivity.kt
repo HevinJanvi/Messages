@@ -27,6 +27,7 @@ import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.Constants.FROMARCHIVE
 import com.test.messages.demo.Util.Constants.FROMBLOCK
 import com.test.messages.demo.Util.Constants.ISGROUP
+import com.test.messages.demo.Util.Constants.MESSAGE_SIZE
 import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.MessagesRefreshEvent
@@ -56,6 +57,7 @@ class ProfileActivity : BaseActivity() {
     private lateinit var binding: ActivityProfileBinding
     private var threadId: Long = -1
     private lateinit var number: String
+    private var messageSize: Int = 0
     private lateinit var name: String
     private var fromBlock: Boolean = false
     private var fromArchive: Boolean = false
@@ -91,6 +93,24 @@ class ProfileActivity : BaseActivity() {
         name = intent.getStringExtra(NAME).toString()
         fromBlock = intent.getBooleanExtra(FROMBLOCK, false)
         fromArchive = intent.getBooleanExtra(FROMARCHIVE, false)
+        messageSize = intent.getIntExtra(MESSAGE_SIZE, 0)
+        Log.d("TAG", "onCreate:messageSize "+messageSize)
+        if (messageSize == 0) {
+            binding.ontherLy.isEnabled = false
+            binding.ontherLy.alpha = 0.3f
+            binding.notifyLy.isEnabled = false
+            binding.notifyLy.isClickable = false
+            binding.lyArchive.isEnabled = false
+            binding.lyArchive.isClickable = false
+            binding.deleteLy.isEnabled = false
+            binding.deleteLy.isClickable = false
+            binding.profileBlock.isEnabled = false
+            binding.profileBlock.isClickable = false
+            binding.profileBlock.alpha = 0.3f
+        } else {
+            binding.ontherLy.isEnabled = true
+            binding.ontherLy.alpha = 1f
+        }
         binding.adreesUser.text = name
         binding.number.text = number
         setupClickListeners()
@@ -100,6 +120,8 @@ class ProfileActivity : BaseActivity() {
         if (threadId != -1L) {
             checkIfArchived(threadId)
         }
+
+
 
         val latestName = getContactName(number) ?: name
         val latestPhotoUri = getContactPhotoUri(number)
@@ -269,29 +291,43 @@ class ProfileActivity : BaseActivity() {
                         disableLy()
                         binding.profileBlock.setImageResource(R.drawable.profile_unblock)
                         binding.profileBlock.setOnClickListener {
-                            val unblockDialog = UnblockDialog(this@ProfileActivity) {
+                            if (messageSize != 0) {
+                                val unblockDialog = UnblockDialog(this@ProfileActivity) {
+                                    binding.profileBlock.isEnabled = false
+                                    fromBlock = false
+                                    viewModel.unblockConversations(listOf(threadId))
+                                    binding.profileBlock.setImageResource(R.drawable.profile_block)
+                                    refreshCheck(threadId)
+                                }
+                                unblockDialog.show()
+                            }else{
                                 binding.profileBlock.isEnabled = false
-                                fromBlock = false
-                                viewModel.unblockConversations(listOf(threadId))
-                                binding.profileBlock.setImageResource(R.drawable.profile_block)
-                                refreshCheck(threadId)
+                                binding.profileBlock.isClickable = false
+                                binding.profileBlock.alpha = 0.3f
                             }
-                            unblockDialog.show()
+
                         }
                     } else {
                         enableLy()
                         binding.profileBlock.setImageResource(R.drawable.profile_block)
 
                         binding.profileBlock.setOnClickListener {
-                            val blockDialog = BlockDialog(this@ProfileActivity) {
-                                binding.profileBlock.isEnabled = false
-                                viewModel.blockSelectedConversations(listOf(threadId)) {
-                                    fromBlock = true
-                                    binding.profileBlock.setImageResource(R.drawable.profile_unblock)
-                                    refreshCheck(threadId)
+                            if (messageSize != 0) {
+                                val blockDialog = BlockDialog(this@ProfileActivity) {
+                                    binding.profileBlock.isEnabled = false
+                                    viewModel.blockSelectedConversations(listOf(threadId)) {
+                                        fromBlock = true
+                                        binding.profileBlock.setImageResource(R.drawable.profile_unblock)
+                                        refreshCheck(threadId)
+                                    }
                                 }
+                                blockDialog.show()
+                            }else{
+                                binding.profileBlock.isEnabled = false
+                                binding.profileBlock.isClickable = false
+                                binding.profileBlock.alpha = 0.3f
                             }
-                            blockDialog.show()
+
                         }
                     }
 
@@ -308,7 +344,7 @@ class ProfileActivity : BaseActivity() {
                 checkIfBlocked(threadId)
                 binding.profileBlock.isEnabled = true
             }, 500)
-        }catch (e:Exception){
+        } catch (e: Exception) {
         }
 
     }

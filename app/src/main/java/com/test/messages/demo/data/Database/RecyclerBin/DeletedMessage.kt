@@ -38,5 +38,11 @@ data class DeletedMessage(
     val deletedTime: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "is_group_chat") val isGroupChat: Boolean = false,
-    @ColumnInfo(name = "profile_image_url") val profileImageUrl: String? = null
+    @ColumnInfo(name = "profile_image_url") val profileImageUrl: String? = null,
+
+    @ColumnInfo(name = "is_pinned")
+    val isPinned: Boolean = false,
+
+    @ColumnInfo(name = "is_muted")
+    val isMuted: Boolean = false
 )

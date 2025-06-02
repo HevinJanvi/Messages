@@ -968,11 +968,17 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 if (seenNumbers.contains(number)) continue
                 seenNumbers.add(number)
+                Log.d("TAG", "getAllContacts:normalizeNumber "+normalized)
 
+                var number2 = number.replace(
+                    " ",
+                    ""
+                ).replace("(", "").replace(")", "").replace("-", "")
+                Log.d("TAG", "getAllContacts:Number "+number2)
                 val contact = ContactItem(
                     cid = id,
                     name = name,
-                    phoneNumber = number,
+                    phoneNumber = number2,
                     normalizeNumber = normalized,
                     profileImageUrl = photoUri
                 )

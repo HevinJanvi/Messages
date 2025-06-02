@@ -78,11 +78,11 @@ class SearchContactAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val contact = contacts[position]
         holder.name.text = contact.name
-        holder.number.text = contact.phoneNumber
+//        holder.number.text = contact.normalizeNumber
         holder.itemView.setOnClickListener { onItemClick(contact) }
 
         holder.name.text = if (query.isNotEmpty()) highlightText(holder.itemView.context,contact.name ?: "", query) else contact.name
-        holder.number.text = if (query.isNotEmpty()) highlightText(holder.itemView.context,contact.phoneNumber, query) else contact.phoneNumber
+        holder.number.text = if (query.isNotEmpty()) highlightText(holder.itemView.context,contact.normalizeNumber, query) else contact.normalizeNumber
 
 
         if (contact.profileImageUrl != null && contact.profileImageUrl.isNotEmpty()) {

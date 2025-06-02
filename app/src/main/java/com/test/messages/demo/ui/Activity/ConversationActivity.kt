@@ -63,6 +63,7 @@ import com.test.messages.demo.Util.Constants.GROUP_NAME_KEY
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.Util.Constants.ISGROUP
 import com.test.messages.demo.Util.Constants.ISSCHEDULED
+import com.test.messages.demo.Util.Constants.MESSAGE_SIZE
 import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.Constants.PROFILEURL
@@ -220,12 +221,25 @@ class ConversationActivity : BaseActivity() {
                 binding.schedulLy.visibility = View.GONE
                 isScheduled = false
             }
+
         } else {
             binding.schedulLy.visibility = View.GONE
+        }
+        binding.selectedTimeTextView.setOnClickListener {
+            showDateTimePickerDialog()
         }
         Log.d("TAG", "onCreate: threadId :- " + threadId)
         setupRecyclerView()
         checkIfThreadBlocked(threadId)
+        if (isfromBlock) {
+            binding.blockLy.visibility = View.VISIBLE
+            binding.btnUnblock.setOnClickListener {
+                unblockThread(threadId)
+            }
+        } else {
+            binding.blockLy.visibility = View.GONE
+        }
+
         if (threadId != -1L) {
             resetMessageCount(this, threadId)
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -237,6 +251,8 @@ class ConversationActivity : BaseActivity() {
         }
         markThreadAsRead(this@ConversationActivity, threadId)
         viewModel.loadStarredMessages()
+
+
         observeViewModel()
 
         val cleanedNumber = number.replace("[^+\\d]".toRegex(), "")
@@ -246,15 +262,6 @@ class ConversationActivity : BaseActivity() {
             binding.btnCall.visibility = View.VISIBLE
         }
 
-        if (isfromBlock) {
-
-            binding.blockLy.visibility = View.VISIBLE
-            binding.btnUnblock.setOnClickListener {
-                unblockThread(threadId)
-            }
-        } else {
-            binding.blockLy.visibility = View.GONE
-        }
         getDrfat()
         sharetxt = intent.getStringExtra(EXTRA_TXT)
         if (!sharetxt.isNullOrEmpty()) {
@@ -324,6 +331,7 @@ class ConversationActivity : BaseActivity() {
             makeCall(number)
         }
         binding.btnInfo.setOnClickListener {
+            val messageItemSize = adapter.itemCount
 
             val numbersList =
                 number.split(GROUP_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }
@@ -333,7 +341,9 @@ class ConversationActivity : BaseActivity() {
                 intent.putExtra(EXTRA_THREAD_ID, threadId)
                 intent.putExtra(GROUP_NAME, groupName ?: name)
                 intent.putStringArrayListExtra(GROUP_MEMBERS, ArrayList(numbersList))
+                intent.putExtra(MESSAGE_SIZE, messageItemSize)
                 startActivity(intent)
+
             } else {
                 val intent = Intent(this, ProfileActivity::class.java)
                 intent.putExtra(EXTRA_THREAD_ID, threadId)
@@ -342,6 +352,7 @@ class ConversationActivity : BaseActivity() {
                 intent.putExtra(FROMBLOCK, isfromBlock)
                 intent.putExtra(FROMARCHIVE, isfromArchive)
                 intent.putExtra(PROFILEURL, profileUrl)
+                intent.putExtra(MESSAGE_SIZE, messageItemSize)
                 profileLauncher.launch(intent)
             }
         }
@@ -500,8 +511,10 @@ class ConversationActivity : BaseActivity() {
             availableSIMCards,
             onSelectionChanged = { selectedCount ->
                 updateUI(selectedCount)
-                adapter.setSearchQuery(highlightQuery)
-                searchAndScroll(highlightQuery)
+                if(!highlightQuery.isNullOrEmpty()){
+                    adapter.setSearchQuery(highlightQuery)
+                    searchAndScroll(highlightQuery)
+                }
 
             },
             onStarClicked = { conversation ->
@@ -572,7 +585,7 @@ class ConversationActivity : BaseActivity() {
                 }, 300)
             } else {
                 if (highlightQuery.isNotEmpty()) {
-
+                    Log.d("TAG", "scrolltoBottom:11 ")
                 } else {
                     binding.recyclerViewConversation.postDelayed({
                         binding.recyclerViewConversation.scrollToPosition(adapter.itemCount - 1)
@@ -617,6 +630,7 @@ class ConversationActivity : BaseActivity() {
             if (conversation == null) {
                 return@observe
             }
+            Log.d("TAG", "observeViewModel: "+conversation.size)
             var conversationList = conversation
             CoroutineScope(Dispatchers.IO).launch {
                 val filteredList =
@@ -665,10 +679,10 @@ class ConversationActivity : BaseActivity() {
                             adapter.setSearchQuery(highlightQuery)
                             searchAndScroll(highlightQuery)
                         }
-                        if (shouldScrollToBottom) {
+//                        if (shouldScrollToBottom) {
                             scrolltoBottom()
-                        }
-                        shouldScrollToBottom = true
+//                        }
+//                        shouldScrollToBottom = true
 
                     }
 
@@ -740,7 +754,8 @@ class ConversationActivity : BaseActivity() {
         val text = binding.editTextMessage.text.toString().trim()
         if (text.isEmpty()) return
         binding.editTextMessage.setText("")
-        val numbersSet = number.split(GROUP_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        val numbersSet =
+            number.split(GROUP_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         val selectedSimId =
             availableSIMCards.getOrNull((selectedSimIndex - 1).toInt())?.subscriptionId
                 ?: SubscriptionManager.getDefaultSmsSubscriptionId()
@@ -815,10 +830,11 @@ class ConversationActivity : BaseActivity() {
                 withContext(Dispatchers.Main) {
                     tempMessages.add(tempMessage)
                     adapter.addMessages(listOf(tempMessage))
-                    adapter.setSearchQuery("")
+                   /* adapter.setSearchQuery("")
                     highlightQuery = ""
                     searchAndScroll(highlightQuery)
-                    scrolltoBottom()
+                    scrolltoBottom()*/
+                    highlightQuery = ""
 
                 }
                 val messageUri = messagingUtils.insertSmsMessage(
@@ -841,14 +857,12 @@ class ConversationActivity : BaseActivity() {
                 }
             }
 
-
             withContext(Dispatchers.Main) {
                 updateSnnipet()
                 viewModel.loadMessages()
                 viewModel.loadConversation(threadIdToUse)
-                adapter.setSearchQuery("")
+//                adapter.setSearchQuery("")
                 EventBus.getDefault().post(ConversationUpdatedEvent(threadId))
-
             }
         }
     }
@@ -904,19 +918,23 @@ class ConversationActivity : BaseActivity() {
             selectionArgs
         )
 
-        val addresses = number.split(GROUP_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        val addresses =
+            number.split(GROUP_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         subscriptionId = SmsManager.getDefaultSmsSubscriptionId()
         val simCard = availableSIMCards.getOrNull((selectedSimIndex - 1).toInt())
         val subscriptionId =
             simCard?.subscriptionId ?: SubscriptionManager.getDefaultSmsSubscriptionId()
         if (isGroup) {
-            messagingUtils.insertSmsMessage(
+            Log.d("TAG", "resendMessage: " + addresses)
+            val groupThreadId = getThreadId(addresses.toSet())
+            var groupUri = messagingUtils.insertSmsMessage(
                 subId = subscriptionId,
                 dest = number,
                 text = message.body ?: return,
                 timestamp = System.currentTimeMillis(),
-                threadId = threadId
+                threadId = groupThreadId
             )
+            viewModel.loadConversation(groupThreadId)
         } else {
             sendSmsMessage(
                 text = message.body ?: return,
@@ -925,9 +943,10 @@ class ConversationActivity : BaseActivity() {
                 requireDeliveryReport = false,
                 messageId = null
             )
+            threadId = getThreadId(setOf(number))
+            viewModel.loadConversation(threadId)
         }
-        threadId = getThreadId(setOf(number))
-        viewModel.loadConversation(threadId)
+
     }
 
 
@@ -1066,7 +1085,7 @@ class ConversationActivity : BaseActivity() {
                 if (adapter.itemCount == 0) {
                     finish()
                 }
-            }, 50)
+            }, 100)
         }
     }
 
@@ -1118,10 +1137,10 @@ class ConversationActivity : BaseActivity() {
 
     private fun updateUI(selectedCount: Int) {
         if (selectedCount > 0) {
+            highlightQuery=""
             binding.actionSelectItem.visibility = View.VISIBLE
             binding.actionbar.visibility = View.GONE
             binding.countText.text = "$selectedCount" + " " + getString(R.string.selected)
-
             val selectedItems = adapter.selectedItems
             if (selectedCount == 1) {
                 val selectedMessage = selectedItems.first()
@@ -1158,7 +1177,9 @@ class ConversationActivity : BaseActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onRecievessagesEvent(event: NewSmsEvent) {
+        Log.d("TAG", "onRecievessagesEvent: ")
         viewModel.loadConversation(threadId)
+        highlightQuery = ""
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1177,7 +1198,7 @@ class ConversationActivity : BaseActivity() {
         viewModel.loadConversation(threadId)
     }
 
-    @SuppressLint("RestrictedApi")
+   /* @SuppressLint("RestrictedApi")
     private fun showDateTimePickerDialog() {
         val calendar = Calendar.getInstance()
         val currentYear = calendar.get(Calendar.YEAR)
@@ -1278,7 +1299,108 @@ class ConversationActivity : BaseActivity() {
         }
         datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
         datePickerDialog.show()
+    }*/
+
+    @SuppressLint("RestrictedApi")
+    private fun showDateTimePickerDialog() {
+        val calendar = Calendar.getInstance()
+        if (selectedTimeInMillis > 0L) {
+            calendar.timeInMillis = selectedTimeInMillis
+        }
+
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+
+        val datePickerDialog = DatePickerDialog(
+            this@ConversationActivity, R.style.CustomDatePicker,
+            { _, selectedYear, selectedMonth, selectedDayOfMonth ->
+                val selectedDate = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, selectedYear)
+                    set(Calendar.MONTH, selectedMonth)
+                    set(Calendar.DAY_OF_MONTH, selectedDayOfMonth)
+                }
+
+                val timePickerDialog = TimePickerDialog(
+                    this, R.style.CustomTimePicker,
+                    { _, selectedHour, selectedMinute ->
+                        val selectedCalendar = Calendar.getInstance().apply {
+                            set(Calendar.YEAR, selectedYear)
+                            set(Calendar.MONTH, selectedMonth)
+                            set(Calendar.DAY_OF_MONTH, selectedDayOfMonth)
+                            set(Calendar.HOUR_OF_DAY, selectedHour)
+                            set(Calendar.MINUTE, selectedMinute)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+
+                        if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.cannot_select_past_time),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            showDateTimePickerDialog() // Reopen the picker
+                        } else {
+                            selectedTimeInMillis = selectedCalendar.timeInMillis
+                            binding.schedulLy.visibility = View.VISIBLE
+
+                            val is24Hour = android.text.format.DateFormat.is24HourFormat(this)
+                            val timePattern = if (is24Hour) "dd MMM yyyy HH:mm" else "dd MMM yyyy hh:mm a"
+                            val formattedTime = SimpleDateFormat(timePattern, Locale.ENGLISH)
+                                .format(selectedCalendar.time)
+
+                            val spannable = SpannableStringBuilder().apply {
+                                append(getString(R.string.schedule_at))
+                                setSpan(
+                                    ForegroundColorSpan(
+                                        ContextCompat.getColor(
+                                            this@ConversationActivity,
+                                            R.color.colorPrimary
+                                        )
+                                    ),
+                                    0,
+                                    getString(R.string.schedule_at).length,
+                                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                                val timeSpan = SpannableString(formattedTime)
+                                timeSpan.setSpan(
+                                    ForegroundColorSpan(
+                                        ContextCompat.getColor(
+                                            this@ConversationActivity,
+                                            R.color.colorPrimary
+                                        )
+                                    ),
+                                    0,
+                                    timeSpan.length,
+                                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                )
+                                append(timeSpan)
+                            }
+                            binding.selectedTimeTextView.text = spannable
+                        }
+                    },
+                    hour,
+                    minute,
+                    android.text.format.DateFormat.is24HourFormat(this)
+                )
+                timePickerDialog.show()
+            },
+            year,
+            month,
+            day
+        )
+
+        datePickerDialog.setOnCancelListener {
+            isScheduled = false
+            binding.schedulLy.visibility = View.GONE
+        }
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
+        datePickerDialog.show()
     }
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     private fun scheduleMessage() {
@@ -1367,6 +1489,7 @@ class ConversationActivity : BaseActivity() {
 
         binding.txtCantReply.text = spannable
         binding.txtCantReply.movementMethod = LinkMovementMethod.getInstance()
+        binding.txtCantReply.highlightColor = Color.TRANSPARENT
     }
 
 

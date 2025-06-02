@@ -499,7 +499,7 @@ class ArchivedActivity : BaseActivity() {
     }
 
     private fun markThreadsReadOrUnread() {
-        val selectedMessages = adapter.selectedMessages
+        val selectedMessages = adapter.selectedMessages.toList()
         if (selectedMessages.isEmpty()) return
 
         lifecycleScope.launch(Dispatchers.IO) {

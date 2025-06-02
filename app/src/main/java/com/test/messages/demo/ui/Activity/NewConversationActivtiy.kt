@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.ISGROUP
 import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.data.Model.ContactItem
@@ -324,6 +325,8 @@ class NewConversationActivtiy : BaseActivity() {
             putExtra(EXTRA_THREAD_ID, threadId)
             putExtra(NUMBER, combinedNumbers)
             putExtra(NAME, selectedNames.joinToString(GROUP_SEPARATOR))
+            putExtra(ISGROUP, selectedNumbers.size > 1)
+
         }
         startActivity(intent)
         finish()

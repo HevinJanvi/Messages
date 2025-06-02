@@ -14,6 +14,9 @@ interface PinDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
      fun insertPinnedMessages(pinnedMessages: List<PinMessage>)
 
+    @Query("UPDATE pinned_messages SET thread_id = :newThreadId WHERE thread_id = :oldThreadId")
+    fun updateThreadId(oldThreadId: Long, newThreadId: Long)
+
     @Query("DELETE FROM pinned_messages WHERE thread_id IN (:threadIds)")
     suspend fun removePinnedMessages(threadIds: List<Long>)
 

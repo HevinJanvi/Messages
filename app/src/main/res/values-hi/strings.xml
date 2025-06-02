@@ -106,7 +106,7 @@
     <string name="message_copied">संदेश कॉपी किया गया!</string>
     <string name="send_now">अभी भेजें</string>
     <string name="copy_text">टेक्स्ट कॉपी करें</string>
-    <string name="schedule_at">शेड्यूल करें</string>
+    <string name="schedule_at">शेड्यूल करें\n</string>
     <string name="welcome_to_messages"><font fgcolor="#1A73E8">संदेश</font> में आपका स्वागत है</string>
 
     <string name="to_send_and_receive">संदेश भेजने और प्राप्त करने के लिए, Messages\nको अपने डिफ़ॉल्ट SMS ऐप के रूप में सेट करें।</string>

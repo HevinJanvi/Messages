@@ -1,5 +1,6 @@
 package com.test.messages.demo.ui.Activity
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -29,6 +30,8 @@ import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.Constants.PREFS_NAME
 import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.data.Database.Notification.NotificationSetting
+import com.test.messages.demo.data.Database.Pin.PinMessage
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityRecyclebinBinding
@@ -165,6 +168,8 @@ class RecycleBinActivity : BaseActivity() {
     private fun restoreSelectedMessages() {
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
+        val pinDao = AppDatabase.getDatabase(this).pinDao()
+        val notificationDao = AppDatabase.getDatabase(this).notificationDao()
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
         val tvMessage = dialogView.findViewById<TextView>(R.id.tvProgressMessage)
@@ -194,6 +199,7 @@ class RecycleBinActivity : BaseActivity() {
 
                 val selectedThreadIds =
                     recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
+//                val pinnedThreadIds =  AppDatabase.getDatabase(this@RecycleBinActivity).pinDao().getAllPinnedThreadIds().toSet()
 
                 for (threadId in selectedThreadIds) {
                     val threadMessages = db.getAllMessagesByThread(threadId)
@@ -201,6 +207,8 @@ class RecycleBinActivity : BaseActivity() {
                 }
 
                 val reversedList = allMessagesToRestore.asReversed()
+                val updatedMutedThreads = mutableSetOf<Long>()
+                val updatedPinnedThreads = mutableSetOf<Long>()
 
                 for (deletedMessage in reversedList) {
                     var threadId = getThreadId(setOf(deletedMessage.address))
@@ -229,6 +237,24 @@ class RecycleBinActivity : BaseActivity() {
                             }
                         }
                     }
+                    //pinned
+                    if (!updatedPinnedThreads.contains(originalThreadId) && pinDao.isPinned(listOf(originalThreadId)) == 1) {
+                        pinDao.updateThreadId(
+                            oldThreadId = originalThreadId,
+                            newThreadId = threadId
+                        )
+                        updatedPinnedThreads.add(originalThreadId)
+                    }
+                    //muted
+                    if (!updatedMutedThreads.contains(originalThreadId) && notificationDao.isThreadExists(originalThreadId) == 1) {
+                        val oldSetting = notificationDao.getNotificationSetting(originalThreadId)
+                        if (oldSetting != null) {
+                            val newSetting = oldSetting.copy(threadId = threadId)
+                            notificationDao.insertOrUpdate(newSetting)
+                            notificationDao.deleteByThreadId(originalThreadId)
+                            updatedMutedThreads.add(originalThreadId)
+                        }
+                    }
 
                     val values = ContentValues().apply {
                         put(Telephony.Sms.THREAD_ID, threadId)
@@ -241,13 +267,16 @@ class RecycleBinActivity : BaseActivity() {
                     }
 
                     contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
+
                     db.deleteMessage(deletedMessage)
 
                     val current = restoredThreadMap[threadId]
                     if (current == null || deletedMessage.date > current.second) {
                         restoredThreadMap[threadId] = Pair(deletedMessage.body, deletedMessage.date)
                     }
+
                 }
+
 
                 val elapsed = System.currentTimeMillis() - startTime
                 val minDisplay = 800L
@@ -351,7 +380,6 @@ class RecycleBinActivity : BaseActivity() {
                 return cursor != null && cursor.moveToFirst()
             }
         }
-
     }
 
     private fun updateActionLayout(selectedCount: Int) {

@@ -339,12 +339,9 @@ class ConversationAdapter(
                     val matchedText = matcher.group()
                     spannableString.setSpan(object : ClickableSpan() {
                         override fun onClick(widget: View) {
-                            if (!isContactSaved && conversationItem.isIncoming()) {
 
-                                ExternalLinkDialog(widget.context, matchedText).show()
-                            } else {
                                 onClick(matchedText)
-                            }
+
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
@@ -393,12 +390,18 @@ class ConversationAdapter(
                 "Website",
                 context.getString(R.string.web_type),
             ) { url ->
+
+                if (!isContactSaved && conversationItem.isIncoming()) {
+                                ExternalLinkDialog(context, context.getString(R.string.web_type)).show()
+                  }else{
                 val intent = Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse(if (url.startsWith("http")) url else "http://$url")
                 )
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
+                  }
+
             }
 
             applySpan(

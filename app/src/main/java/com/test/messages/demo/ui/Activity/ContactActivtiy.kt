@@ -44,6 +44,7 @@ class ContactActivtiy : BaseActivity() {
     private lateinit var binding: ActivityContactBinding
     private var selectedContacts = mutableListOf<ContactItem>()
     private val selectedContactViews = mutableMapOf<String, View>()
+    private lateinit var view: View
 
     private var allContacts = listOf<ContactItem>()
     private val viewModel: MessageViewModel by viewModels()
@@ -56,6 +57,7 @@ class ContactActivtiy : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityContactBinding.inflate(layoutInflater)
+        view = binding.getRoot()
         setContentView(binding.root)
         applyWindowInsetsToView(binding.rootView)
         messageUtils = MessageUtils(this)
@@ -142,6 +144,13 @@ class ContactActivtiy : BaseActivity() {
             R.id.fastscroller_bubble, R.id.fastscroller_handle
         )
         binding.contactRecyclerView.adapter = contactAdapter
+        binding.contactRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    view.hideKeyboard(this@ContactActivtiy)
+                }
+            }
+        })
 
         viewModel.loadContacts()
         binding.progressBar.visibility = View.VISIBLE

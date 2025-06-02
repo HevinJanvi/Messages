@@ -8,12 +8,14 @@ import android.os.Bundle
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.Constants.FROMSEARCH
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
@@ -24,6 +26,7 @@ import com.test.messages.demo.Util.Constants.QUERY
 import com.test.messages.demo.Util.ConversationUpdatedEvent
 import com.test.messages.demo.Util.DeleteSearchMessageEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
+import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.SearchableContact
@@ -66,6 +69,7 @@ class SearchActivity : BaseActivity() {
     private val allContacts = mutableListOf<ContactItem>()
     private var indexedContacts = listOf<SearchableContact>()
     private var indexedMessages = listOf<SearchableMessage>()
+    private lateinit var view: View
 
     fun buildContactIndex(contacts: List<ContactItem>) {
         lifecycleScope.launch(Dispatchers.Default) {
@@ -129,7 +133,9 @@ class SearchActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
+        view = binding.getRoot()
         setContentView(binding.root)
+
         applyWindowInsetsToView(binding.rootView)
         EventBus.getDefault().register(this)
         setupRecyclerViews()
@@ -230,6 +236,23 @@ class SearchActivity : BaseActivity() {
             binding.searchInput.text.clear()
             onBackPressed()
         }
+
+        binding.recyclerViewMessages.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    view.hideKeyboard(this@SearchActivity)
+                }
+            }
+        })
+
+        binding.recyclerViewContacts.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    view.hideKeyboard(this@SearchActivity)
+                }
+            }
+        })
+
     }
 
 

@@ -65,4 +65,12 @@ interface NotificationDao {
 
     @Query("UPDATE notification_settings SET isNotificationOn = :isNotificationOn WHERE threadId = :threadId")
     fun updateNotificationSetting(threadId: Long, isNotificationOn: Int)
+
+    @Query("SELECT COUNT(*) FROM notification_settings WHERE threadId = :threadId")
+    fun isThreadExists(threadId: Long): Int
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertOrUpdate(notificationSetting: NotificationSetting)
+
+    @Query("DELETE FROM notification_settings WHERE threadId = :threadId")
+    fun deleteByThreadId(threadId: Long)
 }

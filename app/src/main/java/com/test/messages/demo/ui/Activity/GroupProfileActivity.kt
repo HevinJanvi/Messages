@@ -13,6 +13,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.Constants.GROUP_MEMBERS
 import com.test.messages.demo.Util.Constants.GROUP_NAME
@@ -48,6 +49,7 @@ class GroupProfileActivity : BaseActivity() {
     private var threadId: Long = -1
     private val viewModel: MessageViewModel by viewModels()
     private var isArchived = false
+    private var messageSize: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +59,20 @@ class GroupProfileActivity : BaseActivity() {
         val numbersList = intent.getStringArrayListExtra(GROUP_MEMBERS) ?: arrayListOf()
         groupName = intent.getStringExtra(GROUP_NAME) ?: getString(R.string.group_chat)
         threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1)
+        messageSize = intent.getIntExtra(Constants.MESSAGE_SIZE, 0)
+        if (messageSize == 0) {
+            binding.ontherLy.isEnabled = false
+            binding.ontherLy.alpha = 0.3f
+            binding.lyArchive.isEnabled = false
+            binding.lyArchive.isClickable = false
+            binding.deleteLy.isEnabled = false
+            binding.deleteLy.isClickable = false
+
+
+        } else {
+            binding.ontherLy.isEnabled = false
+            binding.ontherLy.alpha = 1f
+        }
 
         if (threadId != -1L) {
             loadGroupName(threadId)
@@ -83,7 +99,6 @@ class GroupProfileActivity : BaseActivity() {
             val deleteDialog = DeleteDialog(this, "group", true) {
                 deleteMessagesForCurrentThread(threadId)
                 viewModel.deleteStarredMessagesForThread(threadId)
-
             }
             deleteDialog.show()
         }

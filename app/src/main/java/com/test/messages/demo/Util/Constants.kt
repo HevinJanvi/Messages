@@ -69,6 +69,7 @@ object Constants {
     const val LAUNCHFROM = "launched_from"
     const val SHOW_CATEGORIES = "show_categories"
     const val CATEGORY_ORDER = "category_order"
+    const val MESSAGE_SIZE = "item_size"
 
     // lock screen visibility constants
     const val LOCK_SCREEN_SENDER_MESSAGE = 1

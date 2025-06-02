@@ -61,7 +61,10 @@ class StarredMessagesAdapter :
             holder.initialsTextView.visibility = View.GONE
             holder.icUser.setImageResource(R.drawable.ic_group)
         }else{
-            if (message.profile_image != null && message.profile_image.isNotEmpty()) {
+            val firstChar = message.sender.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+
+            if (startsWithSpecialChar || message.profile_image != null && message.profile_image.isNotEmpty()) {
                 holder.icUser.visibility = View.VISIBLE
                 holder.initialsTextView.visibility = View.GONE
                 Glide.with(holder.itemView.context)

@@ -107,7 +107,7 @@
     <string name="message_copied">تم نسخ الرسالة!</string>
     <string name="send_now">أرسل الآن</string>
     <string name="copy_text">نسخ النص</string>
-    <string name="schedule_at">حدد موعدًا في</string>
+    <string name="schedule_at">\nحدد موعدًا في</string>
     <string name="welcome_to_messages">مرحباً بكم في <font fgcolor="#1A73E8">الرسائل</font></string>
     <string name="to_send_and_receive">لإرسال واستقبال الرسائل، قم بتعيين تطبيق الرسائل القصيرة الافتراضي لديك.</string>
     <string name="instant_replies_in_one_tap">ردود فورية بنقرة واحدة</string>

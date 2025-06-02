@@ -71,7 +71,7 @@
     <string name="yesterday">Yesterday</string>
     <string name="continues">Continue</string>
     <string name="this_sender_isnot_your_contacts">This sender isn’t one of your\ncontacts</string>
-    <string name="link_from_people">Link from people that you don’t know may open\nunwanted or harmful content</string>
+    <string name="link_from_people">Link from people that you don’t know may open unwanted or harmful content</string>
     <string name="continue_with_possible_risk">Continue with possible risk</string>
     <string name="i_understand">I Understand that this link may be harmful</string>
     <string name="empty_starred_msg">Your Starred messages will appear here</string>

@@ -106,7 +106,7 @@
     <string name="message_copied">Pesan disalin!</string>
     <string name="send_now">Kirim Sekarang</string>
     <string name="copy_text">Salin Teks</string>
-    <string name="schedule_at">Jadwalkan pukul</string>
+    <string name="schedule_at">Jadwalkan pukul\n</string>
     <string name="welcome_to_messages">Selamat datang di <font fgcolor="#1A73E8">Pesan</font></string>
 
     <string name="to_send_and_receive">Untuk mengirim dan menerima pesan, tetapkan Pesan sebagai aplikasi SMS default Anda.</string>

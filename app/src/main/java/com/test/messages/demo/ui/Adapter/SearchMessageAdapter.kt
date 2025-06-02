@@ -11,6 +11,7 @@ import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -62,6 +63,16 @@ class SearchMessageAdapter(
         val matchCount = matchCountMap[message.threadId] ?: 0
         holder.matchCount.text = "${matchCount}" +""+ holder.itemView.context.getString(R.string.matches_found)
 
+        if (!message.read) {
+            holder.sender.setTypeface(null, Typeface.BOLD)
+            holder.blueDot.visibility = View.VISIBLE
+            holder.message.setTextColor(holder.itemView.resources.getColor(R.color.textcolor))
+        } else {
+            holder.sender.setTypeface(null, Typeface.NORMAL)
+            holder.blueDot.visibility = View.GONE
+            holder.message.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
+        }
+
         if (!message.profileImageUrl.isNullOrEmpty()) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
@@ -76,6 +87,9 @@ class SearchMessageAdapter(
             holder.profileContainer.backgroundTintList =
                 ColorStateList.valueOf(TimeUtils.getRandomColor(message.address))
         }
+
+
+
     }
 
     override fun getItemCount(): Int = messages.size
@@ -124,6 +138,7 @@ class SearchMessageAdapter(
         val icUser: RoundedImageView = itemView.findViewById(R.id.icUser)
         val profileContainer: RelativeLayout = itemView.findViewById(R.id.profileContainer)
         val matchCount: TextView = itemView.findViewById(R.id.matchCount)
+        val blueDot: ImageView = itemView.findViewById(R.id.blueDot)
     }
 }
 

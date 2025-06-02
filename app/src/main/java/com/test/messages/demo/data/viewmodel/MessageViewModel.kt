@@ -199,6 +199,7 @@ class MessageViewModel @Inject constructor(
         return _pinnedThreadIds.value?.contains(threadId) == true
     }
 
+
     fun isMuted(threadId: Long): Boolean {
         return _mutedThreadIds.value?.contains(threadId) == true
     }
@@ -240,9 +241,19 @@ class MessageViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 callback.invoke()
             }
+            refreshMutedMessages()
         }
     }
 
+    private suspend fun refreshMutedMessages() = withContext(Dispatchers.IO) {
+        val updatedMessages = repository.getMessages()
+        val mutedThreadIds = repository.getMutedThreadIds()
+        val sortedMessages =
+            updatedMessages.sortedByDescending { mutedThreadIds.contains(it.threadId) }
+        withContext(Dispatchers.Main) {
+            (repository.messages as MutableLiveData).postValue(sortedMessages)
+        }
+    }
 
     private suspend fun refreshPinnedMessages() = withContext(Dispatchers.IO) {
         val updatedMessages = repository.getMessages()
