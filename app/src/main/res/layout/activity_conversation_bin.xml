@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:fitsSystemWindows="true"
-    tools:context=".ui.Activity.ConversationBinactivity">
+    tools:context=".Ui.Activity.ConversationBinactivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/Toolbar"

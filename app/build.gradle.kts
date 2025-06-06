@@ -102,7 +102,6 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.46")
     kapt("com.google.dagger:hilt-compiler:2.46")
 
-//    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.fragment:fragment-ktx:1.6.1")
     implementation("androidx.activity:activity-ktx:1.7.2")
     implementation("com.klinkerapps:android-smsmms:5.2.6")
@@ -117,16 +116,12 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.greenrobot:eventbus:3.1.1")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
-//    implementation ("android.arch.lifecycle:extensions:1.1.1")
     implementation("com.tbuonomo:dotsindicator:5.1.0")
     implementation("it.xabaras.android:recyclerview-swipedecorator:1.4")
 
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-analytics")
-
-//    implementation ("com.intuit.sdp:sdp-android:1.1.0")
-//    implementation ("com.intuit.ssp:ssp-android:1.1.0")
 
 
 }

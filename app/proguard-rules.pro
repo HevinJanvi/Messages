@@ -39,5 +39,5 @@
 -keep class com.test.messages.demo.data.Database.Pin.PinMessage.* { *; }
 -keep class com.test.messages.demo.data.Database.RecyclerBin.** { *; }
 -keep class com.test.messages.demo.data.Database.Starred.StarredMessage.* { *; }
-#-keep class com.test.messages.demo.data.reciever.MessageScheduler.* { *; }
--keep class com.test.messages.demo.ui.Dialogs.ScheduleDialog.* { *; }
+#-keep class com.test.messages.demo.Helper.MessageScheduler.* { *; }
+-keep class com.test.messages.demo.Ui.Dialogs.ScheduleDialog.* { *; }

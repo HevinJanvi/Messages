@@ -4,13 +4,12 @@ package com.test.messages.demo.data.viewmodel
 import android.content.Context
 import android.os.Build
 import android.provider.Telephony
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Helper.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Block.BlockConversation
 import com.test.messages.demo.data.Database.Starred.StarredMessage
@@ -163,29 +162,25 @@ class MessageViewModel @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             val pinnedThreadIds = repository.getPinnedThreadIds().toMutableSet()
 
-            val pinnedMessages = selectedIds.filter { it in pinnedThreadIds }  // Already pinned
-            val unpinnedMessages = selectedIds.filter { it !in pinnedThreadIds } // Not pinned yet
+            val pinnedMessages = selectedIds.filter { it in pinnedThreadIds }
+            val unpinnedMessages = selectedIds.filter { it !in pinnedThreadIds }
             when {
                 pinnedMessages.isNotEmpty() && unpinnedMessages.isNotEmpty() -> {
                     when {
                         pinnedMessages.size >= unpinnedMessages.size -> {
-                            // If pinned >= unpinned, we unpin all
                             repository.removePinnedMessages(pinnedMessages)
                         }
                         else -> {
-                            // More unpinned → Pin only unpinned ones
                             repository.addPinnedMessages(unpinnedMessages)
                         }
                     }
                 }
 
                 pinnedMessages.isNotEmpty() -> {
-                    // Only pinned messages selected → Unpin them
                     repository.removePinnedMessages(pinnedMessages)
                 }
 
                 unpinnedMessages.isNotEmpty() -> {
-                    // Only unpinned messages selected → Pin them
                     repository.addPinnedMessages(unpinnedMessages)
                 }
             }
@@ -215,27 +210,23 @@ class MessageViewModel @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             val muteThreadIds = repository.getMutedThreadIds().toMutableSet()
 
-            val mutedMessages = selectedIds.filter { it in muteThreadIds }  // Already muted
-            val unmutedMessages = selectedIds.filter { it !in muteThreadIds } // Not unmuted yet
+            val mutedMessages = selectedIds.filter { it in muteThreadIds }
+            val unmutedMessages = selectedIds.filter { it !in muteThreadIds }
             when {
                 mutedMessages.isNotEmpty() && unmutedMessages.isNotEmpty() -> {
                     when {
                         mutedMessages.size >= unmutedMessages.size -> {
-                            // Ifmuted >= unmuted, we unmute all
                             repository.removeMutedMessages(mutedMessages)
                         }
                         else -> {
-                            // More unmuted → mute only unmute ones
                             repository.addMutedMessages(unmutedMessages)
                         }
                     }
                 }
                 mutedMessages.isNotEmpty() -> {
-                    // Only muted messages selected → Unmute them
                     repository.removeMutedMessages(mutedMessages)
                 }
                 unmutedMessages.isNotEmpty() -> {
-                    // Only unmuted messages selected → mute them
                     repository.addMutedMessages(unmutedMessages)
                 }
             }
@@ -259,15 +250,6 @@ class MessageViewModel @Inject constructor(
         return repository.getBlockedNumbers()
     }
 
-    fun blockContacts(contactToBlock: List<MessageItem>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            repository.blockContacts(contactToBlock)
-            val updatedMessages = repository.getMessages()
-            withContext(Dispatchers.Main) {
-                (repository.messages as MutableLiveData).value = updatedMessages
-            }
-        }
-    }
 
     fun loadBlockedMessages() {
         repository.getBlockedContacts().observeForever { messages ->
@@ -282,9 +264,6 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    suspend fun getBlockedThreadIdForNumber(phoneNumber: String): Long? {
-        return repository.getBlockedThreadId(phoneNumber)
-    }
 
     suspend fun getBlockedConversations(): List<BlockConversation> {
         return repository.getBlockConversations()
@@ -370,7 +349,6 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-
     fun toggleStarredMessage(
         messageId: Long,
         threadId: Long,
@@ -400,10 +378,6 @@ class MessageViewModel @Inject constructor(
                 repository.insertStarredMessage(starredMessage)
             }
             loadStarredMessages()
-            /*val starredMessages = repository.getAllStarredMessagesNew()
-            withContext(Dispatchers.Main) {
-                _starredMessageIds.value = starredMessages
-            }*/
         }
     }
 
@@ -416,7 +390,6 @@ class MessageViewModel @Inject constructor(
                     message.starred = false
                 } else {
                     val isGroup = message.address.contains(GROUP_SEPARATOR)
-                    Log.d("TAG", "starSelectedMessages: "+message.profileImageUrl)
                     repository.insertStarredMessage(
                         StarredMessage(
                             message_id = message.id,

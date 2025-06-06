@@ -2,19 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.provider.Telephony.SMS_RECEIVED" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
         android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -23,7 +26,6 @@
     <application
         android:name=".data.MyApp"
         android:allowBackup="false"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -32,70 +34,70 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".ui.Activity.BakupRestoreActivity"
+            android:name=".Ui.Activity.BakupRestoreActivity"
             android:exported="false"
-            android:parentActivityName=".ui.Activity.MainActivity"
+            android:parentActivityName=".Ui.Activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.SwipeActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.Activity.AboutActivity"
+            android:name=".Ui.Activity.SwipeActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.ThemeActivity"
+            android:name=".Ui.Activity.AboutActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.SettingsActivity"
+            android:name=".Ui.Activity.ThemeActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.IntroActivity"
+            android:name=".Ui.Activity.SettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.LanguageActivity"
+            android:name=".Ui.Activity.IntroActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.ScheduleActivity"
+            android:name=".Ui.Activity.LanguageActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.AddScheduleActivity"
+            android:name=".Ui.Activity.ScheduleActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.SearchActivity"
+            android:name=".Ui.Activity.AddScheduleActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Ui.Activity.SearchActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ui.Activity.NotificationActivity"
+            android:name=".Ui.Activity.NotificationActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.GroupProfileActivity"
+            android:name=".Ui.Activity.GroupProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
         <activity
-            android:name=".ui.Activity.ProfileActivity"
+            android:name=".Ui.Activity.ProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.ArchivedActivity"
+            android:name=".Ui.Activity.ArchivedActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.RecycleBinActivity"
+            android:name=".Ui.Activity.RecycleBinActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.NewConversationActivtiy"
+            android:name=".Ui.Activity.NewConversationActivtiy"
             android:exported="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
@@ -116,7 +118,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.Activity.SplashActivity"
+            android:name=".Ui.Activity.SplashActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/splashTheme">
@@ -127,7 +129,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.Activity.IntentHandlerActivity"
+            android:name=".Ui.Activity.IntentHandlerActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -149,7 +151,7 @@
         </activity>
 
         <activity
-            android:name=".ui.Activity.SmsPermissionActivity"
+            android:name=".Ui.Activity.SmsPermissionActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
@@ -192,7 +194,7 @@
         </receiver>
 
         <service
-            android:name=".data.reciever.HeadlessSmsSendService"
+            android:name=".data.Service.HeadlessSmsSendService"
             android:exported="true"
             android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
             <intent-filter>
@@ -207,7 +209,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".data.reciever.MmsService"
+            android:name=".data.Service.MmsService"
             android:exported="true"
             android:permission="android.permission.BROADCAST_WAP_PUSH">
             <intent-filter>
@@ -224,45 +226,45 @@
             android:grantUriPermissions="true" />
 
         <activity
-            android:name=".ui.Activity.MainActivity"
+            android:name=".Ui.Activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
         <activity
-            android:name=".ui.Activity.ConversationActivity"
+            android:name=".Ui.Activity.ConversationActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:parentActivityName=".ui.Activity.MainActivity"
+            android:parentActivityName=".Ui.Activity.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.Activity.MainActivity" />
+                android:value=".Ui.Activity.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.Activity.ContactActivtiy"
+            android:name=".Ui.Activity.ContactActivtiy"
             android:exported="false"
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name=".ui.Activity.BlockedContactActivity"
+            android:name=".Ui.Activity.BlockedContactActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.BlockMessageActivity"
+            android:name=".Ui.Activity.BlockMessageActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.StarredMessagesActivity"
+            android:name=".Ui.Activity.StarredMessagesActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.Activity.EditCategoryActivity"
+            android:name=".Ui.Activity.EditCategoryActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.test.messages.demo.ui.Activity.ConversationBinactivity"
+            android:name="com.test.messages.demo.Ui.Activity.ConversationBinactivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"/>
@@ -312,7 +314,7 @@
             android:exported="true">
         </receiver>
 
-        <service android:name=".data.reciever.RestoreService"    android:foregroundServiceType="dataSync"    />
+        <service android:name=".data.Service.BackupRestoreService"    android:foregroundServiceType="dataSync"    />
     </application>
 
 </manifest>

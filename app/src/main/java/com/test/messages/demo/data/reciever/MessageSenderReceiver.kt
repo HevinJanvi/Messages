@@ -5,11 +5,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
-import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
-import com.test.messages.demo.Util.MessagesRestoredEvent
-import com.test.messages.demo.ui.SMSend.MessageUtils
-import com.test.messages.demo.ui.SMSend.SmsSender
-import com.test.messages.demo.ui.SMSend.queryThreadIdForSingleAddress
+import com.test.messages.demo.Helper.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Helper.MessagesRestoredEvent
+import com.test.messages.demo.SMSHelper.MessageUtils
+import com.test.messages.demo.SMSHelper.SmsSender
+import com.test.messages.demo.SMSHelper.queryThreadIdForSingleAddress
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import org.greenrobot.eventbus.EventBus
 

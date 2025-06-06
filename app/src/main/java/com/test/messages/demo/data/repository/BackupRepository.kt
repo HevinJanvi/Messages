@@ -5,11 +5,10 @@ import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Telephony
-import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Helper.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.data.Model.ConversationItem
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.Dispatchers
@@ -148,8 +147,6 @@ class BackupRepository(private val context: Context) {
 
         val restoredList: List<ConversationItem> =
             Gson().fromJson(json, object : TypeToken<List<ConversationItem>>() {}.type)
-
-//        onProgressUpdate.invoke(10)
         val existingIds = getExistingMessageIds()
         val sortedList = restoredList.sortedBy { it.date }.filterNot { existingIds.contains(it.id) }
         val insertedMessages = mutableListOf<ConversationItem>()

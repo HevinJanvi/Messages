@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:id="@+id/rootView"
-    tools:context=".ui.Activity.IntroActivity">
+    tools:context=".Ui.Activity.IntroActivity">
 
     <TextView
         android:id="@+id/skipButton"

@@ -4,12 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Archived.ArchivedDao
 import com.test.messages.demo.data.Database.Block.BlockConversation
 import com.test.messages.demo.data.Database.Block.BlockDao
-import com.test.messages.demo.data.Database.Converters
 import com.test.messages.demo.data.Database.Notification.NotificationDao
 import com.test.messages.demo.data.Database.Notification.NotificationSetting
 import com.test.messages.demo.data.Database.Pin.PinDao
@@ -23,7 +21,6 @@ import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Databas
 
 @Database(entities = [DeletedMessage::class, ArchivedConversation::class, BlockConversation::class,
     PinMessage::class, StarredMessage::class, ScheduledMessage::class, NotificationSetting::class], version = 23, exportSchema = false)
-//@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun recycleBinDao(): RecycleBinDao
     abstract fun archivedDao(): ArchivedDao

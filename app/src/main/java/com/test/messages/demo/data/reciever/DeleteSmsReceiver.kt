@@ -3,8 +3,8 @@ package com.test.messages.demo.data.reciever
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.test.messages.demo.Util.Constants
-import com.test.messages.demo.ui.SMSend.notificationManager
+import com.test.messages.demo.Helper.Constants
+import com.test.messages.demo.SMSHelper.notificationManager
 
 class DeleteSmsReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

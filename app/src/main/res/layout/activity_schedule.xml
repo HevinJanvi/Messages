@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:id="@+id/rootView"
-    tools:context=".ui.Activity.ScheduleActivity">
+    tools:context=".Ui.Activity.ScheduleActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBar"
@@ -32,7 +32,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.test.messages.demo.ui.CustomView.MarqueeTextView
+        <com.test.messages.demo.Ui.CustomView.MarqueeTextView
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

@@ -17,9 +17,6 @@ interface BlockDao {
     @Query("SELECT conversationId FROM block_conversations WHERE isBlocked = 1")
     fun getBlockThreadIds(): List<Long>
 
-    @Query("SELECT conversationId FROM block_conversations WHERE number = :phoneNumber LIMIT 1")
-    suspend fun getBlockedThreadId(phoneNumber: String): Long?
-
     @Query("SELECT COUNT(*) FROM block_conversations WHERE number = :number")
     suspend fun isDeleted(number: String): Boolean
 

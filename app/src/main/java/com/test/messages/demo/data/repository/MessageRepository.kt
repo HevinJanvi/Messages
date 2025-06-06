@@ -10,7 +10,6 @@ import android.os.Build
 import android.provider.BlockedNumberContract
 import android.provider.ContactsContract
 import android.provider.Telephony
-import android.util.Log
 import android.util.Patterns
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
@@ -19,10 +18,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.test.messages.demo.R
-import com.test.messages.demo.Util.Constants
-import com.test.messages.demo.Util.Constants.GROUP_NAME_KEY
-import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
-import com.test.messages.demo.Util.ViewUtils.countryCodes
+import com.test.messages.demo.Helper.Constants
+import com.test.messages.demo.Helper.Constants.GROUP_NAME_KEY
+import com.test.messages.demo.Helper.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Utils.ViewUtils.countryCodes
 import com.test.messages.demo.data.Database.Archived.ArchivedConversation
 import com.test.messages.demo.data.Database.Block.BlockConversation
 import com.test.messages.demo.data.Database.Notification.NotificationSetting
@@ -31,8 +30,8 @@ import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.MessageItem
-import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
-import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
+import com.test.messages.demo.SMSHelper.hasReadContactsPermission
+import com.test.messages.demo.SMSHelper.hasReadSmsPermission
 import dagger.hilt.android.qualifiers.ApplicationContext
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +61,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getMessages(): List<MessageItem> {
-        val startTime = System.currentTimeMillis()
         val sharedPreferences =
             context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -82,56 +80,34 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
             for (messageItem in messageList) {
                 val reciptids = messageItem.reciptids.trim()
-//                Log.d("DEBUG", " Receipt IDs: ${messageItem.threadId} Sender:${messageItem.sender}  Body:${messageItem.body}")
-
                 if (messageItem.body.isNullOrBlank() || messageItem.sender == null) continue
-//                Log.d("TAG", "getMessages: " + reciptids)
                 val isGroupChat = reciptids.contains(" ")
-
-
                 val (displayName, rawPhoneNumber, photoUri) = if (isGroupChat) {
-//                    Log.d("TAG", "getMessages:11111 ")
                     val receiptIdList = reciptids.split(" ")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
-//                    Log.d("DEBUG", "Group detected! Receipt IDs: $receiptIdList")
-
                     val rawPhoneNumbers = receiptIdList.map { id -> recipientMap[id] ?: id }
-//                    Log.d("DEBUG", "Mapped phone numbers: $rawPhoneNumbers")
-                    val key = "${GROUP_NAME_KEY}${messageItem.threadId}"
-
                     val savedGroupName =
                         sharedPreferences.getString(
                             "${GROUP_NAME_KEY}${messageItem.threadId}",
                             null
                         )
-//                    Log.d("DEBUG", "Saved group name for thread ${messageItem.threadId}: $savedGroupName")
                     val groupName = savedGroupName ?: rawPhoneNumbers.map { number ->
                         contactDetails[number]?.name
                             ?: contactDetails[number.removeCountryCode()]?.name ?: number
                     }.joinToString(", ")
-//                    Log.d("DEBUG", "Final group name: $groupName")
 
                     Triple(groupName, rawPhoneNumbers.joinToString(GROUP_SEPARATOR), "")
                 } else {
                     val rawPhone = (recipientMap[reciptids] ?: reciptids).replace(" ", "")
-//                    Log.d("DEBUG", "Processing individual chat. Raw phone number: $rawPhone")
                     var contactInfo =
                         contactDetails[rawPhone] ?: contactDetails[rawPhone.removeCountryCode()]
                     if (contactInfo == null && rawPhone.length > 5) {
-                        //remove +___12345
-                        //remove +__12345
-
-                        //remove +_12345
                         contactInfo = contactDetails[rawPhone.substring(4)]
                             ?: contactDetails[rawPhone.substring(3)]
                                     ?: contactDetails[rawPhone.substring(2)]
                                     ?: contactDetails[rawPhone.substring(1)]
                                     ?: contactDetails[rawPhone]
-                        /* Log.d(
-                             "DEBUG",
-                             "getMessages: " + contactInfo?.name + "---------number----" + rawPhone
-                         )*/
                     }
 
                     Triple(
@@ -140,10 +116,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         contactInfo?.profileImageUrl ?: ""
                     )
                 }
-                /* Log.d(
-                     "TAG",
-                     "getMessages:thread " + messageItem.threadId + "---isgrpoup-----" + isGroupChat
-                 )*/
+
                 newMsgList.add(
                     messageItem.copy(
                         sender = displayName,
@@ -156,9 +129,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             }
 
             _messages.postValue(newMsgList)
-            val endTime = System.currentTimeMillis()
-            Log.d("Performance", "getMessages() took ${endTime - startTime} ms")
-
             newMsgList
         }
     }
@@ -216,7 +186,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 val senderName = ""
                 val profileImageUrl = ""
-//                Log.d("TAG", "getConversations:snnipet " + lastMessage + "---thread----" + threadId)
                 if (lastMessage != null && messageCount > 0) {
                     conversations.add(
                         MessageItem(
@@ -233,17 +202,13 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                             false,
                             messageMap[threadId]?.date ?: lastMessageTimestamp
 
-
                         )
                     )
 
                 }
             }
-
         }
-//        Log.d("ObserverDebug", "getConversations: " + conversations.size)
-//        val conversationList = getLastLatestMessage()
-//        Log.d("ObserverDebug", "Unique threads count: ${conversationList.size}")
+
         return conversations
     }
 
@@ -269,15 +234,12 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             while (cursor.moveToNext()) {
                 val recipientIds =
                     cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Threads.RECIPIENT_IDS))
-
-//                Log.d("TAG", "getRecipientid---- " + recipientIds)
                 recipientIds.split(GROUP_SEPARATOR).map { it.trim() }
                     .filter { it.isNotEmpty() }
                     .let { recipientList.addAll(it) }
             }
         }
         val recipientMap = getRecipientAddressesForIds(recipientList)
-//        Log.d("TAG", "getRecipientAddresses: " + recipientMap)
         return recipientMap
     }
 
@@ -300,16 +262,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val recipientId = it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr._ID))
                 val recipientPhoneNumber =
                     it.getString(it.getColumnIndexOrThrow(Telephony.Mms.Addr.ADDRESS))
-                /* Log.d(
-                     "DEBUG",
-                     "getRecipientAddressesFor:---" + recipientId + "-------number-------" + recipientPhoneNumber
-                 )*/
-
                 recipientMap[recipientId] = recipientPhoneNumber
 
             }
         }
-//        Log.d("TAG", "getRecipientAddressesForIds:- $recipientMap")
         return recipientMap
     }
 
@@ -353,7 +309,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                         " ",
                         ""
                     ).replace("(", "").replace(")", "").replace("-", "")
-//                    Log.d("DEBUG", "getContactDetails: "+phoneNumber+"-----name----"+displayName+"-----normalize numbr----"+normalizePhoneNumber )
                     contactList.add(
                         ContactItem(
                             cid,
@@ -371,10 +326,8 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     fun getConversationDetails(threadId: Long): List<ConversationItem> {
         val conversationList = mutableListOf<ConversationItem>()
-//        Log.d("TAG", "getConversationDetails:- " + threadId)
         if (!context.hasReadContactsPermission()
         ) {
-//            Log.d("MessageRepository", "READ_CONTACTS permission not granted")
             return conversationList
         }
         val projection = arrayOf(
@@ -401,11 +354,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
 
         cursor?.use {
-//            Log.d("TAG", "Conversation loaded. Messages found: ${it.count}")
-
             while (it.moveToNext()) {
-//                Log.d("TAG", "Conversation loaded.")
-
                 val id = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms._ID))
                 val date = it.getLong(it.getColumnIndexOrThrow(Telephony.Sms.DATE))
                 val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
@@ -414,8 +363,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val read = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.READ)) == 1
                 val subscriptionId =
                     it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.SUBSCRIPTION_ID))
-//                Log.d("MessageRepository", "Message: $body | Type: $type | Address: $address | date: $date")
-
                 conversationList.add(
                     ConversationItem(
                         id,
@@ -433,8 +380,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 )
             }
         }
-//        Log.d("TAG", "Conversation loaded. Messages found:1 ${conversationList.size}")
-
         return conversationList
     }
 
@@ -622,11 +567,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         AppDatabase.getDatabase(context).blockDao().getAllBlockConversations()
     }
 
-    suspend fun getBlockedThreadId(phoneNumber: String): Long? {
-        return withContext(Dispatchers.IO) {
-            AppDatabase.getDatabase(context).blockDao().getBlockedThreadId(phoneNumber)
-        }
-    }
 
     suspend fun getBlockThreadIds(): List<Long> {
         return withContext(Dispatchers.IO) {
@@ -691,8 +631,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         return@withContext null
     }
 
-
-    //blocked contacts
     fun getBlockedContacts(): LiveData<List<MessageItem>> {
         val liveData = MutableLiveData<List<MessageItem>>()
 
@@ -757,26 +695,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         }
 
         return -1
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun blockContacts(messagesToBlock: List<MessageItem>) {
-        val contentResolver = context.contentResolver
-
-        for (message in messagesToBlock) {
-            val values = ContentValues().apply {
-                put(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER, message.number)
-            }
-
-            try {
-                val uri =
-                    contentResolver.insert(BlockedNumberContract.BlockedNumbers.CONTENT_URI, values)
-                if (uri != null) {
-                } else {
-                }
-            } catch (e: Exception) {
-            }
-        }
     }
 
 
@@ -950,13 +868,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 if (seenNumbers.contains(number)) continue
                 seenNumbers.add(number)
-                Log.d("TAG", "getAllContacts:normalizeNumber " + normalized)
-
                 var number2 = number.replace(
                     " ",
                     ""
                 ).replace("(", "").replace(")", "").replace("-", "")
-                Log.d("TAG", "getAllContacts:Number " + number2)
                 val contact = ContactItem(
                     cid = id,
                     name = name,

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:id="@+id/rootView"
-    tools:context=".ui.Activity.ThemeActivity">
+    tools:context=".Ui.Activity.ThemeActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBarTheme"
@@ -79,7 +79,7 @@
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="5dp">
 
-                <com.test.messages.demo.ui.CustomView.MarqueeTextView
+                <com.test.messages.demo.Ui.CustomView.MarqueeTextView
                     android:id="@+id/txtLight"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -131,7 +131,7 @@
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="5dp">
 
-                <com.test.messages.demo.ui.CustomView.MarqueeTextView
+                <com.test.messages.demo.Ui.CustomView.MarqueeTextView
                     android:id="@+id/txtDark"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -184,7 +184,7 @@
                 android:paddingVertical="5dp"
                 android:layout_marginTop="5dp">
 
-                <com.test.messages.demo.ui.CustomView.MarqueeTextView
+                <com.test.messages.demo.Ui.CustomView.MarqueeTextView
                     android:id="@+id/txtsystem"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

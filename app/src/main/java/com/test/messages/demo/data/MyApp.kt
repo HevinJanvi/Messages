@@ -3,8 +3,8 @@ package com.test.messages.demo.data
 import android.app.Application
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
-import com.test.messages.demo.Util.Constants.PREFS_NAME
-import com.test.messages.demo.Util.Constants.THEMEMODE
+import com.test.messages.demo.Helper.Constants.PREFS_NAME
+import com.test.messages.demo.Helper.Constants.THEMEMODE
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:id="@+id/rootView"
-    tools:context=".ui.Activity.NotificationActivity">
+    tools:context=".Ui.Activity.NotificationActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/actionbar"

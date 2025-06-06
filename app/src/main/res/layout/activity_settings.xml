@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:id="@+id/rootView"
-    tools:context=".ui.Activity.SettingsActivity">
+    tools:context=".Ui.Activity.SettingsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBarSetting"

@@ -7,7 +7,7 @@ import android.provider.Telephony
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.test.messages.demo.data.Model.DraftModel
-import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
+import com.test.messages.demo.SMSHelper.hasReadSmsPermission
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

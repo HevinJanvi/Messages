@@ -5,12 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
-import com.test.messages.demo.Util.Constants.MARK_AS_READ
-import com.test.messages.demo.Util.MarkasreadEvent
-import com.test.messages.demo.Util.SmsUtils
+import com.test.messages.demo.Helper.Constants.EXTRA_THREAD_ID
+import com.test.messages.demo.Helper.Constants.MARK_AS_READ
+import com.test.messages.demo.Helper.MarkasreadEvent
+import com.test.messages.demo.Utils.SmsUtils
 import com.test.messages.demo.data.repository.MessageRepository
-import com.test.messages.demo.ui.SMSend.notificationManager
+import com.test.messages.demo.SMSHelper.notificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject

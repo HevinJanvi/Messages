@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:id="@+id/rootView"
-    tools:context=".ui.Activity.BakupRestoreActivity">
+    tools:context=".Ui.Activity.BakupRestoreActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolBarbackup"
@@ -32,7 +32,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.test.messages.demo.ui.CustomView.MarqueeTextView
+        <com.test.messages.demo.Ui.CustomView.MarqueeTextView
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
                     android:weightSum="2"
                     app:layout_constraintTop_toBottomOf="@+id/txtviw2">
 
-                    <com.test.messages.demo.ui.CustomView.MarqueeTextView
+                    <com.test.messages.demo.Ui.CustomView.MarqueeTextView
                         android:id="@+id/btnRestore"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -137,7 +137,7 @@
                         android:textColor="@color/white"
                         android:textSize="16sp" />
 
-                    <com.test.messages.demo.ui.CustomView.MarqueeTextView
+                    <com.test.messages.demo.Ui.CustomView.MarqueeTextView
                         android:id="@+id/btnBackup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
