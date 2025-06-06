@@ -97,8 +97,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
-    implementation("io.github.cymchad:BaseRecyclerViewAdapterHelper4:4.1.0")
-
     implementation("com.google.dagger:hilt-android:2.46")
     kapt("com.google.dagger:hilt-compiler:2.46")
 
@@ -115,7 +113,6 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.greenrobot:eventbus:3.1.1")
-    implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("com.tbuonomo:dotsindicator:5.1.0")
     implementation("it.xabaras.android:recyclerview-swipedecorator:1.4")
 
