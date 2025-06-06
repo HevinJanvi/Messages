@@ -35,9 +35,9 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.ViewUtils.blinkThen
 import com.test.messages.demo.data.reciever.UnreadMessageListener
 import com.test.messages.demo.data.viewmodel.MessageViewModel
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
-import com.test.messages.demo.ui.send.notificationManager
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.notificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,11 +80,12 @@ class MainActivity : BaseActivity(), UnreadMessageListener {
         val view: View = binding.getRoot()
         setContentView(view)
         applyWindowInsetsToView(findViewById(R.id.rootView))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+       /* for sdk 35
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             val layoutParams =  binding.include.header.layoutParams as ConstraintLayout.LayoutParams
             layoutParams.setMargins(0,100,0,0)
             binding.include.header.layoutParams = layoutParams
-        }
+        }*/
 
         EventBus.getDefault().register(this)
 

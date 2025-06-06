@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.data.Database.Scheduled.ScheduledMessage
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.TimeUtils.formatTimestamp
 import com.test.messages.demo.Util.TimeUtils.getInitials
 import com.test.messages.demo.Util.TimeUtils.getRandomColor
@@ -60,22 +61,30 @@ class ScheduledMessageAdapter(private val onItemClick: (ScheduledMessage) -> Uni
             recipientView.text = message.recipientName
             messageView.text = message.message
             timeView.text = formatTimestamp(itemView.context,message.scheduledTime)
-            val firstChar = message.recipientName.trim().firstOrNull()
-            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
-            if (message.profileUrl != null && message.profileUrl.isNotEmpty() || startsWithSpecialChar) {
+
+            if (message.recipientNumber.contains(Constants.GROUP_SEPARATOR)) {
                 icUser.visibility = View.VISIBLE
                 initialsTextView.visibility = View.GONE
-                Glide.with(itemView.context)
-                    .load(message.profileUrl)
-                    .placeholder(R.drawable.ic_user)
-                    .into(icUser)
+                icUser.setImageResource(R.drawable.ic_group)
             } else {
-                icUser.visibility = View.GONE
-                initialsTextView.visibility = View.VISIBLE
-                initialsTextView.text = getInitials(message.recipientName)
-                profileContainer.backgroundTintList =
-                    ColorStateList.valueOf(getRandomColor(message.recipientName))
+                val firstChar = message.recipientName.trim().firstOrNull()
+                val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+                if (message.profileUrl != null && message.profileUrl.isNotEmpty() || startsWithSpecialChar) {
+                    icUser.visibility = View.VISIBLE
+                    initialsTextView.visibility = View.GONE
+                    Glide.with(itemView.context)
+                        .load(message.profileUrl)
+                        .placeholder(R.drawable.ic_user)
+                        .into(icUser)
+                } else {
+                    icUser.visibility = View.GONE
+                    initialsTextView.visibility = View.VISIBLE
+                    initialsTextView.text = getInitials(message.recipientName)
+                    profileContainer.backgroundTintList =
+                        ColorStateList.valueOf(getRandomColor(message.recipientName))
+                }
             }
+
         }
     }
 }

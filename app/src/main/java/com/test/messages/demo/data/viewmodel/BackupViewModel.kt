@@ -31,12 +31,13 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
     fun restoreMessages(
         uri: Uri,
         onProgressUpdate: (Int) -> Unit,
-        onComplete: (List<ConversationItem>) -> Unit
+        onComplete: (List<ConversationItem>) -> Unit,
+        onFailure: (Throwable) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             repository.restoreMessages(uri, { progress ->
                 onProgressUpdate.invoke(progress)
-            }, onComplete)
+            }, onComplete,onFailure)
         }
     }
 

@@ -193,7 +193,7 @@
     <string name="backup">ব্যাকআপ</string>
     <string name="restore_now">এখনই পুনরুদ্ধার করুন</string>
     <string name="restore_success">পুনরুদ্ধার সফল</string>
-    <string name="last_backup">শেষ ব্যাকআপ:</string>
+    <string name="last_backup">শেষ ব্যাকআপ:%s</string>
     <string name="backing_up">ব্যাক আপ হচ্ছে...</string>
     <string name="small">ছোট</string>
     <string name="large">বড়</string>

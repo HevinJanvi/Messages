@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -32,8 +31,8 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -223,6 +222,7 @@ class BlockMessageActivity : BaseActivity() {
 
                 for (item in messages) {
                     val threadId = item.threadId
+                    viewModel.deleteStarredMessagesForThread(threadId)
                     val cursor = contentResolver.query(
                         Telephony.Sms.CONTENT_URI,
                         null,
@@ -259,7 +259,7 @@ class BlockMessageActivity : BaseActivity() {
                                 subscriptionId = subscriptionId,
                                 deletedTime = System.currentTimeMillis(),
                                 isGroupChat = address.contains(GROUP_SEPARATOR),
-                                profileImageUrl = ""
+                                profileImageUrl = item.profileImageUrl
                             )
                             deletedMessages.add(deletedMessage)
                         }

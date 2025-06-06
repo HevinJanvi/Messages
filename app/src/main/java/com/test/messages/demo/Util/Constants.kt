@@ -53,6 +53,7 @@ object Constants {
     const val QUERY = "QUERY"
     const val ISSCHEDULED = "isScheduled"
     const val ISGROUP = "isGroup"
+    const val ISCONTACT_SAVE = "isSaved"
     const val ISSTARRED= "isStareed"
     const val ISDELETED = "isDeletedThread"
     const val GROUP_NAME = "GROUP_NAME"
@@ -76,5 +77,14 @@ object Constants {
     const val LOCK_SCREEN_SENDER = 2
     const val LOCK_SCREEN_NOTHING = 3
 
-
+    const val SEND_BROADCAST_TO_SEND_RESTORE_COUNT_PROGRESS_BAR = "1"
+    const val SEND_PROGRESS_VALUE = "0"
+    const val SEND_RESTORE_COMPLETED_BROADCAST = "2"
+    const val SEND_BROADCAST_RESTORE_FAILED = "3"
+    const val SEND_BROADCAST_CANCEL = "6"
+    const val SEND_ERROR_MESSAGE = "4"
+    const val SEND_BACKUP_COMPLETED_BROADCAST="5"
+    const val ACTION_START_RESTORE = "ACTION_START_RESTORE"
+    const val ACTION_START_BACKUP = "ACTION_START_BACKUP"
+    const val EXTRA_JSON_DATA = "extra_json_data"
 }

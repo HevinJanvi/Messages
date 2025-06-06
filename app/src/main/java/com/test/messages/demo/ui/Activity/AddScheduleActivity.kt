@@ -23,7 +23,7 @@ import com.test.messages.demo.Util.Constants.PROFILEURL
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.databinding.ActivityAddScheduleBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
-import com.test.messages.demo.ui.send.MessageUtils
+import com.test.messages.demo.ui.SMSend.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import dagger.hilt.android.AndroidEntryPoint

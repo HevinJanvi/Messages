@@ -192,7 +192,7 @@
     <string name="backup">Sichern</string>
     <string name="restore_now">Jetzt wiederherstellen</string>
     <string name="restore_success">Wiederherstellung erfolgreich</string>
-    <string name="last_backup">Letzte Sicherung:</string>
+    <string name="last_backup">Letzte Sicherung:%s</string>
     <string name="backing_up">Wird gesichert...</string>
     <string name="small">Klein</string>
     <string name="large">Groß</string>

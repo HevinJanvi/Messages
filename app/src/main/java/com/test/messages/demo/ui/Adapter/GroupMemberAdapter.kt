@@ -7,7 +7,6 @@ import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +24,7 @@ import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.ui.Activity.ConversationActivity
-import com.test.messages.demo.ui.send.getThreadId
+import com.test.messages.demo.ui.SMSend.getThreadId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -191,7 +191,7 @@
     <string name="backup">백업</string>
     <string name="restore_now">지금 복원</string>
     <string name="restore_success">복원 성공</string>
-    <string name="last_backup">마지막 백업:</string>
+    <string name="last_backup">마지막 백업:%s</string>
     <string name="backing_up">백업 중...</string>
     <string name="small">작게</string>
     <string name="large">크게</string>

@@ -63,6 +63,7 @@ class MessageAdapter(private val onSelectionChanged: (Int) -> Unit) :
 
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
+        Log.d("TAG", "onBindViewHolder:m "+message.body)
         holder.date.text = formatTimestamp(holder.itemView.context,message.lastMsgDate)
         if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE

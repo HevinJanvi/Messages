@@ -31,8 +31,8 @@ import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.MessageItem
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.qualifiers.ApplicationContext
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -50,29 +50,6 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
     private val _conversation = MutableLiveData<List<ConversationItem>?>()
     val conversation: LiveData<List<ConversationItem>?> get() = _conversation
-//    val countryCodes = listOf(
-//        "0", "+1", "+7", "+20", "+27", "+30", "+31", "+32", "+33", "+34", "+36", "+39",
-//        "+40", "+41", "+43", "+44", "+45", "+46", "+47", "+48", "+49", "+51", "+52",
-//        "+53", "+54", "+55", "+56", "+57", "+58", "+60", "+61", "+62", "+63", "+64",
-//        "+65", "+66", "+81", "+82", "+84", "+86", "+90", "+91", "+92", "+93", "+94",
-//        "+95", "+98", "+211", "+212", "+213", "+216", "+218", "+220", "+221", "+222",
-//        "+223", "+224", "+225", "+226", "+227", "+228", "+229", "+230", "+231", "+232",
-//        "+233", "+234", "+235", "+236", "+237", "+238", "+239", "+240", "+241", "+242",
-//        "+243", "+244", "+245", "+246", "+247", "+248", "+249", "+250", "+251", "+252",
-//        "+253", "+254", "+255", "+256", "+257", "+258", "+260", "+261", "+262", "+263",
-//        "+264", "+265", "+266", "+267", "+268", "+269", "+290", "+291", "+297", "+298",
-//        "+299", "+350", "+351", "+352", "+353", "+354", "+355", "+356", "+357", "+358",
-//        "+359", "+370", "+371", "+372", "+373", "+374", "+375", "+376", "+377", "+378",
-//        "+379", "+380", "+381", "+382", "+383", "+385", "+386", "+387", "+389", "+420",
-//        "+421", "+423", "+500", "+501", "+502", "+503", "+504", "+505", "+506", "+507",
-//        "+508", "+509", "+590", "+591", "+592", "+593", "+594", "+595", "+596", "+597",
-//        "+598", "+599", "+670", "+672", "+673", "+674", "+675", "+676", "+677", "+678",
-//        "+679", "+680", "+681", "+682", "+683", "+685", "+686", "+687", "+688", "+689",
-//        "+690", "+691", "+692", "+850", "+852", "+853", "+855", "+856", "+880", "+886",
-//        "+960", "+961", "+962", "+963", "+964", "+965", "+966", "+967", "+968", "+970",
-//        "+971", "+972", "+973", "+974", "+975", "+976", "+977", "+992", "+993", "+994",
-//        "+995", "+996", "+998"
-//    )
 
     fun String.removeCountryCode(): String {
         for (code in countryCodes.sortedByDescending { it.length }) {
@@ -107,7 +84,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
                 val reciptids = messageItem.reciptids.trim()
 //                Log.d("DEBUG", " Receipt IDs: ${messageItem.threadId} Sender:${messageItem.sender}  Body:${messageItem.body}")
 
-                if (messageItem.body.isNullOrBlank() || messageItem.sender == null ) continue
+                if (messageItem.body.isNullOrBlank() || messageItem.sender == null) continue
 //                Log.d("TAG", "getMessages: " + reciptids)
                 val isGroupChat = reciptids.contains(" ")
 
@@ -185,6 +162,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
             newMsgList
         }
     }
+
     fun emptyConversation() {
         _conversation.postValue(null)
     }
@@ -264,7 +242,7 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
         }
 //        Log.d("ObserverDebug", "getConversations: " + conversations.size)
-        val conversationList = getLastLatestMessage()
+//        val conversationList = getLastLatestMessage()
 //        Log.d("ObserverDebug", "Unique threads count: ${conversationList.size}")
         return conversations
     }
@@ -463,7 +441,9 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
     fun getLastLatestMessage(): MutableMap<Long, ConversationItem> {
         val threadMessageMap = mutableMapOf<Long, ConversationItem>()
         if (!context.hasReadContactsPermission() || (!Build.MANUFACTURER.equals("motorola") && !Build.MANUFACTURER.equals(
-                "Google") && !Build.MANUFACTURER.equals("vivo"))) {
+                "Google"
+            ) && !Build.MANUFACTURER.equals("vivo"))
+        ) {
             return threadMessageMap
         }
         val uri = Telephony.Sms.CONTENT_URI
@@ -834,8 +814,10 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
         return AppDatabase.getDatabase(context).starredMessageDao().getAllStarredMessages()
             .map { it.message_id }.toSet()
     }
+
     suspend fun deleteStarredMessagesByThreadId(threadId: Long) {
-        AppDatabase.getDatabase(context).starredMessageDao().deleteStarredMessagesByThreadId(threadId)
+        AppDatabase.getDatabase(context).starredMessageDao()
+            .deleteStarredMessagesByThreadId(threadId)
     }
 
     suspend fun insertStarredMessage(starredMessage: StarredMessage) {
@@ -968,13 +950,13 @@ class MessageRepository @Inject constructor(@ApplicationContext private val cont
 
                 if (seenNumbers.contains(number)) continue
                 seenNumbers.add(number)
-                Log.d("TAG", "getAllContacts:normalizeNumber "+normalized)
+                Log.d("TAG", "getAllContacts:normalizeNumber " + normalized)
 
                 var number2 = number.replace(
                     " ",
                     ""
                 ).replace("(", "").replace(")", "").replace("-", "")
-                Log.d("TAG", "getAllContacts:Number "+number2)
+                Log.d("TAG", "getAllContacts:Number " + number2)
                 val contact = ContactItem(
                     cid = id,
                     name = name,

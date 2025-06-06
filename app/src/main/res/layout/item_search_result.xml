@@ -61,7 +61,7 @@
             android:textDirection="locale"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
-            android:textSize="17dp"
+            android:textSize="17sp"
             app:layout_constraintEnd_toStartOf="@+id/date"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toTopOf="parent" />
@@ -79,7 +79,7 @@
             android:textDirection="locale"
             android:textColor="@color/gray_txtcolor"
             android:textFontWeight="400"
-            android:textSize="13dp"
+            android:textSize="13sp"
             app:layout_constraintEnd_toStartOf="@+id/blueDot"
             app:layout_constraintStart_toEndOf="@+id/imageContainer"
             app:layout_constraintTop_toBottomOf="@id/sender" />

@@ -43,55 +43,49 @@
 
     </FrameLayout>
 
-
-    <!--<RelativeLayout
-        android:id="@+id/profileContainer"
-        android:layout_width="37dp"
-        android:layout_height="37dp"
-        android:background="@drawable/circle_background"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+    <FrameLayout
+        android:id="@+id/lyContactTxt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageContainer"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/initialsTextView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
-    </RelativeLayout>
-    />-->
+            android:id="@+id/contactName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="start"
+            android:singleLine="true"
+            android:text="@string/contacts"
+            android:textColor="@color/textcolor"
+            android:textDirection="ltr"
+            android:textFontWeight="500"
+            android:textSize="16sp" />
+    </FrameLayout>
 
-    <TextView
-        android:id="@+id/contactName"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:fontFamily="@font/product_sans_medium"
-        android:singleLine="true"
-        android:text="contact"
-        android:textDirection="locale"
-        android:textColor="@color/textcolor"
-        android:textFontWeight="500"
-        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageContainer"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/lyContactTxt">
+
+        <TextView
+            android:id="@+id/contactNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:elegantTextHeight="true"
+            android:fontFamily="@font/product_sans_regular"
+            android:text=""
+            android:textColor="@color/gray_txtcolor"
+            android:textDirection="ltr"
+            android:textSize="13sp" />
+
+    </FrameLayout>
 
 
-    <TextView
-        android:id="@+id/contactNumber"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:elegantTextHeight="true"
-        android:fontFamily="@font/product_sans_regular"
-        android:text="11344679"
-        android:textDirection="locale"
-        android:textColor="@color/gray_txtcolor"
-        android:textSize="13sp"
-        app:layout_constraintStart_toEndOf="@+id/imageContainer"
-        app:layout_constraintTop_toBottomOf="@id/contactName" />
 </androidx.constraintlayout.widget.ConstraintLayout>

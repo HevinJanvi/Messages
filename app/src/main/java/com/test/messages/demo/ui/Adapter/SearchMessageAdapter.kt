@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.makeramen.roundedimageview.RoundedImageView
 import com.test.messages.demo.R
+import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.data.Model.ConversationItem
 import java.util.Locale
@@ -42,7 +43,11 @@ class SearchMessageAdapter(
     }
 
 
-    fun updateList(newMessages: List<ConversationItem>, newQuery: String, newCountMap: Map<Long, Int>) {
+    fun updateList(
+        newMessages: List<ConversationItem>,
+        newQuery: String,
+        newCountMap: Map<Long, Int>
+    ) {
         val diffCallback = MessageDiffCallback(messages, newMessages)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messages = newMessages
@@ -55,13 +60,14 @@ class SearchMessageAdapter(
         val message = messages[position]
         holder.sender.text = highlightText(message.address, query, holder.itemView.context)
         holder.message.text = highlightText(message.body, query, holder.itemView.context)
-        holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context,message.date)
+        holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context, message.date)
 
         holder.itemView.setOnClickListener {
             onItemClick(message, query)
         }
         val matchCount = matchCountMap[message.threadId] ?: 0
-        holder.matchCount.text = "${matchCount}" +""+ holder.itemView.context.getString(R.string.matches_found)
+        holder.matchCount.text =
+            "${matchCount}" + "" + holder.itemView.context.getString(R.string.matches_found)
 
         if (!message.read) {
             holder.sender.setTypeface(null, Typeface.BOLD)
@@ -73,23 +79,28 @@ class SearchMessageAdapter(
             holder.message.setTextColor(holder.itemView.resources.getColor(R.color.gray_txtcolor))
         }
 
-        if (!message.profileImageUrl.isNullOrEmpty()) {
+        if (message.address.contains(GROUP_SEPARATOR)) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
-            Glide.with(holder.itemView.context)
-                .load(message.profileImageUrl)
-                .placeholder(R.drawable.ic_user)
-                .into(holder.icUser)
+            holder.icUser.setImageResource(R.drawable.ic_group)
         } else {
-            holder.icUser.visibility = View.GONE
-            holder.initialsTextView.visibility = View.VISIBLE
-            holder.initialsTextView.text = TimeUtils.getInitials(message.address)
-            holder.profileContainer.backgroundTintList =
-                ColorStateList.valueOf(TimeUtils.getRandomColor(message.address))
+            val firstChar = message.address.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+            if (message.profileImageUrl != null && message.profileImageUrl.isNotEmpty() || startsWithSpecialChar) {
+                holder.icUser.visibility = View.VISIBLE
+                holder.initialsTextView.visibility = View.GONE
+                Glide.with(holder.itemView.context)
+                    .load(message.profileImageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .into(holder.icUser)
+            } else {
+                holder.icUser.visibility = View.GONE
+                holder.initialsTextView.visibility = View.VISIBLE
+                holder.initialsTextView.text = TimeUtils.getInitials(message.address)
+                holder.profileContainer.backgroundTintList =
+                    ColorStateList.valueOf(TimeUtils.getRandomColor(message.address))
+            }
         }
-
-
-
     }
 
     override fun getItemCount(): Int = messages.size

@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
@@ -26,7 +25,6 @@ import com.test.messages.demo.Util.Constants.QUERY
 import com.test.messages.demo.Util.ConversationUpdatedEvent
 import com.test.messages.demo.Util.DeleteSearchMessageEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.Util.ViewUtils.removeCountryCode
 import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.data.Model.SearchableContact
@@ -35,9 +33,9 @@ import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivitySearchBinding
 import com.test.messages.demo.ui.Adapter.SearchContactAdapter
 import com.test.messages.demo.ui.Adapter.SearchMessageAdapter
-import com.test.messages.demo.ui.send.getThreadId
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.getThreadId
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +62,7 @@ class SearchActivity : BaseActivity() {
     private var isMessageExpanded = false
     private var isContactExpanded = false
     private var lastSearchQuery: String = ""
+    private var threadId: Long = -1
 
     private val allMessages = mutableListOf<ConversationItem>()
     private val allContacts = mutableListOf<ContactItem>()
@@ -72,8 +71,10 @@ class SearchActivity : BaseActivity() {
     private lateinit var view: View
 
     fun buildContactIndex(contacts: List<ContactItem>) {
+
+        val safeList = contacts.toList()
         lifecycleScope.launch(Dispatchers.Default) {
-            val newList = contacts.map {
+            val newList = safeList.map {
                 val searchable = "${it.name ?: ""} ${it.phoneNumber}".lowercase()
                 SearchableContact(it, searchable)
             }
@@ -85,7 +86,6 @@ class SearchActivity : BaseActivity() {
     }
 
     private val indexMutex = Mutex()
-
     fun buildSearchIndex(messages: List<ConversationItem>) {
         val indexed = messages.map {
             val searchable = "${it.body} ${it.address}".lowercase()
@@ -110,6 +110,7 @@ class SearchActivity : BaseActivity() {
     fun onConversationUpdated(event: ConversationUpdatedEvent) {
         clearFilters()
         fetchInitialData()
+
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -118,7 +119,7 @@ class SearchActivity : BaseActivity() {
         if (!SmsPermissionUtils.checkAndRedirectIfNotDefault(this) && hasReadSmsPermission() && hasReadContactsPermission()) {
             return
         }
-
+        fetchInitialData()
         if (lastSearchQuery.length > 1) {
             performSearch(lastSearchQuery)
         }
@@ -192,6 +193,7 @@ class SearchActivity : BaseActivity() {
                 viewModel.getContactNumber(this, rawAddress)
             }
             val intent = Intent(this, ConversationActivity::class.java).apply {
+                threadId = message.threadId
                 putExtra(EXTRA_THREAD_ID, message.threadId)
                 putExtra(NUMBER, number)
                 putExtra(NAME, message.address)
@@ -200,6 +202,7 @@ class SearchActivity : BaseActivity() {
                 putExtra(ISGROUP, isGroup)
             }
             startActivity(intent)
+
         }
         binding.recyclerViewMessages.adapter = adapter
         binding.recyclerViewContacts.layoutManager = LinearLayoutManager(this)
@@ -272,6 +275,7 @@ class SearchActivity : BaseActivity() {
                 viewModel.getContactNumber(this, rawAddress)
             }
             val intent = Intent(this, ConversationActivity::class.java).apply {
+                threadId = message.threadId
                 putExtra(EXTRA_THREAD_ID, message.threadId)
                 putExtra(NUMBER, number)
                 putExtra(NAME, message.address)
@@ -370,7 +374,8 @@ class SearchActivity : BaseActivity() {
                     safeContacts = ArrayList(indexedContacts)
                 }
 
-                val contactMap = safeContacts.associate { it.original.phoneNumber to it.original.name }
+                val contactMap =
+                    safeContacts.associate { it.original.phoneNumber to it.original.name }
 
                 val filteredMessages = safeMessages
                     .asSequence()

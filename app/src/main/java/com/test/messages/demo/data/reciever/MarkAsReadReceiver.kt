@@ -10,7 +10,7 @@ import com.test.messages.demo.Util.Constants.MARK_AS_READ
 import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.SmsUtils
 import com.test.messages.demo.data.repository.MessageRepository
-import com.test.messages.demo.ui.send.notificationManager
+import com.test.messages.demo.ui.SMSend.notificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject

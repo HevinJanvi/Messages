@@ -30,4 +30,8 @@ interface StarredMessageDao {
     @Query("DELETE FROM starred_messages WHERE thread_id = :threadId")
     suspend fun deleteStarredMessagesByThreadId(threadId: Long)
 
+    @Query("UPDATE starred_messages SET sender = :newName, profile_image = :newUrl WHERE thread_id = :threadId")
+    suspend fun updateNameAndProfile(threadId: Long, newName: String, newUrl: String)
+
+
 }

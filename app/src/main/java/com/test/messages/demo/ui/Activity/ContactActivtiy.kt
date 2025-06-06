@@ -34,8 +34,8 @@ import com.test.messages.demo.data.Model.ContactItem
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityContactBinding
 import com.test.messages.demo.ui.Adapter.ContactAdapter
-import com.test.messages.demo.ui.send.MessageUtils
-import com.test.messages.demo.ui.send.getThreadId
+import com.test.messages.demo.ui.SMSend.MessageUtils
+import com.test.messages.demo.ui.SMSend.getThreadId
 import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 

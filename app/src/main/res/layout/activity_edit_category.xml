@@ -75,7 +75,7 @@
                 android:text="@string/show_categories"
                 android:textColor="@color/textcolor"
                 android:textFontWeight="400"
-                android:textSize="19dp"
+                android:textSize="19sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/categorySwitch"
                 app:layout_constraintStart_toStartOf="parent"
@@ -122,7 +122,7 @@
             android:lineSpacingExtra="3dp"
             android:text="@string/organize_category"
             android:textColor="@color/gray_txtcolor"
-            android:textSize="16dp"
+            android:textSize="16sp"
             app:layout_constraintTop_toBottomOf="@+id/view1" />
 
         <TextView
@@ -135,7 +135,7 @@
             android:lineSpacingExtra="3dp"
             android:text="@string/tabbed_categories"
             android:textColor="@color/textcolor"
-            android:textSize="17dp"
+            android:textSize="17sp"
             app:layout_constraintTop_toBottomOf="@+id/txt1" />
 
         <androidx.recyclerview.widget.RecyclerView

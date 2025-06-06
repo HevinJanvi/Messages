@@ -50,6 +50,7 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         val otpTextView: TextView = itemView.findViewById(R.id.otpTextView)
 
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message, parent, false)
         return ViewHolder(view)
@@ -59,23 +60,32 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
         val message = messages[position]
         holder.senderName.text = message.sender
         holder.messageBody.text = message.body
-        holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
-        val firstChar = message.sender.trim().firstOrNull()
-        val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
-        if (startsWithSpecialChar|| message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+        holder.date.text = formatTimestamp(holder.itemView.context, message.timestamp)
+
+        if (message.isGroupChat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
-            Glide.with(holder.itemView.context)
-                .load(message.profileImageUrl)
-                .placeholder(R.drawable.ic_user)
-                .dontAnimate()
-                .into(holder.icUser)
+            holder.icUser.setImageResource(R.drawable.ic_group)
         } else {
-            holder.icUser.visibility = View.GONE
-            holder.initialsTextView.visibility = View.VISIBLE
-            holder.initialsTextView.text = getInitials(message.sender)
-            holder.profileContainer.backgroundTintList =
-                ColorStateList.valueOf(getRandomColor(message.sender))
+            val firstChar = message.sender.trim().firstOrNull()
+            val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
+
+            if (startsWithSpecialChar || message.profileImageUrl != null && message.profileImageUrl.isNotEmpty()) {
+                holder.icUser.visibility = View.VISIBLE
+                holder.initialsTextView.visibility = View.GONE
+                Glide.with(holder.itemView.context)
+                    .load(message.profileImageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .dontAnimate()
+                    .into(holder.icUser)
+            } else {
+                holder.icUser.visibility = View.GONE
+                holder.initialsTextView.visibility = View.VISIBLE
+                holder.initialsTextView.text = getInitials(message.sender)
+                holder.profileContainer.backgroundTintList =
+                    ColorStateList.valueOf(getRandomColor(message.sender))
+            }
+
         }
 
         if (!message.isRead) {
@@ -208,6 +218,7 @@ class ArchiveMessageAdapter(private val onArchiveSelectionChanged: (Int) -> Unit
     fun isAllSelected(): Boolean {
         return messages.isNotEmpty() && selectedMessages.size == messages.size
     }
+
     override fun getItemCount(): Int = messages.size
 
     fun removeItems(threadIds: List<Long>) {

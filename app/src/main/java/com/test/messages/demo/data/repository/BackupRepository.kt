@@ -5,24 +5,17 @@ import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Telephony
-import android.util.JsonWriter
-import android.util.Log
 import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.data.Model.ConversationItem
-import com.test.messages.demo.data.Model.MessageItem
-import com.test.messages.demo.ui.send.getThreadId
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.BufferedOutputStream
 import java.io.BufferedWriter
+import java.io.OutputStream
 import java.io.OutputStreamWriter
 
 class BackupRepository(private val context: Context) {
@@ -78,6 +71,9 @@ class BackupRepository(private val context: Context) {
         return messageList
     }
 
+    private var messages: List<ConversationItem> = emptyList()
+    private var outputStream: OutputStream? = null
+    private var writer: BufferedWriter? = null
 
     suspend fun backupMessages(
         uri: Uri,
@@ -85,27 +81,27 @@ class BackupRepository(private val context: Context) {
         onComplete: (Boolean) -> Unit
     ) {
         try {
-            val messages = fetchMessagesFromCursor()
+             messages = fetchMessagesFromCursor()
             if (messages.isEmpty()) {
                 withContext(Dispatchers.Main) { onComplete(false) }
                 return
             }
 
-            val outputStream = context.contentResolver.openOutputStream(uri)
+             outputStream = context.contentResolver.openOutputStream(uri)
             if (outputStream == null) {
                 withContext(Dispatchers.Main) { onComplete(false) }
                 return
             }
 
-            val writer = BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
-            writer.write("[\n")
+             writer = BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
+            writer?.write("[\n")
             val gson = Gson()
             for ((index, message) in messages.withIndex()) {
                 val jsonMessage = gson.toJson(message)
-                writer.write("  $jsonMessage")
+                writer?.write("  $jsonMessage")
 
                 if (index < messages.size - 1) {
-                    writer.write(",\n")
+                    writer?.write(",\n")
                 }
 
                 val progress = ((index + 1) * 100) / messages.size
@@ -113,10 +109,10 @@ class BackupRepository(private val context: Context) {
                     onProgress(progress)
                 }
             }
-            writer.write("\n]")
+            writer?.write("\n]")
 
-            writer.flush()
-            writer.close()
+            writer?.flush()
+            writer?.close()
 
             withContext(Dispatchers.Main) {
                 onComplete(true)
@@ -133,7 +129,8 @@ class BackupRepository(private val context: Context) {
     suspend fun restoreMessages(
         uri: Uri,
         onProgressUpdate: (Int) -> Unit,
-        onComplete: (List<ConversationItem>) -> Unit
+        onComplete: (List<ConversationItem>) -> Unit,
+        onFailure: (Throwable) -> Unit
     ) {
         withContext(Dispatchers.Main) {
             onProgressUpdate.invoke(0)
@@ -142,19 +139,30 @@ class BackupRepository(private val context: Context) {
         val inputStream = context.contentResolver.openInputStream(uri)
         val json = inputStream?.bufferedReader().use { it?.readText() }
 
+        if (json.isNullOrEmpty()) {
+            withContext(Dispatchers.Main) {
+                onFailure(IllegalArgumentException(context.getString(R.string.restore_failed)))
+            }
+            return
+        }
+
         val restoredList: List<ConversationItem> =
             Gson().fromJson(json, object : TypeToken<List<ConversationItem>>() {}.type)
 
-        onProgressUpdate.invoke(10)
-
-        val sortedList = restoredList.sortedBy { it.date }
+//        onProgressUpdate.invoke(10)
         val existingIds = getExistingMessageIds()
+        val sortedList = restoredList.sortedBy { it.date }.filterNot { existingIds.contains(it.id) }
         val insertedMessages = mutableListOf<ConversationItem>()
         val totalMessages = sortedList.size.coerceAtLeast(1)
 
         try {
             for ((index, message) in sortedList.withIndex()) {
                 if (existingIds.contains(message.id)) continue
+
+                val address = message.address
+                if (address.isNullOrEmpty()) {
+                    continue
+                }
 
                 val isGroup = message.address.contains(GROUP_SEPARATOR)
                 val originalThreadId = message.threadId

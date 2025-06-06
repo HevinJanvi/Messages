@@ -97,7 +97,7 @@
                 android:fontFamily="@font/product_sans_regular"
                 android:text="@string/conversation_title"
                 android:textColor="@color/textcolor"
-                android:textSize="17dp"
+                android:textSize="17sp"
                 android:textDirection="locale"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -112,7 +112,7 @@
                 android:maxLines="5"
                 android:textDirection="locale"
                 android:textColor="@color/gray_txtcolor"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/UpdateName" />
 

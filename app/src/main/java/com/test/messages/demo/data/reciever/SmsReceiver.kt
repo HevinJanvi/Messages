@@ -10,16 +10,15 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Telephony
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.Constants.DROPMSG
 import com.test.messages.demo.Util.ConversationOpenedEvent
 import com.test.messages.demo.Util.NewSmsEvent
 import com.test.messages.demo.data.repository.MessageRepository
-import com.test.messages.demo.ui.send.getThreadId
-import com.test.messages.demo.ui.send.getThreadIdSingle
-import com.test.messages.demo.ui.send.notificationHelper
+import com.test.messages.demo.ui.SMSend.getThreadId
+import com.test.messages.demo.ui.SMSend.getThreadIdSingle
+import com.test.messages.demo.ui.SMSend.notificationHelper
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -56,7 +55,7 @@ class SmsReceiver : BroadcastReceiver() {
                 subject = it.pseudoSubject
                 status = it.status
                 body += it.messageBody
-                date = it.timestampMillis
+                date = System.currentTimeMillis()
             }
 
             CoroutineScope(Dispatchers.IO).launch {

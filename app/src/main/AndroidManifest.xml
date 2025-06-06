@@ -16,13 +16,13 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
         android:maxSdkVersion="32"/>
 
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-feature android:name="android.hardware.telephony" />
 
     <application
         android:name=".data.MyApp"
         android:allowBackup="false"
-        android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -34,6 +34,7 @@
         <activity
             android:name=".ui.Activity.BakupRestoreActivity"
             android:exported="false"
+            android:parentActivityName=".ui.Activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.Activity.SwipeActivity"
@@ -281,9 +282,10 @@
         <receiver
             android:name=".data.reciever.MarkAsReadReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="true"
+            android:protectionLevel="signature" >
             <intent-filter>
-                <action android:name="com.simplemobiletools.smsmessenger.action.mark_as_read" />
+                <action android:name="com.test.messages.demo.action.mark_as_read" />
             </intent-filter>
         </receiver>
 
@@ -309,6 +311,8 @@
             android:enabled="true"
             android:exported="true">
         </receiver>
+
+        <service android:name=".data.reciever.RestoreService"    android:foregroundServiceType="dataSync"    />
     </application>
 
 </manifest>

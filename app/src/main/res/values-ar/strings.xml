@@ -191,7 +191,7 @@
     <string name="backup">نسخ احتياطي</string>
     <string name="restore_now">استعادة الآن</string>
     <string name="restore_success">استعادة ناجحة</string>
-    <string name="last_backup">آخر نسخة احتياطية:</string>
+    <string name="last_backup">%sآخر نسخة احتياطية:</string>
     <string name="backing_up">جاري النسخ الاحتياطي...</string>
     <string name="small">صغير</string>
     <string name="large">كبير</string>

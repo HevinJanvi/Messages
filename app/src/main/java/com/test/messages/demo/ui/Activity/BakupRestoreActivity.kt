@@ -1,15 +1,24 @@
 package com.test.messages.demo.ui.Activity
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.Constants
+import com.test.messages.demo.Util.Constants.ACTION_START_BACKUP
+import com.test.messages.demo.Util.Constants.ACTION_START_RESTORE
+import com.test.messages.demo.Util.Constants.EXTRA_JSON_DATA
 import com.test.messages.demo.Util.MessagesRestoredEvent
+import com.test.messages.demo.data.reciever.RestoreService
 import com.test.messages.demo.data.viewmodel.BackupViewModel
 import com.test.messages.demo.databinding.ActivityBakupRestoreBinding
 import kotlinx.coroutines.CoroutineScope
@@ -48,14 +57,7 @@ class BakupRestoreActivity : BaseActivity() {
             animateButton(it)
             Restore()
         }
-        backupViewModel.restoreProgress.observe(this) { progress ->
-            if (progress in 1..99) {
-                showProgress()
-                binding.progressBar.progress = progress
-            } else {
-                hideProgress()
-            }
-        }
+
 
     }
 
@@ -109,7 +111,7 @@ class BakupRestoreActivity : BaseActivity() {
                 text = getString(R.string.messages_can_be_backed)
                 setTextColor(ContextCompat.getColor(context, R.color.gray_txtcolor))
             } else {
-                text = getString(R.string.last_backup) + lastBackupTime
+                text = getString(R.string.last_backup,lastBackupTime)
                 setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
             }
         }
@@ -121,54 +123,152 @@ class BakupRestoreActivity : BaseActivity() {
         backupViewModel.clearRestoreProgress()
     }
 
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter().apply {
+            addAction(Constants.SEND_BROADCAST_TO_SEND_RESTORE_COUNT_PROGRESS_BAR)
+            addAction(Constants.SEND_RESTORE_COMPLETED_BROADCAST)
+            addAction(Constants.SEND_BACKUP_COMPLETED_BROADCAST)
+            addAction(Constants.SEND_BROADCAST_RESTORE_FAILED)
+            addAction(Constants.SEND_BROADCAST_CANCEL)
+        }
+        LocalBroadcastManager.getInstance(this).registerReceiver(progressBarReceiver, filter)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(progressBarReceiver)
+    }
+
+    private val progressBarReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Constants.SEND_BROADCAST_TO_SEND_RESTORE_COUNT_PROGRESS_BAR -> {
+                    val progress = intent.getIntExtra(Constants.SEND_PROGRESS_VALUE, 0)
+                    runOnUiThread {
+                        showProgress()
+                        binding.progressBar.progress = progress
+                    }
+                }
+
+                Constants.SEND_RESTORE_COMPLETED_BROADCAST -> {
+                    Toast.makeText(
+                        this@BakupRestoreActivity,
+                        getString(R.string.restore_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    runOnUiThread {
+                        hideProgress()
+                        EventBus.getDefault().post(MessagesRestoredEvent(true))
+
+                    }
+                }
+
+                Constants.SEND_BACKUP_COMPLETED_BROADCAST -> {
+                    saveLastBackupTime()
+                    loadLastBackupTime()
+                    Toast.makeText(
+                        this@BakupRestoreActivity,
+                        getString(R.string.backup_saved_successfully),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    runOnUiThread {
+                        hideProgress()
+
+                    }
+                }
+
+                Constants.SEND_BROADCAST_CANCEL -> {
+                    runOnUiThread {
+                        hideProgress()
+                    }
+                    EventBus.getDefault().post(MessagesRestoredEvent(true))
+
+                }
+                Constants.SEND_BROADCAST_RESTORE_FAILED -> {
+                    val error =
+                        intent.getStringExtra(Constants.SEND_ERROR_MESSAGE) ?: "Unknown error"
+                    Toast.makeText(context, getString(R.string.restore_failed), Toast.LENGTH_LONG)
+                        .show()
+                    runOnUiThread {
+                        hideProgress()
+                    }
+                }
+
+            }
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             data?.data?.let { uri ->
                 when (requestCode) {
                     IMPORT_JSON_REQUEST_CODE -> {
-
+                        showProgress()
                         binding.txtviw.setText(getString(R.string.restoring))
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            try {
-                                showProgress()
-                                backupViewModel.restoreMessages(uri, { progress ->
-                                    binding.progressBar.progress = progress
-
-                                }) { restoredList ->
-                                    hideProgress()
-                                    if (restoredList.isNotEmpty()) {
-                                        Toast.makeText(
-                                            this@BakupRestoreActivity,
-                                            getString(R.string.restore_success),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        EventBus.getDefault().post(MessagesRestoredEvent(true))
-                                    } else {
-                                        Toast.makeText(
-                                            this@BakupRestoreActivity,
-                                            getString(R.string.no_new_messages_restored),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                hideProgress()
-                                Toast.makeText(
-                                    this@BakupRestoreActivity,
-                                    getString(R.string.restore_failed) + "${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
+                        val intent = Intent(this, RestoreService::class.java).apply {
+                            action = ACTION_START_RESTORE
+                            putExtra(EXTRA_JSON_DATA, uri.toString())
                         }
+                        ContextCompat.startForegroundService(this, intent)
+
+                        /*  CoroutineScope(Dispatchers.Main).launch {
+                              try {
+                                  showProgress()
+                                  backupViewModel.restoreMessages(
+                                      uri,
+                                      { progress -> binding.progressBar.progress = progress },
+                                      { restoredList ->
+                                          hideProgress()
+                                          if (restoredList.isNotEmpty()) {
+                                              Toast.makeText(
+                                                  this@BakupRestoreActivity,
+                                                  getString(R.string.restore_success),
+                                                  Toast.LENGTH_SHORT
+                                              ).show()
+                                              EventBus.getDefault().post(MessagesRestoredEvent(true))
+                                          } else {
+                                              Toast.makeText(
+                                                  this@BakupRestoreActivity,
+                                                  getString(R.string.no_new_messages_restored),
+                                                  Toast.LENGTH_SHORT
+                                              ).show()
+                                          }
+                                      },
+                                      {
+                                          hideProgress()
+                                          Toast.makeText(
+                                              this@BakupRestoreActivity,
+                                              getString(R.string.restore_failed),
+                                              Toast.LENGTH_SHORT
+                                          ).show()
+                                      }
+                                  )
+
+                              } catch (e: Exception) {
+                                  hideProgress()
+                                  Toast.makeText(
+                                      this@BakupRestoreActivity,
+                                      getString(R.string.restore_failed) + "${e.message}",
+                                      Toast.LENGTH_LONG
+                                  ).show()
+                              }
+                          }*/
 
                     }
 
                     EXPORT_JSON_REQUEST_CODE -> {
                         binding.txtviw.setText(getString(R.string.backing_up))
                         showProgress()
-                        backupViewModel.backupMessages(uri,
+                        val intent = Intent(this, RestoreService::class.java).apply {
+                            action = ACTION_START_BACKUP
+                            putExtra(EXTRA_JSON_DATA, uri.toString())
+                        }
+                        ContextCompat.startForegroundService(this, intent)
+
+
+                        /*backupViewModel.backupMessages(uri,
                             onProgress = { progress ->
                                 runOnUiThread {
                                     binding.progressBar.progress = progress
@@ -195,7 +295,7 @@ class BakupRestoreActivity : BaseActivity() {
                                     }
                                 }
                             }
-                        )
+                        )*/
 
                     }
 

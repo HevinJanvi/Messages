@@ -7,9 +7,9 @@ import android.content.Intent
 import android.provider.Telephony
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
 import com.test.messages.demo.Util.MessagesRestoredEvent
-import com.test.messages.demo.ui.send.MessageUtils
-import com.test.messages.demo.ui.send.SmsSender
-import com.test.messages.demo.ui.send.queryThreadIdForSingleAddress
+import com.test.messages.demo.ui.SMSend.MessageUtils
+import com.test.messages.demo.ui.SMSend.SmsSender
+import com.test.messages.demo.ui.SMSend.queryThreadIdForSingleAddress
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import org.greenrobot.eventbus.EventBus
 
@@ -35,6 +35,21 @@ class MessageSenderReceiver : BroadcastReceiver() {
                 val recipients =
                     message.recipientNumber.split(GROUP_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }
 
+                if (recipients.size > 1) {
+                    val groupThreadId = Telephony.Threads.getOrCreateThreadId(context, recipients.toSet())
+
+                    messagingUtils.insertSmsMessage(
+                        subId = subId,
+                        dest = recipients.joinToString(GROUP_SEPARATOR),
+                        text = message.message,
+                        timestamp = System.currentTimeMillis(),
+                        threadId = groupThreadId,
+                        status = Telephony.Sms.Sent.STATUS_COMPLETE,
+                        type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
+                        messageId = null
+                    )
+                }
+
                 for (recipient in recipients) {
                     val recipientThreadId = context.queryThreadIdForSingleAddress(recipient)
 
@@ -58,28 +73,6 @@ class MessageSenderReceiver : BroadcastReceiver() {
                         messageUri = messageUri
                     )
                 }
-
-                val groupRecipientSet = recipients.toSet()
-                val groupThreadIdActual = Telephony.Threads.getOrCreateThreadId(context, groupRecipientSet)
-                val groupMessageUri = messagingUtils.insertSmsMessage(
-                    subId = subId,
-                    dest = recipients.joinToString(GROUP_SEPARATOR),
-                    text = message.message,
-                    timestamp = System.currentTimeMillis(),
-                    threadId = groupThreadIdActual,
-                    status = Telephony.Sms.Sent.STATUS_COMPLETE,
-                    type = Telephony.Sms.Sent.MESSAGE_TYPE_SENT,
-                    messageId = null
-                )
-
-                SmsSender.getInstance(context.applicationContext as Application).sendMessage(
-                    subId = subId,
-                    destination = recipients.joinToString(GROUP_SEPARATOR),
-                    body = message.message,
-                    serviceCenter = null,
-                    requireDeliveryReport = false,
-                    messageUri = groupMessageUri
-                )
 
                 db.scheduledMessageDao().delete(message)
                 EventBus.getDefault().post(MessagesRestoredEvent(true))

@@ -60,7 +60,7 @@
                 android:textColorHint="@color/gray_txtcolor"
                 android:textDirection="locale"
                 android:textFontWeight="400"
-                android:textSize="15dp"
+                android:textSize="15sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnclose"
                 app:layout_constraintStart_toEndOf="@+id/icBack"

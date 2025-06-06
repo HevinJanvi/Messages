@@ -67,8 +67,8 @@
 
             <ImageView
                 android:id="@+id/btnKeypad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="22dp"
+                android:layout_height="17dp"
                 android:layout_marginEnd="10dp"
                 android:adjustViewBounds="true"
                 android:src="@drawable/ic_num_keypad"
@@ -169,7 +169,7 @@
             android:background="@drawable/ripple_effect"
             android:textColor="@color/textcolor"
             android:textFontWeight="500"
-            android:textSize="18dp" />
+            android:textSize="18sp" />
 
     </LinearLayout>
 

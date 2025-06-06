@@ -191,7 +191,7 @@
     <string name="backup">Cadangan</string>
     <string name="restore_now">Pulihkan Sekarang</string>
     <string name="restore_success">Pulihkan Berhasil</string>
-    <string name="last_backup">Cadangan Terakhir:</string>
+    <string name="last_backup">Cadangan Terakhir:%s</string>
     <string name="backing_up">Mencadangkan...</string>
     <string name="small">Kecil</string>
     <string name="large">Besar</string>

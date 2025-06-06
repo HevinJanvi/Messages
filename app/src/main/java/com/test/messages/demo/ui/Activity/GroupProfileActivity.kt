@@ -1,14 +1,12 @@
 package com.test.messages.demo.ui.Activity
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,8 +26,8 @@ import com.test.messages.demo.ui.Dialogs.RenameDialog
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.UpdateGroupNameEvent
 import com.test.messages.demo.data.viewmodel.MessageViewModel
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage

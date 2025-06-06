@@ -115,7 +115,6 @@ class NotificationActivity : BaseActivity(){
                 updatePreviewText(previewOption)
             }
         }
-
     }
 
 

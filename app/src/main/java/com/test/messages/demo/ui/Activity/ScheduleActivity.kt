@@ -21,12 +21,12 @@ import com.test.messages.demo.R
 import com.test.messages.demo.databinding.ActivityScheduleBinding
 import com.test.messages.demo.ui.Adapter.ScheduledMessageAdapter
 import com.test.messages.demo.ui.Dialogs.ScheduleDialog
-import com.test.messages.demo.ui.send.MessageUtils
+import com.test.messages.demo.ui.SMSend.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.ui.send.SmsSender
+import com.test.messages.demo.ui.SMSend.SmsSender
 import com.test.messages.demo.data.viewmodel.MessageViewModel
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.Dispatchers

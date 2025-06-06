@@ -191,7 +191,7 @@
     <string name="backup">बैकअप</string>
     <string name="restore_now">अभी पुनर्स्थापित करें</string>
     <string name="restore_success">पुनर्स्थापित सफल</string>
-    <string name="last_backup">अंतिम बैकअप:</string>
+    <string name="last_backup">अंतिम बैकअप:%s</string>
     <string name="backing_up">बैकअप लिया जा रहा है...</string>
     <string name="small">छोटा</string>
     <string name="large">बड़ा</string>

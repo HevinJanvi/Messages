@@ -37,6 +37,7 @@
                 android:layout_marginVertical="4dp"
                 android:fontFamily="@font/product_sans_regular"
                 android:paddingStart="15dp"
+                android:paddingEnd="0dp"
                 android:text="@string/small"
                 android:textColor="@color/textcolor"
                 android:textSize="16sp" />

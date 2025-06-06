@@ -53,7 +53,7 @@
                     android:text="@string/app_name"
                     android:textColor="@color/textcolor"
                     android:textFontWeight="500"
-                    android:textSize="20dp"
+                    android:textSize="20sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/icFilter"
                     app:layout_constraintStart_toEndOf="@id/icDrawer"
@@ -130,7 +130,7 @@
                     android:text="@string/selected"
                     android:textColor="@color/textcolor"
                     android:textFontWeight="500"
-                    android:textSize="19dp"
+                    android:textSize="19sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/SelecteAll"
@@ -196,7 +196,7 @@
                         android:fontFamily="@font/product_sans_regular"
                         android:text="@string/pin"
                         android:textColor="@color/gray_txtcolor"
-                        android:textSize="12dp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -225,7 +225,7 @@
                         android:gravity="center"
                         android:text="@string/notification"
                         android:textColor="@color/gray_txtcolor"
-                        android:textSize="12dp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -253,7 +253,7 @@
                         android:gravity="center"
                         android:text="@string/archived"
                         android:textColor="@color/gray_txtcolor"
-                        android:textSize="12dp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -280,7 +280,7 @@
                         android:gravity="center"
                         android:text="@string/delete"
                         android:textColor="@color/gray_txtcolor"
-                        android:textSize="12dp" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -309,7 +309,7 @@
                         android:gravity="center"
                         android:text="@string/block"
                         android:textColor="@color/gray_txtcolor"
-                        android:textSize="12dp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
             </LinearLayout>

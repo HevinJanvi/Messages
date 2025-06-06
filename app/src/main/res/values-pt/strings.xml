@@ -191,7 +191,7 @@
     <string name="backup">Backup</string>
     <string name="restore_now">Restaurar agora</string>
     <string name="restore_success">Restauração bem-sucedida</string>
-    <string name="last_backup">Último backup:</string>
+    <string name="last_backup">Último backup:%s</string>
     <string name="backing_up">Fazendo backup...</string>
     <string name="small">Pequeno</string>
     <string name="large">Grande</string>

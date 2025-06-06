@@ -1,6 +1,5 @@
 package com.test.messages.demo.ui.Activity
 
-import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -24,22 +23,22 @@ import com.test.messages.demo.R
 import com.test.messages.demo.Util.Constants
 import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.ISCONTACT_SAVE
 import com.test.messages.demo.Util.Constants.ISDELETED
 import com.test.messages.demo.Util.Constants.ISGROUP
 import com.test.messages.demo.Util.Constants.NAME
+import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.Util.Constants.PREFS_NAME
 import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.data.Database.Notification.NotificationSetting
-import com.test.messages.demo.data.Database.Pin.PinMessage
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityRecyclebinBinding
 import com.test.messages.demo.ui.Adapter.RecycleBinAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
-import com.test.messages.demo.ui.send.getThreadId
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.getThreadId
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -70,12 +69,13 @@ class RecycleBinActivity : BaseActivity() {
         }
 
         binding.recycleBinRecyclerView.adapter = recycleBinAdapter
-        recycleBinAdapter.onBinItemClick = { deletedMessage ->
+        recycleBinAdapter.onBinItemClick = {(deletedMessage, isContactSaved) ->
             val intent = Intent(this, ConversationBinactivity::class.java)
             intent.putExtra(ISDELETED, true)
             intent.putExtra(EXTRA_THREAD_ID, deletedMessage.threadId)
             intent.putExtra(NAME, deletedMessage.address)
             intent.putExtra(ISGROUP, deletedMessage.isGroupChat)
+            intent.putExtra(ISCONTACT_SAVE, isContactSaved)
             startActivityForResult(intent, 101)
         }
         loadGroupedMessages()
@@ -199,7 +199,6 @@ class RecycleBinActivity : BaseActivity() {
 
                 val selectedThreadIds =
                     recycleBinAdapter.selectedMessages.map { it.threadId }.distinct()
-//                val pinnedThreadIds =  AppDatabase.getDatabase(this@RecycleBinActivity).pinDao().getAllPinnedThreadIds().toSet()
 
                 for (threadId in selectedThreadIds) {
                     val threadMessages = db.getAllMessagesByThread(threadId)

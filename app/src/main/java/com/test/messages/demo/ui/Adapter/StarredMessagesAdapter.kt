@@ -21,7 +21,6 @@ import com.test.messages.demo.Util.ViewUtils.extractOtp
 import com.test.messages.demo.data.Database.Starred.StarredMessage
 import com.test.messages.demo.data.Model.StarredDiffCallback
 
-
 class StarredMessagesAdapter :
     RecyclerView.Adapter<StarredMessagesAdapter.ViewHolder>() {
 
@@ -46,7 +45,8 @@ class StarredMessagesAdapter :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_message_starred, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_message_starred, parent, false)
         return ViewHolder(view)
     }
 
@@ -55,12 +55,12 @@ class StarredMessagesAdapter :
         holder.senderName.text = message.sender
         val lastStarredMessage = lastStarredMessages[message.thread_id] ?: message.body
         holder.messageBody.text = lastStarredMessage ?: message.body
-        holder.date.text = formatTimestamp(holder.itemView.context,message.timestamp)
+        holder.date.text = formatTimestamp(holder.itemView.context, message.timestamp)
         if (message.is_group_chat) {
             holder.icUser.visibility = View.VISIBLE
             holder.initialsTextView.visibility = View.GONE
             holder.icUser.setImageResource(R.drawable.ic_group)
-        }else{
+        } else {
             val firstChar = message.sender.trim().firstOrNull()
             val startsWithSpecialChar = firstChar != null && !firstChar.isLetterOrDigit()
 
@@ -79,7 +79,6 @@ class StarredMessagesAdapter :
                     ColorStateList.valueOf(getRandomColor(message.sender))
             }
         }
-
 
         if (selectedMessages.contains(message)) {
             holder.icSelect.visibility = View.VISIBLE

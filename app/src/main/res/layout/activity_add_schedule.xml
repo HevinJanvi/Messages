@@ -57,7 +57,7 @@
                 android:inputType="text"
                 android:imeOptions="actionDone"
                 android:textFontWeight="400"
-                android:textSize="15dp"
+                android:textSize="15sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/btnKeypad"
                 app:layout_constraintStart_toEndOf="@+id/icBack"

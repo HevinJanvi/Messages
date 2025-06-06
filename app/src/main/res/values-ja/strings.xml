@@ -191,7 +191,7 @@
     <string name="backup">バックアップ</string>
     <string name="restore_now">今すぐ復元</string>
     <string name="restore_success">復元に成功</string>
-    <string name="last_backup">前回のバックアップ: </string>
+    <string name="last_backup">前回のバックアップ:%s </string>
     <string name="backing_up">バックアップ中...</string>
     <string name="small">小</string>
     <string name="large">大</string>

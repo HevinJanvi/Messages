@@ -11,7 +11,7 @@ import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.test.messages.demo.Util.RefreshMessagesEvent
-import com.test.messages.demo.ui.send.MessageUtils
+import com.test.messages.demo.ui.SMSend.MessageUtils
 
 import org.greenrobot.eventbus.EventBus
 

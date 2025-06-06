@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -19,6 +20,7 @@ class CategoryAdapter(private val context: Context,
 
     inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.categoryText)
+        val txtLy: ConstraintLayout = itemView.findViewById(R.id.txtLy)
         val underlineView: View = itemView.findViewById(R.id.underlineView)
     }
 
@@ -55,7 +57,7 @@ class CategoryAdapter(private val context: Context,
             holder.underlineView.requestLayout()
         }
 
-        holder.textView.setOnClickListener {
+        holder.txtLy.setOnClickListener {
             selectedCategory = category
             onCategorySelected(category)
             holder.textView.animate()

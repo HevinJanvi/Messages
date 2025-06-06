@@ -11,9 +11,9 @@ data class ConversationItem(
     val body: String,
     val address: String,
     val type: Int,
-    val read: Boolean,
+    var read: Boolean,
     val subscriptionId: Int,
-    val profileImageUrl: String,
+    var profileImageUrl: String,
     val isHeader: Boolean,
     var starred: Boolean = false
 ) {

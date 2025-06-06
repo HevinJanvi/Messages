@@ -191,7 +191,7 @@
     <string name="backup">Kopia zapasowa</string>
     <string name="restore_now">Przywróć teraz</string>
     <string name="restore_success">Przywracanie zakończone powodzeniem</string>
-    <string name="last_backup">Ostatnia kopia zapasowa:</string>
+    <string name="last_backup">Ostatnia kopia zapasowa:%s</string>
     <string name="backing_up">Kopia zapasowa...</string>
     <string name="small">Mały</string>
     <string name="large">Duży</string>

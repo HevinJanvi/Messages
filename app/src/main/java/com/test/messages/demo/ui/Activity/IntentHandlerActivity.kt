@@ -12,7 +12,7 @@ import com.test.messages.demo.Util.Constants.EXTRA_TXT
 import com.test.messages.demo.Util.Constants.NAME
 import com.test.messages.demo.Util.Constants.NUMBER
 import com.test.messages.demo.data.viewmodel.MessageViewModel
-import com.test.messages.demo.ui.send.getThreadId
+import com.test.messages.demo.ui.SMSend.getThreadId
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

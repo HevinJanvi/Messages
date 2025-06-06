@@ -19,9 +19,9 @@ import com.test.messages.demo.Util.MarkasreadEvent
 import com.test.messages.demo.Util.SmsUtils
 import com.test.messages.demo.Util.ViewUtils.getUseSIMIdAtNumber
 import com.test.messages.demo.data.repository.MessageRepository
-import com.test.messages.demo.ui.send.MessageUtils
-import com.test.messages.demo.ui.send.SmsSend
-import com.test.messages.demo.ui.send.notificationHelper
+import com.test.messages.demo.ui.SMSend.MessageUtils
+import com.test.messages.demo.ui.SMSend.SmsSend
+import com.test.messages.demo.ui.SMSend.notificationHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

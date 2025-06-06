@@ -3,6 +3,7 @@ package com.test.messages.demo.ui.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -21,6 +22,8 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
@@ -40,9 +43,10 @@ import com.test.messages.demo.Util.SnackbarUtil
 import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.viewmodel.DraftViewModel
 import com.test.messages.demo.data.viewmodel.MessageViewModel
+import com.test.messages.demo.ui.Dialogs.BlockProgressDialog
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -255,7 +259,10 @@ class ArchivedActivity : BaseActivity() {
         }
 
         binding.btnBlock.setOnClickListener {
-            val selectedThreadIds = adapter.getSelectedThreadIds()
+            BlockMessages()
+//            blockMessages(adapter.getSelectedThreadIds())
+
+            /*val selectedThreadIds = adapter.getSelectedThreadIds()
 
             if (selectedThreadIds.isNotEmpty()) {
                 val blockDialog = BlockDialog(this) {
@@ -269,12 +276,44 @@ class ArchivedActivity : BaseActivity() {
                     }
                 }
                 blockDialog.show()
-            }
+            }*/
         }
 
         binding.icMore.setOnClickListener {
             showPopup(it)
         }
+    }
+
+    fun BlockMessages() {
+        val selectedGroups = adapter.selectedMessages.filter { it.isGroupChat }
+        if (selectedGroups.isNotEmpty()) {
+            return
+        }
+
+        val selectedIds = adapter.selectedMessages.map { it.threadId }
+        val selectedThreadIds = adapter.getSelectedThreadIds()
+        val blockDialog = BlockDialog(this) {
+            if (selectedIds.size > 10) {
+                val progressDialog = BlockProgressDialog(this)
+                runOnUiThread {
+                    progressDialog.show(getString(R.string.block_messages_progress))
+                }
+                viewModel.unarchiveConversations(selectedThreadIds)
+                viewModel.blockSelectedConversations(selectedIds) {
+                    adapter.removeItems(selectedThreadIds)
+                    adapter.clearSelection()
+                    progressDialog.dismiss()
+                }
+
+            } else {
+                viewModel.unarchiveConversations(selectedThreadIds)
+                viewModel.blockSelectedConversations(selectedIds)
+                adapter.clearSelection()
+            }
+
+        }
+
+        blockDialog.show()
     }
 
     private fun restoreArchivedMessages(messages: List<MessageItem>) {
@@ -309,10 +348,26 @@ class ArchivedActivity : BaseActivity() {
     private fun updateSelectedItemsCount() {
         binding.txtSelectedCount.text =
             "${adapter.selectedMessages.size}" + " " + getString(R.string.selected)
+
         if (adapter.selectedMessages.size > 0) {
             binding.lySelectedItemsArchive.visibility = View.VISIBLE
             binding.selectMenuArchive.visibility = View.VISIBLE
             binding.toolBarArchive.visibility = View.GONE
+
+            val shouldEnable = adapter.selectedMessages.any { it.isGroupChat }
+            binding.btnBlock.isEnabled = !shouldEnable
+            val color = if (!shouldEnable) {
+                ContextCompat.getColor(this, R.color.red)
+            } else {
+                ContextCompat.getColor(this, R.color.default_shadow_color)
+            }
+            ImageViewCompat.setImageTintList(binding.blockic, ColorStateList.valueOf(color))
+            if (!shouldEnable) {
+                binding.txtblock.setTextColor(resources.getColor(R.color.gray_txtcolor))
+            } else {
+                binding.txtblock.setTextColor(resources.getColor(R.color.default_shadow_color))
+            }
+
         } else {
             binding.lySelectedItemsArchive.visibility = View.GONE
             binding.selectMenuArchive.visibility = View.GONE
@@ -379,14 +434,14 @@ class ArchivedActivity : BaseActivity() {
                                 subscriptionId = subscriptionId,
                                 deletedTime = System.currentTimeMillis(),
                                 isGroupChat = address.contains(GROUP_SEPARATOR),
-                                profileImageUrl = ""
+                                profileImageUrl = item.profileImageUrl
                             )
                             deletedMessages.add(deletedMessage)
                         }
                     }
 
                     val uri = Uri.parse("content://sms/conversations/$threadId")
-                     contentResolver.delete(uri, null, null)
+                    contentResolver.delete(uri, null, null)
                 }
                 if (deletedMessages.isNotEmpty()) db.insertMessages(deletedMessages)
                 withContext(Dispatchers.Main) {
@@ -511,7 +566,8 @@ class ArchivedActivity : BaseActivity() {
                 put(Telephony.Sms.READ, newReadStatus)
             }
 
-            val selection = "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(GROUP_SEPARATOR)})"
+            val selection =
+                "${Telephony.Sms.THREAD_ID} IN (${threadIds.joinToString(GROUP_SEPARATOR)})"
             val updatedRows = contentResolver.update(
                 Telephony.Sms.CONTENT_URI,
                 contentValues,

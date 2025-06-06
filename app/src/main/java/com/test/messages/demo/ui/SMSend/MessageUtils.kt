@@ -1,4 +1,4 @@
-package com.test.messages.demo.ui.send
+package com.test.messages.demo.ui.SMSend
 
 import android.annotation.SuppressLint
 import android.content.ContentValues

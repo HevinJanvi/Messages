@@ -15,10 +15,9 @@ import kotlinx.coroutines.withContext
 
 object SmsUtils {
 
-
     fun markThreadAsRead(context: Context, threadId: Long) {
         if (threadId == -1L) return
-
+        Log.d("TAG", "markThreadAsRead: " + threadId)
         CoroutineScope(Dispatchers.IO).launch {
             val contentValues = ContentValues().apply {
                 put(Telephony.Sms.READ, 1)
@@ -26,12 +25,13 @@ object SmsUtils {
             }
 
             val uri = Telephony.Sms.CONTENT_URI
+//            val selection = "${Telephony.Sms.THREAD_ID} = ? AND ${Telephony.Sms.READ} = 0"
             val selection = "${Telephony.Sms.THREAD_ID} = ?"
             val selectionArgs = arrayOf(threadId.toString())
 
             val updatedRows =
                 context.contentResolver.update(uri, contentValues, selection, selectionArgs)
-            Log.d("MessageRepository", "Marked $updatedRows messages as read in thread $threadId")
+            Log.d("TAG", "Marked $updatedRows messages as read in thread $threadId")
         }
     }
 

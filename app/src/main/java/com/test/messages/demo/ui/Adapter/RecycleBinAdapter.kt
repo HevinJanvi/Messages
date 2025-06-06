@@ -34,7 +34,7 @@ class RecycleBinAdapter(
     private var messages: MutableList<DeletedMessage> = mutableListOf()
     val selectedMessages = mutableSetOf<DeletedMessage>()
     private var isMultiSelectionMode = false
-    var onBinItemClick: ((DeletedMessage) -> Unit)? = null
+    var onBinItemClick: ((Pair<DeletedMessage, Boolean>) -> Unit)? = null
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderName: TextView = itemView.findViewById(R.id.senderName)
@@ -58,7 +58,7 @@ class RecycleBinAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val message = messages[position]
-
+        var isContactSaved = false
         val context = holder.itemView.context
         val sharedPreferences = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
         val savedGroupName = sharedPreferences.getString("${GROUP_NAME_KEY}${message.threadId}", null)
@@ -67,9 +67,13 @@ class RecycleBinAdapter(
         } else {
 
             val addressList = message.address.split(GROUP_SEPARATOR)
+
             val nameList = addressList.map { number ->
                 val name = getContactName(context, number.trim())
-                if (!name.isNullOrEmpty() && name != number) name else number
+                if (!name.isNullOrEmpty() && name != number) {
+                    isContactSaved = true
+                    name
+                } else number
             }
             nameList.joinToString(GROUP_SEPARATOR)
         }
@@ -78,7 +82,6 @@ class RecycleBinAdapter(
         holder.senderName.text = finalName
         holder.messageBody.text = message.body
             holder.date.text = TimeUtils.formatTimestamp(holder.itemView.context,message.date)
-
 
         if (selectedMessages.find { it.threadId == message.threadId } != null) {
             holder.icSelect.visibility = View.VISIBLE
@@ -142,7 +145,9 @@ class RecycleBinAdapter(
             if (selectedMessages.isNotEmpty()) {
                 toggleSelection(message, holder)
             } else {
-                onBinItemClick?.invoke(message)
+//                onBinItemClick?.invoke(message)
+                onBinItemClick?.invoke(message to isContactSaved)
+
             }
         }
 
@@ -206,6 +211,7 @@ class RecycleBinAdapter(
     override fun getItemCount(): Int = messages.size
 
     fun getContactName(context: Context, phoneNumber: String): String? {
+        if (phoneNumber.isNullOrBlank()) return null
         val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
         val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
 

@@ -15,7 +15,6 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
@@ -40,11 +39,10 @@ import com.test.messages.demo.data.reciever.DeleteSmsReceiver
 import com.test.messages.demo.data.reciever.DirectReplyReceiver
 import com.test.messages.demo.data.reciever.MarkAsReadReceiver
 import com.test.messages.demo.ui.Activity.ConversationActivity
-import com.test.messages.demo.ui.send.notificationManager
+import com.test.messages.demo.ui.SMSend.notificationManager
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.Locale
-
 
 class NotificationHelper(private val context: Context) {
 
@@ -145,6 +143,7 @@ class NotificationHelper(private val context: Context) {
             putExtra(NAME, sender)
             putExtra(NUMBER, address)
         }
+
         val contentPendingIntent = TaskStackBuilder.create(context).run {
             addParentStack(ConversationActivity::class.java)
             addNextIntent(contentIntent)
@@ -169,7 +168,6 @@ class NotificationHelper(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
 
-
         val markAsReadPendingIntent =
             PendingIntent.getBroadcast(
                 context,
@@ -190,7 +188,6 @@ class NotificationHelper(private val context: Context) {
                 deleteSmsIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
-
 
         var replyAction: NotificationCompat.Action? = null
         val isNoReplySms = isShortCodeWithLetters(address)

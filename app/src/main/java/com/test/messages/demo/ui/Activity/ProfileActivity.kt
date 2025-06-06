@@ -21,6 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
@@ -39,8 +40,8 @@ import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.ViewUtils.isServiceNumber
 import com.test.messages.demo.data.viewmodel.MessageViewModel
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.DeletedMessage
@@ -65,6 +66,7 @@ class ProfileActivity : BaseActivity() {
     private lateinit var addContactLauncher: ActivityResultLauncher<Intent>
     private var contactId: String? = null
     private var isArchived = false
+    private  var latestPhotoUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +79,17 @@ class ProfileActivity : BaseActivity() {
                 val updatedPhotoUri = getContactPhotoUri(number)
                 binding.adreesUser.text = updatedName
                 binding.number.text = number
+
                 if (updatedPhotoUri != null && updatedPhotoUri.toString().isNotBlank()) {
                     profileEdit(updatedName, updatedPhotoUri)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val db = AppDatabase.getDatabase(this@ProfileActivity)
+                        db.starredMessageDao().updateNameAndProfile(
+                            threadId = threadId,
+                            newName = updatedName,
+                            newUrl = updatedPhotoUri?.toString() ?: ""
+                        )
+                    }
                 } else {
                     profileEdit(updatedName, Uri.EMPTY)
                 }
@@ -94,7 +105,7 @@ class ProfileActivity : BaseActivity() {
         fromBlock = intent.getBooleanExtra(FROMBLOCK, false)
         fromArchive = intent.getBooleanExtra(FROMARCHIVE, false)
         messageSize = intent.getIntExtra(MESSAGE_SIZE, 0)
-        Log.d("TAG", "onCreate:messageSize "+messageSize)
+        Log.d("TAG", "onCreate:messageSize " + messageSize)
         if (messageSize == 0) {
             binding.ontherLy.isEnabled = false
             binding.ontherLy.alpha = 0.3f
@@ -121,16 +132,14 @@ class ProfileActivity : BaseActivity() {
             checkIfArchived(threadId)
         }
 
-
-
         val latestName = getContactName(number) ?: name
-        val latestPhotoUri = getContactPhotoUri(number)
+        latestPhotoUri = getContactPhotoUri(number)
 
         binding.adreesUser.text = latestName
         binding.number.text = number
 
         if (latestPhotoUri != null && latestPhotoUri.toString().isNotBlank()) {
-            profileEdit(latestName, latestPhotoUri)
+            profileEdit(latestName, latestPhotoUri!!)
         } else {
             profileEdit(latestName, Uri.EMPTY)
         }
@@ -300,7 +309,7 @@ class ProfileActivity : BaseActivity() {
                                     refreshCheck(threadId)
                                 }
                                 unblockDialog.show()
-                            }else{
+                            } else {
                                 binding.profileBlock.isEnabled = false
                                 binding.profileBlock.isClickable = false
                                 binding.profileBlock.alpha = 0.3f
@@ -322,7 +331,7 @@ class ProfileActivity : BaseActivity() {
                                     }
                                 }
                                 blockDialog.show()
-                            }else{
+                            } else {
                                 binding.profileBlock.isEnabled = false
                                 binding.profileBlock.isClickable = false
                                 binding.profileBlock.alpha = 0.3f
@@ -382,16 +391,83 @@ class ProfileActivity : BaseActivity() {
     }
 
 
+//    @RequiresApi(Build.VERSION_CODES.Q)
+//    fun deleteMessagesForCurrentThread(threadId: Long) {
+//        val contentResolver = contentResolver
+//        val db = AppDatabase.getDatabase(this).recycleBinDao()
+//
+//        Thread {
+//            try {
+//                val deletedMessages = mutableListOf<DeletedMessage>()
+//                val existingBodyDatePairs =
+//                    mutableSetOf<Pair<String, Long>>()
+//
+//                val cursor = contentResolver.query(
+//                    Telephony.Sms.CONTENT_URI,
+//                    null,
+//                    "thread_id = ?",
+//                    arrayOf(threadId.toString()),
+//                    Telephony.Sms.DEFAULT_SORT_ORDER
+//                )
+//
+//                cursor?.use {
+//                    val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+//                    val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+//                    val dateIndex = it.getColumnIndex(Telephony.Sms.DATE)
+//                    val typeIndex = it.getColumnIndex(Telephony.Sms.TYPE)
+//                    val readIndex = it.getColumnIndex(Telephony.Sms.READ)
+//                    val subIdIndex = it.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+//                    val messageIdIndex = it.getColumnIndex(Telephony.Sms._ID)
+//
+//                    while (it.moveToNext()) {
+//                        val body = it.getString(bodyIndex) ?: ""
+//                        val date = it.getLong(dateIndex)
+//                        val key = Pair(body, date)
+//
+//                        if (existingBodyDatePairs.contains(key)) continue
+//                        existingBodyDatePairs.add(key)
+//
+//                        val deletedMessage = DeletedMessage(
+//                            messageId = it.getLong(messageIdIndex),
+//                            threadId = threadId,
+//                            address = it.getString(addressIndex) ?: "",
+//                            date = date,
+//                            body = body,
+//                            type = it.getInt(typeIndex),
+//                            read = it.getInt(readIndex) == 1,
+//                            subscriptionId = if (subIdIndex != -1) it.getInt(subIdIndex) else -1,
+//                            deletedTime = System.currentTimeMillis(),
+//                            isGroupChat = false,
+//                            profileImageUrl = latestPhotoUri.toString()
+//                        )
+//                        deletedMessages.add(deletedMessage)
+//                    }
+//                }
+//                val uri = Uri.parse("content://sms/conversations/$threadId")
+//                contentResolver.delete(uri, null, null)
+//                db.insertMessages(deletedMessages)
+//                Handler(Looper.getMainLooper()).postDelayed({
+//                    EventBus.getDefault().post(MessagesRefreshEvent(true))
+//                    finish()
+//                    overridePendingTransition(0, 0)
+//                }, 100)
+//
+//
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }.start()
+//    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     fun deleteMessagesForCurrentThread(threadId: Long) {
         val contentResolver = contentResolver
         val db = AppDatabase.getDatabase(this).recycleBinDao()
 
-        Thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val deletedMessages = mutableListOf<DeletedMessage>()
-                val existingBodyDatePairs =
-                    mutableSetOf<Pair<String, Long>>()
+                val existingBodyDatePairs = mutableSetOf<Pair<String, Long>>()
 
                 val cursor = contentResolver.query(
                     Telephony.Sms.CONTENT_URI,
@@ -426,27 +502,30 @@ class ProfileActivity : BaseActivity() {
                             body = body,
                             type = it.getInt(typeIndex),
                             read = it.getInt(readIndex) == 1,
-                            subscriptionId = it.getInt(subIdIndex),
-                            deletedTime = System.currentTimeMillis()
+                            subscriptionId = if (subIdIndex != -1) it.getInt(subIdIndex) else -1,
+                            deletedTime = System.currentTimeMillis(),
+                            isGroupChat = false,
+                            profileImageUrl = latestPhotoUri.toString()
                         )
-
                         deletedMessages.add(deletedMessage)
                     }
                 }
+
                 val uri = Uri.parse("content://sms/conversations/$threadId")
                 contentResolver.delete(uri, null, null)
+
                 db.insertMessages(deletedMessages)
-                Handler(Looper.getMainLooper()).postDelayed({
+
+                withContext(Dispatchers.Main) {
                     EventBus.getDefault().post(MessagesRefreshEvent(true))
                     finish()
                     overridePendingTransition(0, 0)
-                }, 100)
-
+                }
 
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }.start()
+        }
     }
 
     private fun disableLy() {
@@ -543,6 +622,14 @@ class ProfileActivity : BaseActivity() {
                 binding.number.text = number
                 if (updatedPhotoUri != null && updatedPhotoUri.toString().isNotBlank()) {
                     profileEdit(updatedName, updatedPhotoUri)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val db = AppDatabase.getDatabase(this@ProfileActivity)
+                        db.starredMessageDao().updateNameAndProfile(
+                            threadId = threadId,
+                            newName = updatedName,
+                            newUrl = updatedPhotoUri?.toString() ?: ""
+                        )
+                    }
                 } else {
                     profileEdit(updatedName, Uri.EMPTY)
                 }

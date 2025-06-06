@@ -37,6 +37,7 @@ import com.test.messages.demo.Util.ViewUtils.extractOtp
 import com.test.messages.demo.Util.ViewUtils.isLikelyOtp
 import com.test.messages.demo.Util.ViewUtils.isProbablyYear
 import com.test.messages.demo.data.Model.ConversationItem
+import com.test.messages.demo.data.Model.MessageItem
 import com.test.messages.demo.data.Model.SIMCard
 import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
 import java.text.SimpleDateFormat
@@ -66,6 +67,7 @@ class ConversationAdapter(
     }
 
     val selectedItems = mutableSetOf<ConversationItem>()
+
     var isMultiSelectionEnabled = false
     private val expandedMessages = mutableSetOf<Long>()
     private var lastMessagePosition: Int? = null
@@ -220,7 +222,7 @@ class ConversationAdapter(
                     messageStatus.visibility = View.GONE
                 }
 
-                val isSelected = selectedItems.contains(message)
+
                 val otpCode = message.body?.extractOtp()
                 if (otpCode != null) {
                     otptext.visibility = View.VISIBLE
@@ -232,7 +234,10 @@ class ConversationAdapter(
                     otptext.visibility = View.GONE
                 }
 
-                if (isSelected) {
+//                val isSelected = selectedItems.contains(message)
+//                if (selectedItems.find { it.id == message.id } != null) {}
+
+                if (selectedItems.find { it.id == message.id } != null) {
                     messageBody.setBackgroundResource(R.drawable.bg_message_selected)
                     messageBody.setTextColor(Color.WHITE)
                 } else {
@@ -318,8 +323,11 @@ class ConversationAdapter(
                 "(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=]+\\.[a-zA-Z]{2,}(/[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=]*)?(\\?[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=%]*)?(\\&[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=%]*)*(#[a-zA-Z0-9\\-._~:/?#@!$&'()*+,;=]*)?"
             )
 
+//            val phonePattern = Pattern.compile(
+//                "\\+?[0-9]{1,4}?[-.\\s]?\\(?[0-9]{2,4}?\\)?[-.\\s]?[0-9]{2,4}[-.\\s]?[0-9]{3,10}"
+//            )
             val phonePattern = Pattern.compile(
-                "\\+?[0-9]{1,4}?[-.\\s]?\\(?[0-9]{2,4}?\\)?[-.\\s]?[0-9]{2,4}[-.\\s]?[0-9]{3,10}"
+                "(?<!\\b(?:Ac|A/c|Account|Acct|txn)[xX0-9\\s]{0,15})\\b\\+?[0-9]{7,15}\\b(?![a-zA-Z])"
             )
 
             val otpPattern = Pattern.compile(
@@ -339,9 +347,7 @@ class ConversationAdapter(
                     val matchedText = matcher.group()
                     spannableString.setSpan(object : ClickableSpan() {
                         override fun onClick(widget: View) {
-
                                 onClick(matchedText)
-
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
@@ -546,20 +552,34 @@ class ConversationAdapter(
         notifyDataSetChanged()
     }
 
-    private fun toggleSelection(message: ConversationItem, i: Int) {
+    private fun toggleSelection(message: ConversationItem,i: Int) {
+        if (selectedItems.find { it.id == message.id } != null) {
+            selectedItems.removeIf { it.id == message.id }
+//            holder.icSelect.visibility = View.INVISIBLE
+//            holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.transparant))
+        } else {
+            selectedItems.add(message)
+//            holder.icSelect.visibility = View.VISIBLE
+//            holder.itemContainer.setBackgroundColor(holder.itemView.context.getColor(R.color.select_bg))
+        }
+        if (selectedItems.isEmpty()) {
+            isMultiSelectionEnabled = false
+        }
+        onSelectionChanged(selectedItems.size)
+        notifyDataSetChanged()
+    }
+    /*private fun toggleSelection(message: ConversationItem, i: Int) {
         if (selectedItems.contains(message)) {
             selectedItems.remove(message)
         } else {
             selectedItems.add(message)
         }
-
         if (selectedItems.isEmpty()) {
             isMultiSelectionEnabled = false
         }
-
         onSelectionChanged(selectedItems.size)
         notifyDataSetChanged()
-    }
+    }*/
 
     fun clearSelection() {
         selectedItems.clear()

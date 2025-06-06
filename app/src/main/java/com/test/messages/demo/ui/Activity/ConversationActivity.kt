@@ -82,9 +82,9 @@ import com.test.messages.demo.data.Model.ConversationItem
 import com.test.messages.demo.databinding.ActivityConversationBinding
 import com.test.messages.demo.ui.Adapter.ConversationAdapter
 import com.test.messages.demo.ui.Dialogs.LearnMoreDialog
-import com.test.messages.demo.ui.send.MessageUtils
+import com.test.messages.demo.ui.SMSend.MessageUtils
 import com.test.messages.demo.Util.SmsPermissionUtils
-import com.test.messages.demo.ui.send.SmsSender
+import com.test.messages.demo.ui.SMSend.SmsSender
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.resetMessageCount
 import com.test.messages.demo.data.reciever.MessageScheduler
@@ -100,11 +100,11 @@ import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.ui.Dialogs.DeleteDialog
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
 import com.test.messages.demo.ui.Dialogs.MessageDetailsDialog
-import com.test.messages.demo.ui.send.getThreadId
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
-import com.test.messages.demo.ui.send.hasReadStatePermission
-import com.test.messages.demo.ui.send.subscriptionManagerCompat
+import com.test.messages.demo.ui.SMSend.getThreadId
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.hasReadStatePermission
+import com.test.messages.demo.ui.SMSend.subscriptionManagerCompat
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -208,6 +208,8 @@ class ConversationActivity : BaseActivity() {
 
         isGroup = intent.getBooleanExtra(ISGROUP, false)
         isStarred = intent.getBooleanExtra(Constants.ISSTARRED, false)
+
+        Log.d("TAG", "onCreate:isStarred "+isStarred)
         setLearnMoreSpannable()
         val forwardedMessage = intent.getStringExtra(FORWARDMSGS)
         if (!forwardedMessage.isNullOrEmpty()) {
@@ -249,9 +251,11 @@ class ConversationActivity : BaseActivity() {
         } else {
             threadId = getThreadId(setOf(number))
         }
-        markThreadAsRead(this@ConversationActivity, threadId)
-        viewModel.loadStarredMessages()
+        if (!isStarred) {
+            markThreadAsRead(this@ConversationActivity, threadId)
+        }
 
+        viewModel.loadStarredMessages()
 
         observeViewModel()
 
@@ -511,7 +515,7 @@ class ConversationActivity : BaseActivity() {
             availableSIMCards,
             onSelectionChanged = { selectedCount ->
                 updateUI(selectedCount)
-                if(!highlightQuery.isNullOrEmpty()){
+                if (!highlightQuery.isNullOrEmpty()) {
                     adapter.setSearchQuery(highlightQuery)
                     searchAndScroll(highlightQuery)
                 }
@@ -626,11 +630,12 @@ class ConversationActivity : BaseActivity() {
         binding.msgSendLayout.visibility = View.GONE
         binding.loader.visibility = View.VISIBLE
         binding.emptyText.visibility = View.GONE
+        binding.btnInfo.visibility = View.GONE
         viewModel.conversation.observe(this) { conversation ->
             if (conversation == null) {
                 return@observe
             }
-            Log.d("TAG", "observeViewModel: "+conversation.size)
+            Log.d("TAG", "observeViewModel: " + conversation.size)
             var conversationList = conversation
             CoroutineScope(Dispatchers.IO).launch {
                 val filteredList =
@@ -670,6 +675,7 @@ class ConversationActivity : BaseActivity() {
                         )
                         addedHeaders.add(headerKey)
                     }
+                    message.profileImageUrl = profileUrl
                     groupedList.add(message)
                 }
                 withContext(Dispatchers.Main) {
@@ -679,15 +685,16 @@ class ConversationActivity : BaseActivity() {
                             adapter.setSearchQuery(highlightQuery)
                             searchAndScroll(highlightQuery)
                         }
-//                        if (shouldScrollToBottom) {
+                        if (shouldScrollToBottom) {
                             scrolltoBottom()
-//                        }
-//                        shouldScrollToBottom = true
+                        }
+                        shouldScrollToBottom = true
 
                     }
 
                     binding.loader.visibility = View.GONE
                     binding.msgSendLayout.visibility = View.VISIBLE
+                    binding.btnInfo.visibility = View.VISIBLE
 
                     if (groupedList.isNotEmpty()) {
                         binding.emptyText.visibility = View.GONE
@@ -709,14 +716,15 @@ class ConversationActivity : BaseActivity() {
                         }
 
                         updateLyouts(ViewUtils.isShortCodeWithLetters(number), isGroup)
-                        markThreadAsRead(this@ConversationActivity, threadId)
+                        if (!isStarred) {
+                            markThreadAsRead(this@ConversationActivity, threadId)
+                        }
                         viewModel.loadMessages()
                     } else {
                         binding.emptyText.visibility = View.VISIBLE
                         binding.loader.visibility = View.GONE
                         binding.address.text = name
                         updateLyouts(ViewUtils.isShortCodeWithLetters(number), isGroup)
-
                     }
                 }
             }
@@ -830,10 +838,10 @@ class ConversationActivity : BaseActivity() {
                 withContext(Dispatchers.Main) {
                     tempMessages.add(tempMessage)
                     adapter.addMessages(listOf(tempMessage))
-                   /* adapter.setSearchQuery("")
-                    highlightQuery = ""
-                    searchAndScroll(highlightQuery)
-                    scrolltoBottom()*/
+                    /* adapter.setSearchQuery("")
+                     highlightQuery = ""
+                     searchAndScroll(highlightQuery)
+                     scrolltoBottom()*/
                     highlightQuery = ""
 
                 }
@@ -1137,7 +1145,7 @@ class ConversationActivity : BaseActivity() {
 
     private fun updateUI(selectedCount: Int) {
         if (selectedCount > 0) {
-            highlightQuery=""
+            highlightQuery = ""
             binding.actionSelectItem.visibility = View.VISIBLE
             binding.actionbar.visibility = View.GONE
             binding.countText.text = "$selectedCount" + " " + getString(R.string.selected)
@@ -1198,108 +1206,108 @@ class ConversationActivity : BaseActivity() {
         viewModel.loadConversation(threadId)
     }
 
-   /* @SuppressLint("RestrictedApi")
-    private fun showDateTimePickerDialog() {
-        val calendar = Calendar.getInstance()
-        val currentYear = calendar.get(Calendar.YEAR)
-        val currentMonth = calendar.get(Calendar.MONTH)
-        val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
-        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-        val currentMinute = calendar.get(Calendar.MINUTE)
+    /* @SuppressLint("RestrictedApi")
+     private fun showDateTimePickerDialog() {
+         val calendar = Calendar.getInstance()
+         val currentYear = calendar.get(Calendar.YEAR)
+         val currentMonth = calendar.get(Calendar.MONTH)
+         val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+         val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+         val currentMinute = calendar.get(Calendar.MINUTE)
 
-        val datePickerDialog = DatePickerDialog(
-            this@ConversationActivity, R.style.CustomDatePicker,
-            { _, year, month, dayOfMonth ->
-                val selectedDate = Calendar.getInstance().apply {
-                    set(Calendar.YEAR, year)
-                    set(Calendar.MONTH, month)
-                    set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                }
+         val datePickerDialog = DatePickerDialog(
+             this@ConversationActivity, R.style.CustomDatePicker,
+             { _, year, month, dayOfMonth ->
+                 val selectedDate = Calendar.getInstance().apply {
+                     set(Calendar.YEAR, year)
+                     set(Calendar.MONTH, month)
+                     set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                 }
 
-                val timePickerDialog = TimePickerDialog(
-                    this, R.style.CustomTimePicker,
+                 val timePickerDialog = TimePickerDialog(
+                     this, R.style.CustomTimePicker,
 
-                    { _, hourOfDay, minute ->
-                        val selectedCalendar = Calendar.getInstance().apply {
-                            set(Calendar.YEAR, year)
-                            set(Calendar.MONTH, month)
-                            set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                            set(Calendar.HOUR_OF_DAY, hourOfDay)
-                            set(Calendar.MINUTE, minute)
-                            set(Calendar.SECOND, 0)
-                            set(Calendar.MILLISECOND, 0)
-                        }
+                     { _, hourOfDay, minute ->
+                         val selectedCalendar = Calendar.getInstance().apply {
+                             set(Calendar.YEAR, year)
+                             set(Calendar.MONTH, month)
+                             set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                             set(Calendar.HOUR_OF_DAY, hourOfDay)
+                             set(Calendar.MINUTE, minute)
+                             set(Calendar.SECOND, 0)
+                             set(Calendar.MILLISECOND, 0)
+                         }
 
-                        if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
-                            Toast.makeText(
-                                this,
-                                getString(R.string.cannot_select_past_time),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            showDateTimePickerDialog()
-                        } else {
-                            selectedTimeInMillis = selectedCalendar.timeInMillis
-                            binding.schedulLy.visibility = View.VISIBLE
+                         if (selectedCalendar.timeInMillis < System.currentTimeMillis()) {
+                             Toast.makeText(
+                                 this,
+                                 getString(R.string.cannot_select_past_time),
+                                 Toast.LENGTH_SHORT
+                             ).show()
+                             showDateTimePickerDialog()
+                         } else {
+                             selectedTimeInMillis = selectedCalendar.timeInMillis
+                             binding.schedulLy.visibility = View.VISIBLE
 
-                            val is24Hour =
-                                android.text.format.DateFormat.is24HourFormat(this@ConversationActivity)
-                            val timePattern =
-                                if (is24Hour) "dd MMM yyyy HH:mm" else "dd MMM yyyy hh:mm a"
-                            val formattedTime =
-                                SimpleDateFormat(timePattern, Locale.ENGLISH).format(
-                                    selectedCalendar.time
-                                )
+                             val is24Hour =
+                                 android.text.format.DateFormat.is24HourFormat(this@ConversationActivity)
+                             val timePattern =
+                                 if (is24Hour) "dd MMM yyyy HH:mm" else "dd MMM yyyy hh:mm a"
+                             val formattedTime =
+                                 SimpleDateFormat(timePattern, Locale.ENGLISH).format(
+                                     selectedCalendar.time
+                                 )
 
-                            val spannable = SpannableStringBuilder().apply {
-                                append(getString(R.string.schedule_at))
-                                setSpan(
-                                    ForegroundColorSpan(
-                                        ContextCompat.getColor(
-                                            this@ConversationActivity,
-                                            R.color.colorPrimary
-                                        )
+                             val spannable = SpannableStringBuilder().apply {
+                                 append(getString(R.string.schedule_at))
+                                 setSpan(
+                                     ForegroundColorSpan(
+                                         ContextCompat.getColor(
+                                             this@ConversationActivity,
+                                             R.color.colorPrimary
+                                         )
 
 
-                                    ),
-                                    0,
-                                    getString(R.string.schedule_at).length,
-                                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                                )
-                                val timeSpan = SpannableString(formattedTime)
-                                timeSpan.setSpan(
-                                    ForegroundColorSpan(
-                                        ContextCompat.getColor(
-                                            this@ConversationActivity,
-                                            R.color.colorPrimary
-                                        )
-                                    ),
-                                    0,
-                                    timeSpan.length,
-                                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                                )
-                                append(timeSpan)
-                            }
-                            binding.selectedTimeTextView.text = spannable
-                        }
-                    },
-                    currentHour,
-                    currentMinute,
-                    false
-                )
-                timePickerDialog.show()
-            },
-            currentYear,
-            currentMonth,
-            currentDay
+                                     ),
+                                     0,
+                                     getString(R.string.schedule_at).length,
+                                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                 )
+                                 val timeSpan = SpannableString(formattedTime)
+                                 timeSpan.setSpan(
+                                     ForegroundColorSpan(
+                                         ContextCompat.getColor(
+                                             this@ConversationActivity,
+                                             R.color.colorPrimary
+                                         )
+                                     ),
+                                     0,
+                                     timeSpan.length,
+                                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                 )
+                                 append(timeSpan)
+                             }
+                             binding.selectedTimeTextView.text = spannable
+                         }
+                     },
+                     currentHour,
+                     currentMinute,
+                     false
+                 )
+                 timePickerDialog.show()
+             },
+             currentYear,
+             currentMonth,
+             currentDay
 
-        )
-        datePickerDialog.setOnCancelListener {
-            isScheduled = false
-            binding.schedulLy.visibility = View.GONE
-        }
-        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
-        datePickerDialog.show()
-    }*/
+         )
+         datePickerDialog.setOnCancelListener {
+             isScheduled = false
+             binding.schedulLy.visibility = View.GONE
+         }
+         datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
+         datePickerDialog.show()
+     }*/
 
     @SuppressLint("RestrictedApi")
     private fun showDateTimePickerDialog() {
@@ -1348,7 +1356,8 @@ class ConversationActivity : BaseActivity() {
                             binding.schedulLy.visibility = View.VISIBLE
 
                             val is24Hour = android.text.format.DateFormat.is24HourFormat(this)
-                            val timePattern = if (is24Hour) "dd MMM yyyy HH:mm" else "dd MMM yyyy hh:mm a"
+                            val timePattern =
+                                if (is24Hour) "dd MMM yyyy HH:mm" else "dd MMM yyyy hh:mm a"
                             val formattedTime = SimpleDateFormat(timePattern, Locale.ENGLISH)
                                 .format(selectedCalendar.time)
 

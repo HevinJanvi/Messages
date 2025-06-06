@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
-    android:id="@+id/rootView"
     tools:context=".ui.Activity.ProfileActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -83,25 +83,32 @@
                 android:textSize="28sp" />
         </RelativeLayout>
 
-
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/adreesUser"
+    <FrameLayout
+        android:id="@+id/txtFrame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
         android:layout_marginHorizontal="50dp"
         android:layout_marginTop="20dp"
-        android:fontFamily="@font/product_sans_medium"
-        android:gravity="center"
-        android:text="kkkkk"
-        android:textColor="@color/textcolor"
-        android:textFontWeight="500"
-        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profileLy" />
+        app:layout_constraintTop_toBottomOf="@+id/profileLy">
+
+        <TextView
+            android:id="@+id/adreesUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:fontFamily="@font/product_sans_medium"
+            android:gravity="center"
+            android:layoutDirection="ltr"
+            android:text="@string/unknown"
+            android:textColor="@color/textcolor"
+            android:textFontWeight="500"
+            android:textSize="22sp" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/btnLy"
@@ -112,7 +119,7 @@
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="4"
-        app:layout_constraintTop_toBottomOf="@+id/adreesUser">
+        app:layout_constraintTop_toBottomOf="@+id/txtFrame">
 
         <ImageView
             android:id="@+id/profileCall"
@@ -316,7 +323,7 @@
                 android:gravity="center_vertical"
                 android:text="@string/delete_con"
                 android:textColor="@color/textcolor"
-                android:textSize="17dp" />
+                android:textSize="17sp" />
 
         </LinearLayout>
 

@@ -35,6 +35,7 @@ import com.test.messages.demo.Util.CustomLinkMovementMethod
 import com.test.messages.demo.Util.ViewUtils
 import com.test.messages.demo.Util.ViewUtils.extractOtp
 import com.test.messages.demo.data.Model.ConversationItem
+import com.test.messages.demo.ui.Dialogs.ExternalLinkDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,6 +44,7 @@ import java.util.regex.Pattern
 
 class ConversationBinAdapter(
     private val context: Context,
+    private val isContactSaved: Boolean,
     private val onSelectionChanged: (Int) -> Unit
 ) : ListAdapter<ConversationItem, ConversationBinAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<ConversationItem>() {
@@ -331,12 +333,22 @@ class ConversationBinAdapter(
                 "Website",
                 context.getString(R.string.web_type),
             ) { url ->
-                val intent = Intent(
+                if (!isContactSaved && conversationItem.isIncoming()) {
+                    ExternalLinkDialog(context, context.getString(R.string.web_type)).show()
+                }else{
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(if (url.startsWith("http")) url else "http://$url")
+                    )
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
+                /*val intent = Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse(if (url.startsWith("http")) url else "http://$url")
                 )
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
+                context.startActivity(intent)*/
             }
 
             applySpan(

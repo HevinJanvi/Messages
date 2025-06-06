@@ -1,23 +1,32 @@
 package com.test.messages.demo.ui.Activity
 
+import android.app.AlertDialog
 import android.content.ContentValues
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.messages.demo.R
 import com.test.messages.demo.Util.Constants.EXTRA_THREAD_ID
 import com.test.messages.demo.Util.Constants.GROUP_SEPARATOR
+import com.test.messages.demo.Util.Constants.ISCONTACT_SAVE
 import com.test.messages.demo.Util.Constants.ISDELETED
 import com.test.messages.demo.Util.Constants.ISGROUP
 import com.test.messages.demo.Util.Constants.NAME
-import com.test.messages.demo.Util.MessagesRestoredEvent
+import com.test.messages.demo.Util.Constants.NUMBER
+import com.test.messages.demo.Util.MessageRestoredEvent
 import com.test.messages.demo.Util.SmsPermissionUtils
 import com.test.messages.demo.Util.TimeUtils
 import com.test.messages.demo.Util.ViewUtils.getorcreateThreadId
@@ -27,12 +36,15 @@ import com.test.messages.demo.data.viewmodel.MessageViewModel
 import com.test.messages.demo.databinding.ActivityConversationBinBinding
 import com.test.messages.demo.ui.Adapter.ConversationBinAdapter
 import com.test.messages.demo.ui.Dialogs.DeleteProgressDialog
-import com.test.messages.demo.ui.send.getThreadId
-import com.test.messages.demo.ui.send.hasReadContactsPermission
-import com.test.messages.demo.ui.send.hasReadSmsPermission
+import com.test.messages.demo.ui.SMSend.getThreadId
+import com.test.messages.demo.ui.SMSend.hasReadContactsPermission
+import com.test.messages.demo.ui.SMSend.hasReadSmsPermission
 import dagger.hilt.android.AndroidEntryPoint
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.AppDatabase
 import easynotes.notes.notepad.notebook.privatenotes.colornote.checklist.Database.RecyclerBin.RecycleBinDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.util.Calendar
 
@@ -45,6 +57,7 @@ class ConversationBinactivity : BaseActivity() {
     private var isGroupThread: Boolean = false
     private var threadId: Long = -1L
     private lateinit var name: String
+    private var isContactSaved: Boolean = false
     private lateinit var db: RecycleBinDao
     private val selectedMessages = mutableSetOf<ConversationItem>()
     private var isMultiSelectEnabled = false
@@ -58,9 +71,17 @@ class ConversationBinactivity : BaseActivity() {
         binding = ActivityConversationBinBinding.inflate(layoutInflater)
         setContentView(binding.root)
         db = AppDatabase.getDatabase(this).recycleBinDao()
+        isGroupThread = intent.getBooleanExtra(ISGROUP, false)
+        isDeletedThread = intent.getBooleanExtra(ISDELETED, false)
+        threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1L)
+        name = intent.getStringExtra(NAME) ?: ""
+        isContactSaved = intent.getBooleanExtra(ISCONTACT_SAVE,false)
+        binding.address.text = name
+
 
         adapter = ConversationBinAdapter(
             context = this,
+            isContactSaved,
             onSelectionChanged = { count ->
                 if (count == 0) {
                     disableMultiSelection()
@@ -79,16 +100,13 @@ class ConversationBinactivity : BaseActivity() {
         binding.recycleConversationView.layoutManager = linearLayoutManager
         binding.recycleConversationView.adapter = adapter
 
-        isGroupThread = intent.getBooleanExtra(ISGROUP, false)
-        isDeletedThread = intent.getBooleanExtra(ISDELETED, false)
-        threadId = intent.getLongExtra(EXTRA_THREAD_ID, -1L)
-        name = intent.getStringExtra(NAME) ?: ""
-        binding.address.text = name
+
         loadDeletedMessages(threadId)
         binding.icClose.setOnClickListener {
             disableMultiSelection()
         }
         binding.btnDelete.setOnClickListener {
+            binding.actionSelectItem.visibility = View.GONE
             deleteSelectedMessages()
             disableMultiSelection()
         }
@@ -217,6 +235,122 @@ class ConversationBinactivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun restoreSelectedMessages() {
         val selected = adapter.getSelectedItems().filter { !it.isHeader }
+
+        val pinDao = AppDatabase.getDatabase(this).pinDao()
+        val notificationDao = AppDatabase.getDatabase(this).notificationDao()
+        val db = AppDatabase.getDatabase(this).recycleBinDao()
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
+        val tvMessage = dialogView.findViewById<TextView>(R.id.tvProgressMessage)
+        tvMessage.text = getString(R.string.restoring_messages)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        dialog.window?.apply {
+            setGravity(Gravity.BOTTOM)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        dialog.show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val restoredThreadMap = mutableMapOf<Long, Pair<String, Long>>()
+                val updatedMutedThreads = mutableSetOf<Long>()
+                val updatedPinnedThreads = mutableSetOf<Long>()
+
+                for (item in selected) {
+                    val originalThreadId = item.threadId
+                    var threadId = if (item.address.contains(GROUP_SEPARATOR)) {
+                        val normalizedAddress = item.address
+                            .split(GROUP_SEPARATOR)
+                            .map { addr ->
+                                viewModel.getContactNumber(this@ConversationBinactivity, addr.trim())
+                            }
+                            .joinToString(GROUP_SEPARATOR)
+                        val tempThreadId = getThreadId(setOf(normalizedAddress))
+                        if (isThreadExists(tempThreadId)) tempThreadId
+                        else createNewGroupThread(normalizedAddress)
+                    } else {
+                        getorcreateThreadId(this@ConversationBinactivity, item.address)
+                    }
+
+                    // Handle pinned thread
+                    if (!updatedPinnedThreads.contains(originalThreadId) && pinDao.isPinned(listOf(originalThreadId)) == 1) {
+                        pinDao.updateThreadId(
+                            oldThreadId = originalThreadId,
+                            newThreadId = threadId
+                        )
+                        updatedPinnedThreads.add(originalThreadId)
+                    }
+
+                    // Handle muted thread
+                    if (!updatedMutedThreads.contains(originalThreadId) && notificationDao.isThreadExists(originalThreadId) == 1) {
+                        val oldSetting = notificationDao.getNotificationSetting(originalThreadId)
+                        if (oldSetting != null) {
+                            val newSetting = oldSetting.copy(threadId = threadId)
+                            notificationDao.insertOrUpdate(newSetting)
+                            notificationDao.deleteByThreadId(originalThreadId)
+                            updatedMutedThreads.add(originalThreadId)
+                        }
+                    }
+
+                    // Insert SMS
+                    val values = ContentValues().apply {
+                        put(Telephony.Sms.THREAD_ID, threadId)
+                        put(Telephony.Sms.DATE, item.date)
+                        put(Telephony.Sms.BODY, item.body)
+                        put(Telephony.Sms.ADDRESS, item.address)
+                        put(Telephony.Sms.TYPE, item.type)
+                        put(Telephony.Sms.READ, if (item.read) 1 else 0)
+                        put(Telephony.Sms.SUBSCRIPTION_ID, item.subscriptionId)
+                    }
+
+                    contentResolver.insert(Telephony.Sms.CONTENT_URI, values)
+                    db.deleteMessageById(item.id)
+
+                    val current = restoredThreadMap[threadId]
+                    if (current == null || item.date > current.second) {
+                        restoredThreadMap[threadId] = Pair(item.body, item.date)
+                    }
+                }
+
+                fetchInsertAndDeleteDraft(threadId)
+
+                withContext(Dispatchers.Main) {
+                    for ((threadId, pair) in restoredThreadMap) {
+                        val (lastMessage, lastTime) = pair
+                        EventBus.getDefault().post(MessageRestoredEvent(threadId, lastMessage, lastTime))
+                    }
+                    loadDeletedMessages(threadId)
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (adapter.itemCount == 0) {
+                            setResult(RESULT_OK)
+                            finish()
+                        }
+                    }, 100)
+
+                    dialog.dismiss()
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    dialog.dismiss()
+                }
+            }
+        }
+    }
+
+   /* @RequiresApi(Build.VERSION_CODES.Q)
+    private fun restoreSelectedMessages() {
+        val selected = adapter.getSelectedItems().filter { !it.isHeader }
         Thread {
             try {
                 selected.forEach {
@@ -271,7 +405,7 @@ class ConversationBinactivity : BaseActivity() {
             } catch (e: Exception) {
             }
         }.start()
-    }
+    }*/
 
     fun fetchInsertAndDeleteDraft(threadId: Long): Boolean {
         val contentResolver = contentResolver

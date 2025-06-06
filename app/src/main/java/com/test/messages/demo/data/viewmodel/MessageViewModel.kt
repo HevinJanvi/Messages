@@ -4,6 +4,7 @@ package com.test.messages.demo.data.viewmodel
 import android.content.Context
 import android.os.Build
 import android.provider.Telephony
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -241,17 +242,6 @@ class MessageViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 callback.invoke()
             }
-            refreshMutedMessages()
-        }
-    }
-
-    private suspend fun refreshMutedMessages() = withContext(Dispatchers.IO) {
-        val updatedMessages = repository.getMessages()
-        val mutedThreadIds = repository.getMutedThreadIds()
-        val sortedMessages =
-            updatedMessages.sortedByDescending { mutedThreadIds.contains(it.threadId) }
-        withContext(Dispatchers.Main) {
-            (repository.messages as MutableLiveData).postValue(sortedMessages)
         }
     }
 
@@ -426,6 +416,7 @@ class MessageViewModel @Inject constructor(
                     message.starred = false
                 } else {
                     val isGroup = message.address.contains(GROUP_SEPARATOR)
+                    Log.d("TAG", "starSelectedMessages: "+message.profileImageUrl)
                     repository.insertStarredMessage(
                         StarredMessage(
                             message_id = message.id,
@@ -530,7 +521,7 @@ class MessageViewModel @Inject constructor(
                         subscriptionId = message.subscriptionId,
                         deletedTime = System.currentTimeMillis(),
                         isGroupChat = isGroup,
-                        profileImageUrl = ""
+                        profileImageUrl = message.profileImageUrl
                     )
                 }
 

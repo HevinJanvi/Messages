@@ -192,7 +192,7 @@
     <string name="backup">Rugsteun</string>
     <string name="restore_now">Herstel nou</string>
     <string name="restore_success">Herstel suksesvol</string>
-    <string name="last_backup">Laaste rugsteun:</string>
+    <string name="last_backup">Laaste rugsteun:%s </string>
     <string name="backing_up">Rugsteun tans …</string>
     <string name="small">Klein</string>
     <string name="large">Groot</string>

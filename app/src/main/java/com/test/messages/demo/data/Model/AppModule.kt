@@ -3,6 +3,7 @@ package com.test.messages.demo.data.Model
 import android.content.Context
 import com.test.messages.demo.data.repository.MessageRepository
 import com.test.messages.demo.data.reciever.SmsReceiver
+import com.test.messages.demo.data.repository.BackupRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,12 @@ class AppModule {
     @Singleton
     fun MessageRepository(@ApplicationContext context:Context): MessageRepository {
         return com.test.messages.demo.data.repository.MessageRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun BackupRepository(@ApplicationContext context:Context): BackupRepository {
+        return com.test.messages.demo.data.repository.BackupRepository(context)
     }
 
 }

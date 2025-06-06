@@ -12,6 +12,8 @@ import android.view.Window
 import android.view.WindowInsetsController
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -77,6 +79,10 @@ open class BaseActivity : AppCompatActivity() {
         val languageCode = ViewUtils.getSelectedLanguage(context)
         val locale = Locale(languageCode)
         Locale.setDefault(locale)
+         if (Build.VERSION.SDK_INT >= 33) {
+             val appLocale = LocaleListCompat.forLanguageTags(languageCode)
+             AppCompatDelegate.setApplicationLocales(appLocale)
+         }
         val configuration = context.resources.configuration
         configuration.setLocale(locale)
         configuration.setLayoutDirection(locale)

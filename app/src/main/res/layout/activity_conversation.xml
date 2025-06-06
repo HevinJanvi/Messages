@@ -231,7 +231,7 @@
                 android:text="@string/blocked"
                 android:textColor="@color/textcolor"
                 android:textFontWeight="400"
-                android:textSize="19dp"
+                android:textSize="19sp"
                 app:layout_constraintStart_toEndOf="@+id/icblock"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -245,7 +245,7 @@
                 android:text="@string/unblock_to_receive_message"
                 android:textColor="@color/gray_txtcolor"
                 android:textFontWeight="400"
-                android:textSize="12dp"
+                android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@+id/icblock"
                 app:layout_constraintTop_toBottomOf="@+id/txtBlock" />
 
@@ -259,7 +259,7 @@
                 android:text="@string/unblock"
                 android:textColor="@color/colorPrimary"
                 android:textFontWeight="500"
-                android:textSize="17dp"
+                android:textSize="17sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txtBlocksub" />
@@ -279,7 +279,7 @@
         android:lineSpacingExtra="5dp"
         android:text="@string/this_is_the_start_of_your_conversation"
         android:textColor="@color/gray_txtcolor"
-        android:textSize="14dp"
+        android:textSize="14sp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -402,7 +402,7 @@
                         android:paddingStart="15dp"
                         android:paddingTop="10dp"
                         android:text=""
-                        android:textSize="15dp"
+                        android:textSize="15sp"
                         app:layout_constraintEnd_toStartOf="@+id/close"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -453,7 +453,7 @@
                         android:textColorHint="@color/gray_txtcolor"
                         android:textDirection="locale"
                         android:textFontWeight="400"
-                        android:textSize="15dp" />
+                        android:textSize="15sp" />
 
                     <ImageView
                         android:id="@+id/imageSimSwitch"
@@ -580,18 +580,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!--            <TextView-->
-            <!--                android:id="@+id/learnMore"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:fontFamily="@font/product_sans_medium"-->
-            <!--                android:text="@string/learn_more"-->
-            <!--                android:gravity="start"-->
-            <!--                android:visibility="gone"-->
-            <!--                android:textColor="@color/colorPrimary"-->
-            <!--                android:textFontWeight="500"-->
-            <!--                android:textSize="14sp" -->
-            <!--                app:layout_constraintStart_toStartOf="parent"/>-->
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
