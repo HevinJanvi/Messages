@@ -17,17 +17,15 @@ android {
             keyPassword = "demo_jks"
         }
     }
-    namespace = "com.test.messages.demo"
+    namespace = "com.messages.sms.textingapp.ai.messaging"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.test.messages.demo"
+        applicationId = "com.messages.sms.textingapp.ai.messaging"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionName = "0.0.1"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -51,7 +49,6 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
-
 
 
     compileOptions {
@@ -86,25 +83,20 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("com.google.android.material:material:1.10.0")
-
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
-    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.1")
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.1")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
     implementation("com.google.dagger:hilt-android:2.46")
     kapt("com.google.dagger:hilt-compiler:2.46")
 
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.fragment:fragment-ktx:1.6.1")
     implementation("androidx.activity:activity-ktx:1.7.2")
+
     implementation("com.klinkerapps:android-smsmms:5.2.6")
-    implementation("androidx.work:work-runtime:2.9.0")
     implementation("com.googlecode.libphonenumber:libphonenumber:8.12.51")
+
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.makeramen:roundedimageview:2.3.0")
 
@@ -113,6 +105,7 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.greenrobot:eventbus:3.1.1")
+
     implementation("com.tbuonomo:dotsindicator:5.1.0")
     implementation("it.xabaras.android:recyclerview-swipedecorator:1.4")
 

@@ -264,7 +264,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.test.messages.demo.Ui.Activity.ConversationBinactivity"
+            android:name="com.messages.sms.textingapp.ai.messaging.Ui.Activity.ConversationBinactivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"/>
@@ -280,7 +280,7 @@
             android:exported="true"
             android:protectionLevel="signature" >
             <intent-filter>
-                <action android:name="com.test.messages.demo.action.mark_as_read" />
+                <action android:name="com.messages.sms.textingapp.ai.messaging.action.mark_as_read" />
             </intent-filter>
         </receiver>
 

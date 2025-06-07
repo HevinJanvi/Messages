@@ -31,13 +31,13 @@
 
 -keep class org.greenrobot.eventbus.android.AndroidComponentsImpl
 
--keep class com.test.messages.demo.data.Model.** { *; }
--keep class com.test.messages.demo.data.Database.Scheduled.ScheduledMessage.* { *; }
--keep class com.test.messages.demo.data.Database.Archived.ArchivedConversation.* { *; }
--keep class com.test.messages.demo.data.Database.Block.BlockConversation.* { *; }
--keep class com.test.messages.demo.data.Database.Notification.NotificationSetting.* { *; }
--keep class com.test.messages.demo.data.Database.Pin.PinMessage.* { *; }
--keep class com.test.messages.demo.data.Database.RecyclerBin.** { *; }
--keep class com.test.messages.demo.data.Database.Starred.StarredMessage.* { *; }
-#-keep class com.test.messages.demo.Helper.MessageScheduler.* { *; }
--keep class com.test.messages.demo.Ui.Dialogs.ScheduleDialog.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Model.** { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.Scheduled.ScheduledMessage.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.Archived.ArchivedConversation.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.Block.BlockConversation.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.Notification.NotificationSetting.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.Pin.PinMessage.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.RecyclerBin.** { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.data.Database.Starred.StarredMessage.* { *; }
+#-keep class com.messages.sms.textingapp.ai.messaging.Helper.MessageScheduler.* { *; }
+-keep class com.messages.sms.textingapp.ai.messaging.Ui.Dialogs.ScheduleDialog.* { *; }

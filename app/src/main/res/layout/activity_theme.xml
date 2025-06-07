@@ -79,7 +79,7 @@
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="5dp">
 
-                <com.test.messages.demo.Ui.CustomView.MarqueeTextView
+                <com.messages.sms.textingapp.ai.messaging.Ui.CustomView.MarqueeTextView
                     android:id="@+id/txtLight"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -131,7 +131,7 @@
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="5dp">
 
-                <com.test.messages.demo.Ui.CustomView.MarqueeTextView
+                <com.messages.sms.textingapp.ai.messaging.Ui.CustomView.MarqueeTextView
                     android:id="@+id/txtDark"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -184,7 +184,7 @@
                 android:paddingVertical="5dp"
                 android:layout_marginTop="5dp">
 
-                <com.test.messages.demo.Ui.CustomView.MarqueeTextView
+                <com.messages.sms.textingapp.ai.messaging.Ui.CustomView.MarqueeTextView
                     android:id="@+id/txtsystem"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
